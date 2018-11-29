@@ -1,5 +1,5 @@
 # MTP Core
-This  flder includes the code for the MTP Core. It is released open source under [GPLv3)](https://www.gnu.org/licenses/gpl-3.0.en.html) license 
+This  flder includes the code for the MTP Core. It is released open source under [(GPLv3)](https://www.gnu.org/licenses/gpl-3.0.en.html) license 
 
 ## INSTALLATION REQUIREMENTS
 Tools needed to compile and run MTP:
