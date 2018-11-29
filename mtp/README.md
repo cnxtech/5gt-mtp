@@ -11,25 +11,25 @@ Tools needed to compile and run MTP:
 
 
 ## COMPILATION PROCEDURE
-MTP is a maven project that can be compiled via command line or via a Java IDE (Netbeans is recommended)
+MTP is a maven project that can be compiled via command line or via a Java IDE ( [Netbeans](https://netbeans.apache.org/download/nb90/nb90.html) is recommended)
 
 ### COMPILATION VIA CLI
 Compile the swagger java rest client (used by MTP as library)
-1. enter in the "java-client-generated" directory
-2. execute "mvn install package"
+1. enter in the ` java-client-generated ` directory
+2. execute ` mvn install package `
 
 Compile the mtp
-1. enter in the "mtp" directory
-2. execute "mvn install package"
+1. enter in the ` mtp ` directory
+2. execute ` mvn install package `
 
 
 ### COMPILATION VIA NETBEANS
 Compile the swagger java rest client (used by MTP as library)
-1. Open "java-client-generated" in Netbeans (under File->Open Project)
+1. Open ` java-client-generated ` in Netbeans (under ` File->Open Project `)
 2. Compile the java rest client (click on build button)
 
 Compile the mtp
-1. Open "mtp" in Netbeans (under File->Open Project)
+1. Open ` mtp ` in Netbeans (under ` File->Open Project `)
 2. Compile the mtp (click on build button)
 
  
@@ -76,11 +76,11 @@ VALUES
 "0");
 ```
 
-An example of interdomainlinks.sql script is already present. The file represents the interdomain links of the reference topology (ReferenceTopology.pptx under the folder "dbscripts/test_topology") 
+An example of interdomainlinks.sql script is already present. The file represents the interdomain links of the reference topology (ReferenceTopology.pptx under the folder ` dbscripts/test_topology `) 
  that is used for test. 
 
 ####  Prepare computeFlavour.sql file
-MTP needs a file containing all compute flavours available for each NfviPop. Each flavour has the following format (refer to IFA005 Section 8.4.2 for the description of the fields):
+MTP needs a file containing all compute flavours available for each NfviPop. Each flavour has the following format (refer to [IFA005 Section 8.4.2](https://www.etsi.org/deliver/etsi_gs/NFV-IFA/001_099/005/02.01.01_60/gs_NFV-IFA005v020101p.pdf) for the description of the fields):
 
 ```sql
 INSERT INTO mtpdomdb.computeflavour
@@ -125,7 +125,7 @@ computeFlavourId)		/* Key used in mtpdomdb.computeflavour table */
 VALUES (0,0,0,"",100,"","",1);
 ```
 
-An example of computeFlavour.sql script is already present. The file represents the flavours of the NfviPoPs of the reference topology (ReferenceTopology.pptx under the folder "dbscripts/test_topology") 
+An example of computeFlavour.sql script is already present. The file represents the flavours of the NfviPoPs of the reference topology (` ReferenceTopology.pptx ` under the folder  ` dbscripts/test_topology `) 
  that is used for test. 
 
 
@@ -165,13 +165,13 @@ XML file is a list of "Domain" entries where each entry represent the informatio
 ## RUN MTP IN STUB MODE
 MTP can run in two ways:
 - Normal mode: It expects to have for each domain a corresponding MTP plugin to contact (detail of contact described in xml file)
-- Stub mode: The domains are simulated as Stub threads (useful for test and debug). The reference domain topology is shown in “ReferenceTopology.ppt” file under “dbscripts/test_topology”
+- Stub mode: The domains are simulated as Stub threads (useful for test and debug). The reference domain topology is shown in ` ReferenceTopology.ppt ` file under ` dbscripts/test_topology `
 
-The mode is enabled by a System properties ("STUB_ENABLE") configured at the startup (see below)
+The mode is enabled by a System properties (` STUB_ENABLE `) configured at the startup (see below)
 
 
 ## RUN MTP
-Output of the compilation is a self-contained jar file. So to run it, just type "java -D"STUB_ENABLE=<yes/no>" -jar <jarfile> <xmlfilename> <ip> <port>" 
+Output of the compilation is a self-contained jar file. So to run it, just type ` java -D"STUB_ENABLE=<yes/no>" -jar <jarfile> <xmlfilename> <ip> <port> ` 
 where:
 - <jarfile> is the name of the jar file (with the local path to reach it)
 - <xmlfilename> is the the file xml describing in Section 1.3 
