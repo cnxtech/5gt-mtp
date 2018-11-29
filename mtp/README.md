@@ -49,7 +49,7 @@ The server installation provides a "root@localhost" access, with a generated tem
 
 #### Prepare interdomainlinks.sql file
 MTP needs a file containing all interdomain links, i.e. the physical links connecting VIM and WIM domains. Each link has the following format:
-
+```sql
 INSERT INTO mtpdomdb.interdomainlink
 (srcDomId, 	/* Source domain Id of the link */
 dstDomId,  	/* Destination domain Id of the link */
@@ -74,7 +74,7 @@ VALUES
 "0",
 "10000000",
 "0");
-
+```
 
 An example of interdomainlinks.sql script is already present. The file represents the interdomain links of the reference topology (ReferenceTopology.pptx under the folder "dbscripts/test_topology") 
  that is used for test. 
@@ -82,6 +82,7 @@ An example of interdomainlinks.sql script is already present. The file represent
 ####  Prepare computeFlavour.sql file
 MTP needs a file containing all compute flavours available for each NfviPop. Each flavour has the following format (refer to IFA005 Section 8.4.2 for the description of the fields):
 
+```sql
 INSERT INTO mtpdomdb.computeflavour
 (computeFlavourId,		/* Unique key to identify the flavor (used by SO) */
 flavourId,			/* Datacenter local identifier of the flavor */
@@ -120,9 +121,9 @@ typeConfiguration,		/* See IFA005 */
 bandwidth,			/* See IFA005 */
 accelerationCapability,		/* See IFA005 */
 metadata,			/* See IFA005 */
-computeFlavourId)	/* Key used in mtpdomdb.computeflavour table */
+computeFlavourId)		/* Key used in mtpdomdb.computeflavour table */
 VALUES (0,0,0,"",100,"","",1);
-
+```
 
 An example of computeFlavour.sql script is already present. The file represents the flavours of the NfviPoPs of the reference topology (ReferenceTopology.pptx under the folder "dbscripts/test_topology") 
  that is used for test. 
@@ -132,6 +133,7 @@ An example of computeFlavour.sql script is already present. The file represents 
 ### Domain configuration file 
 as input MTP needs to know the list of VIM and WIM domains that can controls. The syntax is:
 
+```
 <?xml version="1.0" encoding="UTF-8"?>
 <Domains>
     <Domain >
@@ -151,7 +153,7 @@ as input MTP needs to know the list of VIM and WIM domains that can controls. Th
         <Port>10000</Port>
     </Domain>
 </Domains>
-
+```
 XML file is a list of "Domain" entries where each entry represent the information for a specific domain. Specifically:
 <Type>: identifies the domain type ("T-WIM" or "VIM")
 <Name>: identifies the domain name (same reported in IFA005)
