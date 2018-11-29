@@ -1,4 +1,4 @@
-#########INSTALLATION#################
+MTP INSTALLATION
 
 1. REQUIREMENTS
 Tools needed to compile and run MTP:
