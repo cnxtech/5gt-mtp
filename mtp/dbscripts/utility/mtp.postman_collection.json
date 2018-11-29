@@ -1,0 +1,639 @@
+{
+	"info": {
+		"_postman_id": "654c523a-cf01-aaa3-f0ee-3f40723e0f05",
+		"name": "mtp",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "SBI WIM",
+			"item": [
+				{
+					"name": "query",
+					"item": [
+						{
+							"name": "nfvipop",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "http://localhost:50000/mtpbase/network-resources/nfvi-pop-network-information?filter=all",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "50000",
+									"path": [
+										"mtpbase",
+										"network-resources",
+										"nfvi-pop-network-information"
+									],
+									"query": [
+										{
+											"key": "filter",
+											"value": "all"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "networkresourceinfo",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "http://localhost:50000/mtpbase/information?filter=nfvipopid=1;zoneid=1",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "50000",
+									"path": [
+										"mtpbase",
+										"information"
+									],
+									"query": [
+										{
+											"key": "filter",
+											"value": "nfvipopid=1;zoneid=1"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "networkresourcecapacity",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "http://localhost:50000/mtpbase/network-resources/capacities",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "50000",
+									"path": [
+										"mtpbase",
+										"network-resources",
+										"capacities"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "allocate",
+					"item": [
+						{
+							"name": "networkresourceallocate",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"locationConstraints\" : \"Spain\", \n\t\"reservationId\" : \"1\" ,\n\t\"networkResourceType\" : \"data\" ,\n\t\"typeNetworkData\" : \"netdata3\" ,\n\t\"resourceGroupId\" : \"103\" ,\n\t\"networkResourceName\" : \"setup3\" ,\n\t\"metadata\" : \"logicalLinkId=1\" \n}"
+								},
+								"url": {
+									"raw": "http://localhost:50000/mtpbase/network-resources",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "50000",
+									"path": [
+										"mtpbase",
+										"network-resources"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "terminate",
+					"item": [
+						{
+							"name": "networkresourcetermination",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "http://localhost:50000/mtpbase/network-resources?idlist=1,2,3",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "50000",
+									"path": [
+										"mtpbase",
+										"network-resources"
+									],
+									"query": [
+										{
+											"key": "idlist",
+											"value": "1,2,3"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"_postman_isSubFolder": true
+				}
+			]
+		},
+		{
+			"name": "SBI VIM",
+			"item": [
+				{
+					"name": "query",
+					"item": [
+						{
+							"name": "computeresourceinfo",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "http://localhost:50000/mtpbase/compute-resources/information?filter=nfvipopid=1;zoneid=1",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "50000",
+									"path": [
+										"mtpbase",
+										"compute-resources",
+										"information"
+									],
+									"query": [
+										{
+											"key": "filter",
+											"value": "nfvipopid=1;zoneid=1"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "nfvipop",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "http://localhost:50000/mtpbase/compute-resources/nfvi-pop-compute-information?filter=all",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "50000",
+									"path": [
+										"mtpbase",
+										"compute-resources",
+										"nfvi-pop-compute-information"
+									],
+									"query": [
+										{
+											"key": "filter",
+											"value": "all"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "computeresourcecapacity",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "http://localhost:50000/mtpbase/network-resources/capacities?resid=10",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "50000",
+									"path": [
+										"mtpbase",
+										"network-resources",
+										"capacities"
+									],
+									"query": [
+										{
+											"key": "resid",
+											"value": "10"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "resource zones",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "http://localhost:50000/mtpbase/compute-resources/resource-zones?filter=all",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "50000",
+									"path": [
+										"mtpbase",
+										"compute-resources",
+										"resource-zones"
+									],
+									"query": [
+										{
+											"key": "filter",
+											"value": "all"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "allocate",
+					"item": [
+						{
+							"name": "computeresourceallocate",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"locationConstraints\" : \"21\", \n\t\"reservationId\" : \"2\" ,\n\t\"interfaceData\" : [ \t{\n\t\t\t\t\t\t\t\t\"ipAddress\" : \"10.11.12.13\",\n\t\t\t\t\t\t\t\t\"macAddress\" : \"00:01:02:03:04:05\"\n\t\t\t\t\t\t\t},\n\t\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\t\"ipAddress\" : \"10.11.12.13\",\n\t\t\t\t\t\t\t\t\"macAddress\" : \"10:11:12:13:14:15\"\n\t\t\t\t\t\t\t}\n\t\t\t\t\t] ,\n\t\"computeFlavourId\" : \"3\" ,\n\t\"resourceGroupId\" : \"102\" ,\n\t\"computeName\" : \"setup2\" ,\n\t\"metadata\" : \"nvfipopid=1\" \n}"
+								},
+								"url": {
+									"raw": "http://localhost:50000/mtpbase/compute-resources",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "50000",
+									"path": [
+										"mtpbase",
+										"compute-resources"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "terminate",
+					"item": [
+						{
+							"name": "computeresourcetermination",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "http://localhost:50000/mtpbase/compute-resources?idlist=6,7,8",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "50000",
+									"path": [
+										"mtpbase",
+										"compute-resources"
+									],
+									"query": [
+										{
+											"key": "idlist",
+											"value": "6,7,8"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"_postman_isSubFolder": true
+				}
+			]
+		},
+		{
+			"name": "NBI-SO",
+			"item": [
+				{
+					"name": "query abstraction resources",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://127.0.0.1:50000/mtpbase/abstract-resources",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "50000",
+							"path": [
+								"mtpbase",
+								"abstract-resources"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "allocate network resources",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "",
+								"value": "",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"logicalLinkPathList\": [\r\n    {\r\n      \"logicalLinkAttributes\": {\r\n        \"logicalLinkId\": \"1\",\r\n        \"srcGwIpAddress\": \"10.10.10.10\",\r\n        \"localLinkId\": 1,\r\n        \"dstGwIpAddress\": \"20.20.20.20\",\r\n        \"remoteLinkId\": 1\r\n      }\r\n    }\r\n  ],\r\n  \"reqBandwidth\": 10000,\r\n  \"reqLatency\": 30,\r\n  \"networkLayer\": \"IP\",\r\n  \"interNfviPopNetworkType\": \"L2VPN\",\r\n  \"metaData\": [\r\n    {\r\n      \"key\": \"ServiceId\",\r\n      \"value\": \"5\"\r\n    }\r\n  ]\r\n}"
+						},
+						"url": {
+							"raw": "http://127.0.0.1:50000/mtpbase/abstract-network-resources",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "50000",
+							"path": [
+								"mtpbase",
+								"abstract-network-resources"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "allocate compute resources",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"affinityOrAntiAffinityConstraints\": [\r\n    {\r\n      \"affinityAntiAffinityResourceGroup\": \"1\",\r\n      \"affinityAntiAffinityResourceList\": {\r\n        \"resource\": [\r\n          \"2\"\r\n        ]\r\n      },\r\n      \"scope\": \"3\",\r\n      \"type\": \"4\"\r\n    }\r\n  ],\r\n  \"computeFlavourId\": \"3\",\r\n  \"computeName\": \"setup2\",\r\n  \"interfaceData\": [\r\n    {\r\n\t\t\"ipAddress\" : \"10.11.12.13\",\r\n\t\t\"macAddress\" : \"00:01:02:03:04:05\"\r\n\t\t},\r\n\t\t{\r\n\t\t\t\"ipAddress\" : \"10.11.12.13\",\r\n\t\t\t\"macAddress\" : \"10:11:12:13:14:15\"\r\n\t\t}\r\n  ],\r\n  \"locationConstraints\": \"111\",\r\n  \"metadata\": [\r\n    {\r\n      \"key\": \"ServiceId\",\r\n      \"value\": \"5\"\r\n    },\r\n    {\r\n      \"key\": \"AbstractNfviPopId\",\r\n      \"value\": \"1\"\r\n    }\r\n  ],\r\n  \"reservationId\": \"2\",\r\n  \"resourceGroupId\": \"101\",\r\n  \"userData\": {\r\n    \"content\": \"null\",\r\n    \"method\": \"null\"\r\n  },\r\n  \"vcImageId\": \"null\"\r\n}"
+						},
+						"url": {
+							"raw": "http://127.0.0.1:50000/mtpbase/abstract-compute-resources",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "50000",
+							"path": [
+								"mtpbase",
+								"abstract-compute-resources"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete network resources",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://127.0.0.1:50000/mtpbase/abstract-network-resources?networkId =1&networkId =2",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "50000",
+							"path": [
+								"mtpbase",
+								"abstract-network-resources"
+							],
+							"query": [
+								{
+									"key": "networkId ",
+									"value": "1"
+								},
+								{
+									"key": "networkId ",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete compute resources",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://127.0.0.1:50000/mtpbase/abstract-compute-resources?computeId=1&computeId=2",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "50000",
+							"path": [
+								"mtpbase",
+								"abstract-compute-resources"
+							],
+							"query": [
+								{
+									"key": "computeId",
+									"value": "1"
+								},
+								{
+									"key": "computeId",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "healtz",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://localhost:50000/mtpbase/healthz",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "50000",
+					"path": [
+						"mtpbase",
+						"healthz"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
