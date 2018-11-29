@@ -1,7 +1,7 @@
 # 5GT-MTP
 This repository contains the code for the Mobile Transport and Computing Platform (MTP) developed in the 5G-Transformer EU project.
 
-## Repo Organization
+## Repository Organization
 The repository is divided in three folders:
 
 ### 1. MTP 
