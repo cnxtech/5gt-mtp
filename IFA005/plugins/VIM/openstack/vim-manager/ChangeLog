@@ -1,0 +1,61 @@
+CHANGES
+=======
+
+* Add bcom dependencies installation
+
+0.1.2
+-----
+
+* Fix tagging
+
+0.1.1
+-----
+
+* Add release note
+
+0.1.0
+-----
+
+* Fix npm dependency for doc generation
+* Add third licences and headers in files
+
+0.0.8
+-----
+
+* documentation , import refactoring and fix docker
+
+0.0.7
+-----
+
+* Fix readme
+
+0.0.6
+-----
+
+* Add reame
+
+0.0.5
+-----
+
+* capacity
+
+0.0.4
+-----
+
+* Network and compute quota implementation / Reservation API without implementation
+
+0.0.3
+-----
+
+* Refactor API + Network interface
+
+0.0.2
+-----
+
+* Resources API
+
+0.0.1
+-----
+
+* Add image Software image management API
+* Initial Cookiecutter Commit
