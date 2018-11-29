@@ -2,12 +2,12 @@
 
 ## REQUIREMENTS
 Tools needed to compile and run MTP:
-1. JAVA JRE 1.8.x or higher
-2. maven 
-3. NETBEANS 8.x or higher (optional)
-4. MySQL 8.0 server
-5. JDBC SQL connector
-6. MySQL Workbench (optional)
+1. [JAVA JRE 1.8.x or higher](https://www.oracle.com/technetwork/java/javase/downloads/jre8-downloads-2133155.html)
+2. [Maven](https://maven.apache.org/) 
+3. [NETBEANS 9.x or higher (optional)](https://netbeans.apache.org/download/nb90/nb90.html) 
+4. [MySQL 8.0 server](https://www.mysql.com/)
+5. [JDBC SQL connector](https://dev.mysql.com/downloads/connector/j/)
+6. [MySQL Workbench (optional)](https://dev.mysql.com/downloads/workbench/)
 
 
 ## COMPILATION PROCEDURE
