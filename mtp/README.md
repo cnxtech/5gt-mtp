@@ -1,61 +1,63 @@
-MTP INSTALLATION
+# INSTALLATION
 
-1. REQUIREMENTS
+## REQUIREMENTS
 Tools needed to compile and run MTP:
-a) JAVA JRE 1.8.x or higher
-b) maven 
-c) NETBEANS 8.x or higher (optional)
-d) MySQL 8.0 server
-e) JDBC SQL connector
-f) MySQL Workbench (optional)
+1. JAVA JRE 1.8.x or higher
+2. maven 
+3. NETBEANS 8.x or higher (optional)
+4. MySQL 8.0 server
+5. JDBC SQL connector
+6. MySQL Workbench (optional)
 
 
-2. COMPILATION PROCEDURE
+## COMPILATION PROCEDURE
 MTP is a maven project that can be compiled via command line or via a Java IDE (Netbeans is recommended)
 
-2.1 COMPILATION VIA CLI
+### COMPILATION VIA CLI
 Compile the swagger java rest client (used by MTP as library)
-	a) enter in the "java-client-generated" directory
-	b) execute "mvn install package"
+1. enter in the "java-client-generated" directory
+2. execute "mvn install package"
 
 Compile the mtp
-	a) enter in the "mtp" directory
-	b) execute "mvn install package"
+1. enter in the "mtp" directory
+2. execute "mvn install package"
 
 
-2.2 COMPILATION VIA NETBEANS
-Open "java-client-generated" in Netbeans (under File->Open Project)
-Compile the java rest client (click on build button)
+### COMPILATION VIA NETBEANS
+Compile the swagger java rest client (used by MTP as library)
+1. Open "java-client-generated" in Netbeans (under File->Open Project)
+2. Compile the java rest client (click on build button)
 
-Open "mtp" in Netbeans (under File->Open Project)
-Compile the mtp (click on build button)
+Compile the mtp
+1. Open "mtp" in Netbeans (under File->Open Project)
+2. Compile the mtp (click on build button)
 
  
 
-#########RUNNING#################
-1. PREPARATION
+# RUNNING
+## PREPARATION
 MTP needs some sql scripts to configure specific aspects. Below is described how to configure properly the MySQL server and how to prepare the sql script.
 
-1.1 MySQL DB Server 
+### MySQL DB Server 
 Install MySQL DB server (refer to MySQL online wiki for installation according the Operative System)
 
-1.1.1 Configure MySQL DB Server access
+#### Configure MySQL DB Server access
 MTP is configured to access the MySQL DB with login "mtp" and pwd "mtp").
 The server installation provides a "root@localhost" access, with a generated temporary password; so after the installation you need to change the root password to "mtp" (please refer to MySQL wiki for this operation as it depends from the Operative System)
 
 
 
-1.1.2 Prepare interdomainlinks.sql file
+#### Prepare interdomainlinks.sql file
 MTP needs a file containing all interdomain links, i.e. the physical links connecting VIM and WIM domains. Each link has the following format:
 
 INSERT INTO mtpdomdb.interdomainlink
-(srcDomId, /* Source domain Id of the link */
-dstDomId,  /* Destination domain Id of the link */
-srcGwId,   /* Source node Id of the link */
+(srcDomId, 	/* Source domain Id of the link */
+dstDomId,  	/* Destination domain Id of the link */
+srcGwId,   	/* Source node Id of the link */
 dstGwId,	/* Destination node Id of the link */
 srcGWIp,	/* Source interface IP of the link */
 dstGwIp,	/* Destination interface IP of the link */
-delay,	/* Delay associated to the link */
+delay,		/* Delay associated to the link */
 availableBandwidth,	/* Available BW of the link */
 reservedBandwidth,	/* Reserved BW of the link */
 totalBandwidth,		/* Total BW of the link */
@@ -77,13 +79,13 @@ VALUES
 An example of interdomainlinks.sql script is already present. The file represents the interdomain links of the reference topology (ReferenceTopology.pptx under the folder "dbscripts/test_topology") 
  that is used for test. 
 
-1.1.3 Prepare computeFlavour.sql file
+####  Prepare computeFlavour.sql file
 MTP needs a file containing all compute flavours available for each NfviPop. Each flavour has the following format (refer to IFA005 Section 8.4.2 for the description of the fields):
 
 INSERT INTO mtpdomdb.computeflavour
-(computeFlavourId,	/* Unique key to identify the flavor (used by SO) */
+(computeFlavourId,		/* Unique key to identify the flavor (used by SO) */
 flavourId,			/* Datacenter local identifier of the flavor */
-accelerationCapability,	/* See IFA005 */
+accelerationCapability,		/* See IFA005 */
 NfviPopId)			/* Identifier of the NfviPop using the flavor */
 VALUES (1,1,"accCapability1",11);
 
@@ -95,29 +97,29 @@ VALUES ("typeStorage1",10,1);
 
 
 INSERT INTO mtpdomdb.virtualcpu
-(cpuArchitecture,	/* See IFA005 */
-numVirtualCpu,	/* See IFA005 */
-cpuClock,	/* See IFA005 */
+(cpuArchitecture,			/* See IFA005 */
+numVirtualCpu,				/* See IFA005 */
+cpuClock,				/* See IFA005 */
 virtualCpuOversubscriptionPolicy,	/* See IFA005 */
-computeFlavourId) 	/* Key used in mtpdomdb.computeflavour table */
+computeFlavourId) 			/* Key used in mtpdomdb.computeflavour table */
 VALUES ("x86",4,1,"policy1",1);
 
 INSERT INTO mtpdomdb.virtualmemorydata
-(virtualMemSize,		/* See IFA005 */
+(virtualMemSize,			/* See IFA005 */
 virtualMemOversubscriptionPolicy,	/* See IFA005 */
-numaEnabled,	/* See IFA005 */
-computeFlavourId)	/* Key used in mtpdomdb.computeflavour table */
+numaEnabled,				/* See IFA005 */
+computeFlavourId)			/* Key used in mtpdomdb.computeflavour table */
 VALUES (100,"policy1",true, 1);
 
 
 INSERT INTO mtpdomdb.virtualnetworkinterfacedata
-(networkId,	/* See IFA005 */
-networkPortId,	/* See IFA005 */
-typeVirtualNic,	/* See IFA005 */
-typeConfiguration,	/* See IFA005 */
-bandwidth,	/* See IFA005 */
-accelerationCapability,	/* See IFA005 */
-metadata,	/* See IFA005 */
+(networkId,			/* See IFA005 */
+networkPortId,			/* See IFA005 */
+typeVirtualNic,			/* See IFA005 */
+typeConfiguration,		/* See IFA005 */
+bandwidth,			/* See IFA005 */
+accelerationCapability,		/* See IFA005 */
+metadata,			/* See IFA005 */
 computeFlavourId)	/* Key used in mtpdomdb.computeflavour table */
 VALUES (0,0,0,"",100,"","",1);
 
@@ -127,7 +129,7 @@ An example of computeFlavour.sql script is already present. The file represents 
 
 
    
-1.2 Domain configuration file 
+### Domain configuration file 
 as input MTP needs to know the list of VIM and WIM domains that can controls. The syntax is:
 
 <?xml version="1.0" encoding="UTF-8"?>
@@ -158,7 +160,7 @@ XML file is a list of "Domain" entries where each entry represent the informatio
 <Port>: identifies the port of the server HTTP (use for REST call)
  
 
-2 RUN MTP IN STUB MODE
+## RUN MTP IN STUB MODE
 MTP can run in two ways:
 - Normal mode: It expects to have for each domain a corresponding MTP plugin to contact (detail of contact described in xml file)
 - Stub mode: The domains are simulated as Stub threads (useful for test and debug). The reference domain topology is shown in “ReferenceTopology.ppt” file under “dbscripts/test_topology”
@@ -166,7 +168,7 @@ MTP can run in two ways:
 The mode is enabled by a System properties ("STUB_ENABLE") configured at the startup (see below)
 
 
-3 RUN MTP
+## RUN MTP
 Output of the compilation is a self-contained jar file. So to run it, just type "java -D"STUB_ENABLE=<yes/no>" -jar <jarfile> <xmlfilename> <ip> <port>" 
 where:
 - <jarfile> is the name of the jar file (with the local path to reach it)
@@ -174,8 +176,3 @@ where:
 - <ip> is the ip address where MTP is listening for HTTP REST calls (used for SO communication)
 - <port> is the port number where MTP is listening for HTTP REST calls (used for SO communication)
 - STUB_ENABLE=<yes/no> is a flag that enable/disable the stub mode
-
-	
-
-#########PLUGIN#################
-MTP plugins should be submitted under the folder “IFA005/plugins” according the domain type (WIM plugin under “WIM” folder, VIM plugin under “VIM” folder, MEC plugin under “MEC” folder, RADIO plugin under “RADIO” folder).
