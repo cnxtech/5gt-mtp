@@ -1,6 +1,7 @@
-# INSTALLATION
+# MTP Core
+This  flder includes the code for the MTP Core. It is released open source under [GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html) license 
 
-## REQUIREMENTS
+## INSTALLATION REQUIREMENTS
 Tools needed to compile and run MTP:
 1. [JAVA JRE 1.8.x or higher](https://www.oracle.com/technetwork/java/javase/downloads/jre8-downloads-2133155.html)
 2. [Maven](https://maven.apache.org/) 
