@@ -1,8 +1,17 @@
-# Copyright 2018 b<>com. All rights reserved.
-# This software is the confidential intellectual property of b<>com. You shall
-# not disclose it and shall use it only in accordance with the terms of the
-# license agreement you entered into with b<>com.
-# IDDN number:
+# Copyright 2018 b<>com.
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+# IDDN number: IDDN.FR.001.470053.000.S.C.2018.000.00000.
 #
 # -*- coding: utf-8 -*
 
@@ -59,8 +68,8 @@ def get_network_resources(network_id):
     payload = {
         'networkResourceId': [network_id]
     }
-    r = requests.get(
-        'http://127.0.0.1:8000/network_resources', params=payload)
+    r = requests.post(
+        'http://127.0.0.1:8000/network_resources/query', params=payload)
 
     if r.status_code != 200:
         return False
@@ -74,11 +83,9 @@ def get_network_resources(network_id):
 
 
 def delete_network_resources(network_id):
-    payload = {
-        'networkResourceId': [network_id]
-    }
     r = requests.delete(
-        'http://127.0.0.1:8000/network_resources', params=payload)
+        'http://127.0.0.1:8000/network_resources?'
+        'networkResourceId=' + network_id)
 
     deleted_resources = json.loads(r.text)
 
@@ -93,8 +100,9 @@ def get_network_capacity(network_id):
         'attributeSelector': '',
         'timePeriod': '',
     }
-    r = requests.get(
-        'http://127.0.0.1:8000/network_resources/capacities', params=payload)
+    r = requests.post(
+        'http://127.0.0.1:8000/network_resources/capacities/query',
+        json=payload)
 
     if r.status_code != 200:
         return False
@@ -109,15 +117,9 @@ def test_network_resources_management():
     if not network_id:
         assert False
 
-    get_result = get_network_resources(network_id)
-    if not get_result:
-        assert False
+    assert get_network_resources(network_id)
 
-    delete_result = delete_network_resources(network_id)
-    if not delete_result:
-        assert False
-
-    assert True
+    assert delete_network_resources(network_id)
 
 
 def test_network_capacity():
@@ -129,12 +131,6 @@ def test_network_capacity():
     if not subnet_id:
         assert False
 
-    get_result = get_network_capacity(network_id)
-    if not get_result:
-        assert False
+    assert get_network_capacity(network_id)
 
-    delete_result = delete_network_resources(network_id)
-    if not delete_result:
-        assert False
-
-    assert True
+    assert delete_network_resources(network_id)

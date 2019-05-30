@@ -5,6 +5,7 @@
  */
 package com.mtp.common.objects;
 
+
 import com.mtp.extinterface.nbi.swagger.model.InterNfviPopConnectivityRequest;
 import com.mtp.extinterface.nbi.swagger.model.VirtualNetwork;
 import java.util.ArrayList;

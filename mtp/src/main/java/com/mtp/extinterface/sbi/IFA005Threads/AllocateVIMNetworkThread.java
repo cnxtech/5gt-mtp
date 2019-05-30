@@ -15,7 +15,7 @@ import com.mtp.extinterface.nbi.swagger.model.MetaDataInner;
 import com.mtp.extinterface.nbi.swagger.model.VirtualNetwork;
 import io.swagger.client.ApiClient;
 import io.swagger.client.ApiException;
-import io.swagger.client.api.VirtualisedNetworkResourcesApi;
+import io.swagger.client.api.VimNetworkResourcesApi;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,10 +45,11 @@ public class AllocateVIMNetworkThread extends Thread {
         
 
         for (int i = 0; i < request.getVimdomlist().size(); i++) {
-            String basepath = "http://" + dominfo.get(i).getIp() + ":" + dominfo.get(i).getPort() + "/" + dominfo.get(i).getName();
+            //String basepath = "http://" + dominfo.get(i).getIp() + ":" + dominfo.get(i).getPort() + "/" + dominfo.get(i).getName();
+            String basepath = "http://" + dominfo.get(i).getIp() + ":" + dominfo.get(i).getPort();
             ApiClient capi = new ApiClient();
             capi.setBasePath(basepath);
-            VirtualisedNetworkResourcesApi api = new VirtualisedNetworkResourcesApi(capi);
+            VimNetworkResourcesApi api = new VimNetworkResourcesApi(capi);
 
             AllocateNetworkResult networkresponse; 
             List<MetaDataInner> datalist = new ArrayList();
@@ -60,20 +61,57 @@ public class AllocateVIMNetworkThread extends Thread {
                     servid = request.getNetworkRequest().getMetaData().get(j).getValue();
                 }
             }
-            inputreq.setNetworkResourceType("network");
-            MetaDataInner data = new MetaDataInner();
-            data.setKey("ServiceId");
-            data.setValue(servid);
-            datalist.add(data);
-            data = new MetaDataInner();
-            data.setKey("NetworkType");
-            data.setValue(request.getWimnetlist().get(i).getNetworkType());
-            datalist.add(data);
-            data = new MetaDataInner();
-            data.setKey("SegmentType");
-            data.setValue(request.getWimnetlist().get(i).getSegmentType());
-            datalist.add(data);
-            inputreq.setMetadata(datalist);
+            //retrieve wan link. 
+            //As each link is has to be associated to two VIM domain take , 
+            //just take the quotient of i
+            
+            if (dominfo.get(i).getName().contains("OpenStack") == true ) {
+                int wimpos = i / 2;
+                //when sending ip floating to desctination VIM, the floating IP of transport should be swutched
+                inputreq.setNetworkResourceType("network");
+                MetaDataInner data = new MetaDataInner();
+                data.setKey("ServiceId");
+                data.setValue(servid);
+                datalist.add(data);
+                data = new MetaDataInner();
+                data.setKey("NetworkType");
+                data.setValue(request.getWimnetlist().get(wimpos).getNetworkType());
+                datalist.add(data);
+                data = new MetaDataInner();
+                data.setKey("SegmentType");
+                data.setValue(request.getWimnetlist().get(wimpos).getSegmentType());
+                datalist.add(data);
+                //retrieve ip floting ip send the ip in the reverse order to egress domain
+                String[] ipsplit = request.getWimnetlist().get(wimpos).getSegmentType().split(";");
+                int ingrdom = i%2; //if 0 we are sending info to the ingress domain, if 1 to the egress domain 
+                String segtype;
+                if (ingrdom == 0) {
+                    segtype = ipsplit[0] + ";" + ipsplit[1];
+                } else {
+                    segtype = ipsplit[1] + ";" + ipsplit[0];
+                } 
+                data.setKey("SegmentType");
+                data.setValue(segtype);
+                datalist.add(data);
+                inputreq.setMetadata(datalist);
+            } else {
+                int wimpos = i / 2;
+                inputreq.setNetworkResourceType("network");
+                MetaDataInner data = new MetaDataInner();
+                data.setKey("ServiceId");
+                data.setValue(servid);
+                datalist.add(data);
+                data = new MetaDataInner();
+                data.setKey("NetworkType");
+                data.setValue(request.getWimnetlist().get(wimpos).getNetworkType());
+                datalist.add(data);
+                data = new MetaDataInner();
+                data.setKey("SegmentType");
+                data.setValue(request.getWimnetlist().get(wimpos).getSegmentType());
+                datalist.add(data);
+                inputreq.setMetadata(datalist);
+            }
+            //Add 
             try {
  
                 networkresponse = api.vIMallocateNetwork(inputreq);

@@ -38,7 +38,7 @@ public class MTPIF {
     private HttpServer server;
     
     public MTPIF(String ip, String port ) {
-        String uri_str = "http://" + ip + ":" + port + "/mtpbase/";
+        String uri_str = "http://" + ip + ":" + port + "/crosshaulbase";
         BASE_URI = URI.create(uri_str);
         System.out.println("NBIIF --> Create web server...");
         System.out.flush();

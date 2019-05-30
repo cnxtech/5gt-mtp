@@ -12,7 +12,7 @@ import com.mtp.events.resourcemanagement.NetworkTermination.NetworkTerminateVIMR
 import com.mtp.events.resourcemanagement.NetworkTermination.NetworkTerminateWIMReply;
 import io.swagger.client.ApiClient;
 import io.swagger.client.ApiException;
-import io.swagger.client.api.VirtualisedNetworkResourcesApi;
+import io.swagger.client.api.VimNetworkResourcesApi;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

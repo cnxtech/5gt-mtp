@@ -1,8 +1,17 @@
-# Copyright 2018 b<>com. All rights reserved.
-# This software is the confidential intellectual property of b<>com. You shall
-# not disclose it and shall use it only in accordance with the terms of the
-# license agreement you entered into with b<>com.
-# IDDN number:
+# Copyright 2018 b<>com.
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+# IDDN number: IDDN.FR.001.470053.000.S.C.2018.000.00000.
 #
 # -*- encoding: utf-8 -*-
 
@@ -10,6 +19,8 @@ from oslo_config import cfg
 
 from vim_manager.conf import clients_auth
 from vim_manager.conf import default
+from vim_manager.conf import nfvi_pop
+from vim_manager.conf import vtep
 from vim_manager.conf import discovery
 from vim_manager.conf import glance_client
 from vim_manager.conf import identity
@@ -19,7 +30,6 @@ from vim_manager.conf import nova_client
 CONF = cfg.CONF
 # ConfigOpts = cfg.ConfigOpts
 
-
 def register_all_opts(conf):
     clients_auth.register_opts(conf)
     default.register_opts(conf)
@@ -28,6 +38,8 @@ def register_all_opts(conf):
     identity.register_opts(conf)
     neutron_client.register_opts(conf)
     nova_client.register_opts(conf)
+    nfvi_pop.register_opts(conf)
+    vtep.register_opts(conf)
 
 
 register_all_opts(CONF)

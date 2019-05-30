@@ -5,13 +5,13 @@
             <ConnectivityEndpoints>192.168.1.10;192.168.1.20</ConnectivityEndpoints>
             <geographicalLocationInfo>Pisa</geographicalLocationInfo>
             <popId>11</popId>
-            <vimId>1</vimId>
+            <vimId>3</vimId>
         </NfviPop>
     </NVFIPopList>
     <Zonelist> 
         <Zone>
-            <id>10</id>
-            <popId>11</popId>
+            <id>30</id>
+            <popId>31</popId>
             <name>Ericsson RAN WIM</name>
             <status>enable</status>
             <property>power</property>
@@ -89,7 +89,10 @@
         <srcip>192.168.1.10</srcip>
         <dstip>192.168.1.20</dstip>
         <qosprofile>1</qosprofile>
-        <serviceid>101</serviceid> 
+        <serviceid>101</serviceid>
+        <ip>127.0.0.1</ip>
+        <rxport>60000</rxport>
+        <txport>61000</txport> 
         </RANinfo>
         <RANinfo>
         <id>102</id>
@@ -99,6 +102,9 @@
         <dstip>192.168.1.20</dstip>
         <qosprofile>2</qosprofile>
         <serviceid>102</serviceid> 
+        <ip>127.0.0.1</ip>
+        <rxport>60000</rxport>
+        <txport>61000</txport>  
         </RANinfo>
         <RANinfo>
         <id>103</id>
@@ -107,7 +113,10 @@
         <srcip>192.168.1.10</srcip>
         <dstip>192.168.1.20</dstip>
         <qosprofile>1</qosprofile>
-        <serviceid>101</serviceid> 
+        <serviceid>101</serviceid>
+        <ip>127.0.0.1</ip>
+        <rxport>60000</rxport>
+        <txport>61000</txport>   
         </RANinfo>
         <RANinfo>
         <id>104</id>
@@ -116,7 +125,10 @@
         <srcip>192.168.1.10</srcip>
         <dstip>192.168.1.20</dstip>
         <qosprofile>2</qosprofile>
-        <serviceid>102</serviceid> 
+        <serviceid>102</serviceid>
+        <ip>127.0.0.1</ip>
+        <rxport>60000</rxport>
+        <txport>61000</txport>   
         </RANinfo>
     </RANInfoList>
 </DomainInfo>

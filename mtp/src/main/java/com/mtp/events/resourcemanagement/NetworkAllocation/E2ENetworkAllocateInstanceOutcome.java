@@ -7,6 +7,7 @@ package com.mtp.events.resourcemanagement.NetworkAllocation;
 
 import com.mtp.extinterface.nbi.swagger.model.VirtualNetwork;
 
+
 public class E2ENetworkAllocateInstanceOutcome {
 
     private long reqid;

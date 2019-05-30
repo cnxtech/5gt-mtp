@@ -1,8 +1,17 @@
-# Copyright 2018 b<>com. All rights reserved.
-# This software is the confidential intellectual property of b<>com. You shall
-# not disclose it and shall use it only in accordance with the terms of the
-# license agreement you entered into with b<>com.
-# IDDN number:
+# Copyright 2018 b<>com.
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+# IDDN number: IDDN.FR.001.470053.000.S.C.2018.000.00000.
 #
 # -*- encoding: utf-8 -*-
 
@@ -40,7 +49,11 @@ OPTS = [
         'log_level',
         default=os.environ.get('LOG_LEVEL', 'warning'),
         choices=log.LOG_LEVELS.keys(),
-        help="Service log level (default: LOG_LEVEL or 'warning')")
+        help="Service log level (default: LOG_LEVEL or 'warning')"),
+    cfg.StrOpt(
+        'project_id',
+        default=os.environ.get('PROJECT_ID', '776354dbbda448af872ed1c72ced19ee'),
+        help="ID of the current project/tenant.")
 ]
 
 

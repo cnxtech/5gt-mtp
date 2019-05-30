@@ -17,15 +17,32 @@ public class E2EComputeTerminateInstance {
     private ArrayList<Long> domlist;  //
     private ArrayList<Long> poplist;
     private ComputeTerminateElem computeTermElem;
+     // List of Virtual Machine identifiers for which the termination is to be requested 
+    private ArrayList<String> vmIdList; 
 
-    public E2EComputeTerminateInstance(long reqid, long servid, ArrayList<Long> domlist, ArrayList<Long> poplist, ComputeTerminateElem computeTermElem) {
+    
+    
+    
+    public E2EComputeTerminateInstance(long reqid, long servid, ArrayList<Long> domlist, ArrayList<Long> poplist, ComputeTerminateElem computeTermElem, ArrayList<String> vmIdList) {
         this.reqid = reqid;
         this.servid = servid;
         this.domlist = domlist;
         this.poplist = poplist;
         this.computeTermElem = computeTermElem;
+        this.vmIdList = vmIdList;
     }
 
+    public ArrayList<String> getVmIdList() {
+        return vmIdList;
+    }
+
+    public void setVmIdList(ArrayList<String> vmIdList) {
+        this.vmIdList = vmIdList;
+    }
+
+    
+    
+    
     public long getReqid() {
         return reqid;
     }

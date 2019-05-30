@@ -1,8 +1,17 @@
-# Copyright 2018 b<>com. All rights reserved.
-# This software is the confidential intellectual property of b<>com. You shall
-# not disclose it and shall use it only in accordance with the terms of the
-# license agreement you entered into with b<>com.
-# IDDN number:
+# Copyright 2018 b<>com.
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+# IDDN number: IDDN.FR.001.470053.000.S.C.2018.000.00000.
 #
 # -*- coding: utf-8 -*
 
@@ -81,9 +90,12 @@ def create_compute_resources():
 
 
 def get_compute_capacity():
-    url = 'http://127.0.0.1:8000/compute_resources/capacities'
-    r = requests.get(
-        url + '?computeResourceTypeId=VirtualCpuResourceInformation')
+    payload = {
+        'computeResourceTypeId': 'VirtualCpuResourceInformation'
+    }
+
+    url = 'http://127.0.0.1:8000/compute_resources/capacities/query'
+    r = requests.post(url, json=payload)
 
     if r.status_code != 200:
         return False
@@ -97,8 +109,9 @@ def get_compute_resources(compute_id):
     payload = {
         'computeResourceId': [compute_id]
     }
-    r = requests.get(
-        'http://127.0.0.1:8000/compute_resources', params=payload)
+
+    r = requests.post(
+        'http://127.0.0.1:8000/compute_resources/query', json=payload)
 
     if r.status_code != 200:
         return False
@@ -111,11 +124,8 @@ def get_compute_resources(compute_id):
 
 
 def delete_compute_resources(compute_id):
-    payload = {
-        'computeId': [compute_id]
-    }
     r = requests.delete(
-        'http://127.0.0.1:8000/compute_resources', params=payload)
+        'http://127.0.0.1:8000/compute_resources?computeId=' + compute_id)
 
     deleted_resources = json.loads(r.text)
 
@@ -124,27 +134,15 @@ def delete_compute_resources(compute_id):
 
 def test_compute_resources_management():
     compute_id = create_compute_resources()
-    if not compute_id:
-        assert False
+    assert compute_id
 
-    get_result = get_compute_resources(compute_id)
-    if not get_result:
-        assert False
+    assert get_compute_resources(compute_id)
 
-    delete_result = delete_compute_resources(compute_id)
-    if not delete_result:
-        assert False
-
-    assert True
+    assert delete_compute_resources(compute_id)
 
 
 def test_compute_capacity():
     compute_id = create_compute_resources()
-    if not compute_id:
-        assert False
+    assert compute_id
 
-    get_result = get_compute_capacity()
-    if not get_result:
-        assert False
-
-    assert True
+    assert get_compute_capacity()

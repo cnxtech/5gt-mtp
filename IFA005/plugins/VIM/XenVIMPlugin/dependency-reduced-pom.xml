@@ -14,7 +14,7 @@
           <archive>
             <manifest>
               <addClasspath>true</addClasspath>
-              <mainClass>com.mtp.mtp</mainClass>
+              <mainClass>com.ericsson.xenplugin.xenplugin</mainClass>
             </manifest>
           </archive>
         </configuration>

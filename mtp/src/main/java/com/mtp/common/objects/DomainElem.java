@@ -20,6 +20,7 @@ public class DomainElem {
     private String name;
     private String type;  //1 WIM-Transport, 2 WIM radio, 3 VIM, 4 MEC, ....
     private long id; // id of domain
+    private long mecid; // id of domain
     
     public DomainElem() {
         type = "";
@@ -28,13 +29,24 @@ public class DomainElem {
         port = -1;
         id = -1;
     };
-    public DomainElem(String typeval, String nameval, String ipval, long portval, long idval) {
-        type = typeval;
-        name = nameval;
-        ip = ipval;
-        port = portval;
-        id = idval;
+
+    public DomainElem(String ip, long port, String name, String type, long id, long mecid) {
+        this.ip = ip;
+        this.port = port;
+        this.name = name;
+        this.type = type;
+        this.id = id;
+        this.mecid = mecid;
     }
+    public DomainElem(String type, String name,String ip, long port, long id) {
+        this.ip = ip;
+        this.port = port;
+        this.name = name;
+        this.type = type;
+        this.id = id;
+        this.mecid = -1;
+    }
+
     //get/set function
     public String getIp() {
         return ip;
@@ -66,4 +78,13 @@ public class DomainElem {
     public void setId(long val) {
         id = val;
     }
+
+    public long getMecid() {
+        return mecid;
+    }
+
+    public void setMecid(long mecid) {
+        this.mecid = mecid;
+    }
+    
 }

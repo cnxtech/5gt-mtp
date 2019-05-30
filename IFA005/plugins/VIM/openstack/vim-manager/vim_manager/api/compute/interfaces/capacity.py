@@ -1,8 +1,17 @@
-# Copyright 2018 b<>com. All rights reserved.
-# This software is the confidential intellectual property of b<>com. You shall
-# not disclose it and shall use it only in accordance with the terms of the
-# license agreement you entered into with b<>com.
-# IDDN number:
+# Copyright 2018 b<>com.
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+# IDDN number: IDDN.FR.001.470053.000.S.C.2018.000.00000.
 #
 from urllib.parse import urlparse
 
@@ -15,7 +24,11 @@ from flasgger import fields
 from flasgger import Schema
 from flasgger import SwaggerView
 
+import ast
+
+from vim_manager import conf
 from vim_manager.api.schema import CapacityInformation
+from vim_manager.api.schema import Filter
 from vim_manager.api.schema import NfviPop
 from vim_manager.api.schema import ResourceZone
 from vim_manager.api.schema import TimePeriodInformation
@@ -37,26 +50,26 @@ class QueryComputeCapacityRequest(Schema):
     zoneId = fields.Str(
         required=True,
         description='When specified this parameter identifies the resource '
-                    'zone for which the capacity is requested. When not '
-                    'specified the total capacity managed by the VIM instance '
-                    'will be returned.')
+        'zone for which the capacity is requested. When not '
+        'specified the total capacity managed by the VIM instance '
+        'will be returned.')
     computeResourceTypeId = fields.Str(
         required=True,
         description='Identifier of the resource type for which the issuer '
-                    'wants to know the available, total, reserved and/or '
-                    'allocated capacity.')
+        'wants to know the available, total, reserved and/or '
+        'allocated capacity.')
     resourceCriteria = fields.Str(
         required=True,
         description='Input capacity computation parameter for selecting the '
-                    'virtual memory, virtual CPU and acceleration '
-                    'capabilities for which the issuer wants to know the '
-                    'available, total, reserved and/or allocated capacity. '
-                    'Selecting parameters/attributes that shall be used are '
-                    'defined in the VirtualComputeResourceInformation, '
-                    'VirtualCpuResourceInformation, and '
-                    'VirtualMemoryResourceInformation information elements. '
-                    'This information element and the computeResourceTypeId '
-                    'are mutually exclusive.')
+        'virtual memory, virtual CPU and acceleration '
+        'capabilities for which the issuer wants to know the '
+        'available, total, reserved and/or allocated capacity. '
+        'Selecting parameters/attributes that shall be used are '
+        'defined in the VirtualComputeResourceInformation, '
+        'VirtualCpuResourceInformation, and '
+        'VirtualMemoryResourceInformation information elements. '
+        'This information element and the computeResourceTypeId '
+        'are mutually exclusive.')
     attributeSelector = fields.Str(
         required=True,
         description='Input parameter for selecting which capacity information '
@@ -67,9 +80,9 @@ class QueryComputeCapacityRequest(Schema):
         TimePeriodInformation,
         required=True,
         description='The time interval for which capacity is queried. When '
-                    'omitted, an interval starting "now" is used. The time '
-                    'interval can be specified since resource reservations '
-                    'can be made for a specified time interval.')
+        'omitted, an interval starting "now" is used. The time '
+        'interval can be specified since resource reservations '
+        'can be made for a specified time interval.')
 
 
 class CapacityQueryAPI(SwaggerView):
@@ -80,14 +93,12 @@ class CapacityQueryAPI(SwaggerView):
     Virtualised Compute Resources Information Management Interface.
     """
 
-    parameters = [
-        {
-            "in": "body",
-            "name": "QueryComputeCapacityRequest",
-            "schema": QueryComputeCapacityRequest,
-            "required": True
-        }
-    ]
+    parameters = [{
+        "in": "body",
+        "name": "QueryComputeCapacityRequest",
+        "schema": QueryComputeCapacityRequest,
+        "required": True
+    }]
     responses = {
         OK: {
             'description': 'The capacity during the requested time period. '
@@ -108,8 +119,9 @@ class CapacityQueryAPI(SwaggerView):
     tags = ['virtualisedComputeResources']
     operationId = "queryComputeCapacity"
 
-    def get(self):
-        resource_type_input = flask.request.args.get('computeResourceTypeId')
+    def post(self):
+        data = flask.request.get_json()
+        resource_type_input = data.get('computeResourceTypeId')
 
         resource_types = {
             'VirtualCpuResourceInformation': 'VCPU',
@@ -118,45 +130,32 @@ class CapacityQueryAPI(SwaggerView):
         }
 
         resource_type = resource_types.get(resource_type_input)
-
         config = flask.current_app.osloconfig
         session = OpenStackClients(config).session
-        auth_headers = session.get_auth_headers()
 
-        keystone = OpenStackClients(config).keystone()
+        response = session.get('/resource_providers', endpoint_filter={'service_type': 'placement', 'interface': 'public', 'region_name': 'RegionOne' })
+        resource_providers = json.loads(response.__dict__['_content'].decode("utf-8"))
 
-        placement_service_id = keystone.services.find(name='placement').id
-        placement_api_url = keystone.endpoints.find(
-            service_id=placement_service_id).url
-
-        url = placement_api_url + '/resource_providers'
-
-        r = requests.get(url, headers=auth_headers)
-
-        resource_providers = json.loads(r.text)
-
-        url_inventory = None
-
+        available_capacity = 0
+        total_capacity = 0
+        allocated_capacity = 0
+        # check all the compute nodes
         for resource_provider in resource_providers['resource_providers']:
             links = resource_provider['links']
-
-            placement_api_path = urlparse(placement_api_url).path
-            base_url = placement_api_url.split(placement_api_path)[0]
             for link in links:
                 if link['rel'] == 'inventories':
-                    url_inventory = base_url + link['href']
-
-        r = requests.get(url_inventory, headers=auth_headers)
-
-        data = json.loads(r.text)
-        inventories = data['inventories'][resource_type]
+                    response = session.get(link['href'], endpoint_filter={'service_type': 'placement', 'interface': 'public', 'region_name': 'RegionOne' })
+                    data = json.loads(response.__dict__['_content'].decode("utf-8"))
+                    inventories = data['inventories'][resource_type]
+                    available_capacity = available_capacity + ( inventories['total'] - inventories['reserved'] )
+                    total_capacity = total_capacity + inventories['total']
+                    allocated_capacity = allocated_capacity + inventories['reserved']
 
         capacity_information = {
-            'availableCapacity':
-                inventories['total'] - inventories['reserved'],
+            'availableCapacity': available_capacity,
             'reservedCapacity': None,  # May be use blazar lib
-            'totalCapacity': inventories['total'],
-            'allocatedCapacity': inventories['reserved']
+            'totalCapacity': total_capacity,
+            'allocatedCapacity': allocated_capacity
         }
 
         return flask.jsonify(capacity_information), OK
@@ -168,6 +167,16 @@ class ComputeResourceZoneQueryAPI(SwaggerView):
     This operation enables the NFVO to query information about a Resource
     Zone, e.g. listing the properties of the Resource Zone, and other metadata.
     """
+    parameters = [{
+        "name": "filter",
+        "in": "body",
+        "schema": Filter,
+        "description": "Input filter for selecting information to query. "
+                       "For instance, based on identifier of the Resource "
+                       "Zone, identifier of the NFVI-PoP, properties of "
+                       "the Resource Zone, or other meta-data.",
+        "required": True
+    }]
 
     responses = {
         OK: {
@@ -192,7 +201,7 @@ class ComputeResourceZoneQueryAPI(SwaggerView):
     tags = ['virtualisedComputeResources']
     operationId = "queryComputeResourceZone"
 
-    def get(self):
+    def post(self):
 
         return flask.jsonify(''), OK
 
@@ -206,6 +215,14 @@ class NfviPopComputeInformationQueryAPI(SwaggerView):
     endpoints to reach VNFs instantiated making use of virtualised compute
     resources in the NFVI as specified by the exchanged information elements.
     """
+
+    parameters = [{
+        "name": "filter",
+        "in": "body",
+        "schema": Filter,
+        "description": "Input filter for selecting information to query.",
+        "required": True
+    }]
 
     responses = {
         OK: {
@@ -230,29 +247,31 @@ class NfviPopComputeInformationQueryAPI(SwaggerView):
     tags = ['virtualisedComputeResources']
     operationId = "queryNFVIPoPComputeInformation"
 
-    def get(self):
-
-        return flask.jsonify(''), OK
-
-
-blueprint.add_url_rule(
-    '/compute_resources/capacities', strict_slashes=False,
-    view_func=CapacityQueryAPI.as_view(
-        'queryComputeCapacity'),
-    methods=['GET']
-)
-
+    def post(self):
+        nfvi_pop_param = {
+            'nfviPopId' : conf.cfg.CONF.nfvi_pop.nfviPopId,
+            'vimId' : conf.cfg.CONF.nfvi_pop.vimId,
+            'geographicalLocationInfo' : conf.cfg.CONF.nfvi_pop.geographicalLocationInfo,
+            'networkConnectivityEndpoint' : conf.cfg.CONF.nfvi_pop.networkConnectivityEndpoint
+        }
+        return flask.jsonify(nfvi_pop_param), OK
 
 blueprint.add_url_rule(
-    '/compute_resources/resource_zones', strict_slashes=False,
+    '/v1/compute_resources/capacities/query',
+    strict_slashes=False,
+    view_func=CapacityQueryAPI.as_view('queryComputeCapacity'),
+    methods=['POST'])
+
+blueprint.add_url_rule(
+    '/v1/compute_resources/resource_zones/query',
+    strict_slashes=False,
     view_func=ComputeResourceZoneQueryAPI.as_view(
         'queryComputeResourceZoneQuery'),
-    methods=['GET']
-)
+    methods=['POST'])
 
 blueprint.add_url_rule(
-    '/compute_resources/nfvi_pop_compute_information', strict_slashes=False,
+    '/v1/compute_resources/nfvi_pop_compute_information/query',
+    strict_slashes=False,
     view_func=NfviPopComputeInformationQueryAPI.as_view(
         'queryNfviPopComputeInformation'),
-    methods=['GET']
-)
+    methods=['POST'])

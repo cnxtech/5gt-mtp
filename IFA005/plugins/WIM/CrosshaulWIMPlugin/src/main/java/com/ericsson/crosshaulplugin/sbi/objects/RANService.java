@@ -17,18 +17,24 @@ public class RANService {
     private String dstid;
     private String qosid;
     private String servid;
-    /*TODO: Insert CrosshaulInfo*/
-    
-    public RANService (String id, String prov, String ten, String srcip, String dstip, String qos, String serv) {
-        resid = id;
-        provid = prov;
-        tenid = ten;
-        srcid = srcip;
-        dstid = dstip;
-        qosid = qos;
-        servid = serv;
+    private String ip;
+    private String rxport;
+    private String txport;
+
+    public RANService(String resid, String provid, String tenid, String srcid, String dstid, String qosid, String servid, String ip, String rxport, String txport) {
+        this.resid = resid;
+        this.provid = provid;
+        this.tenid = tenid;
+        this.srcid = srcid;
+        this.dstid = dstid;
+        this.qosid = qosid;
+        this.servid = servid;
+        this.ip = ip;
+        this.rxport = rxport;
+        this.txport = txport;
     }
-    
+
+
     
     public String getResId() {
         return resid;
@@ -51,7 +57,20 @@ public class RANService {
     public String getServId() {
         return servid;
     } 
-    
+
+    public String getIp() {
+        return ip;
+    }
+
+    public String getRxport() {
+        return rxport;
+    }
+
+    public String getTxport() {
+        return txport;
+    }
+
+
     
 }
     

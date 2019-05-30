@@ -15,10 +15,15 @@ import com.mtp.resourcemanagement.ResouceOrchestration;
 //import java.lang.String;
 import com.mtp.events.abstraction.Creation.Parsedomainlist;
 import com.mtp.events.abstraction.Creation.StopServer;
+import com.mtp.extinterface.mon.MonitoringIF;
 import com.mtp.extinterface.nbi.swagger.api.AbstractComputeResourcesApi;
 import com.mtp.extinterface.nbi.swagger.api.AbstractNetworkResourcesApi;
 import com.mtp.extinterface.nbi.swagger.api.AbstractResourcesApi;
+import com.mtp.extinterface.nbi.swagger.api.MecappApi;
 import com.mtp.extinterface.nbi.swagger.api.NBIIF;
+import com.mtp.extinterface.pa.PlacementIF;
+import com.mtp.monitoring.MonitoringDriver;
+import com.mtp.placement.PlacementDriver;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -62,7 +67,12 @@ public class mtp {
 
         //DROP ALL TABLES FROM DB
 //SCRIPT PATH
-        String aSQLScriptFilePath = "..\\dbscripts\\utility\\mtpdb_drop.sql";
+
+String aSQLScriptFilePath = java.nio.file.Paths.get("..","dbscripts", "utility", "mtpdb_drop.sql").toString();
+
+// String aSQLScriptFilePath = "..\\dbscripts\\utility\\mtpdb_drop.sql";
+        
+        
 //Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/mtpdomdb?allowPublicKeyRetrieval=true&useSSL=false", "mtp", "mtp");
         Connection con = DriverManager.getConnection(dbPropertires.getProperty("DbMainURL"), dbPropertires.getProperty("DbMainUsername"), dbPropertires.getProperty("DbMainPassword"));
         try {
@@ -80,7 +90,9 @@ public class mtp {
 
         //CREATE DB SCHEME
 //SCRIPT PATH
-        aSQLScriptFilePath = "..\\dbscripts\\mtpscheme.sql";
+
+ aSQLScriptFilePath = java.nio.file.Paths.get("..","dbscripts","mtpscheme.sql").toString();
+   //     aSQLScriptFilePath = "..\\dbscripts\\mtpscheme.sql";
 //Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/mtpdomdb?allowPublicKeyRetrieval=true&useSSL=false", "mtp", "mtp");
         // con = DriverManager.getConnection("jdbc:mysql://localhost:3306/", "mtp", "mtp");
         try {
@@ -97,7 +109,8 @@ public class mtp {
         }
         //INSERT INTER_DOMAIN_LINKS into DB
 //SCRIPT PATH
-        aSQLScriptFilePath = "..\\dbscripts\\test_topology\\interdomainlinks.sql";
+aSQLScriptFilePath = java.nio.file.Paths.get("..","dbscripts","test_topology","interdomainlinks.sql").toString();       
+// aSQLScriptFilePath = "..\\dbscripts\\test_topology\\interdomainlinks.sql";
 //Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/mtpdomdb?allowPublicKeyRetrieval=true&useSSL=false", "mtp", "mtp");
         // con = DriverManager.getConnection("jdbc:mysql://localhost:3306/", "mtp", "mtp");
         try {
@@ -113,9 +126,30 @@ public class mtp {
                     + " The error is " + e.getMessage());
         }
 
+        //INSERT MEC APPD into DB
+////SCRIPT PATH
+//aSQLScriptFilePath = java.nio.file.Paths.get("..","dbscripts","test_topology","appdlist.sql").toString();          
+//// aSQLScriptFilePath = "..\\dbscripts\\test_topology\\computeFlavour.sql";
+////Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/mtpdomdb?allowPublicKeyRetrieval=true&useSSL=false", "mtp", "mtp");
+//        // con = DriverManager.getConnection("jdbc:mysql://localhost:3306/", "mtp", "mtp");
+//        try {
+//            // Initialize object for ScripRunner
+//            ScriptRunner sr = new ScriptRunner(con);
+//            // Give the input file to Reader
+//            Reader reader = new BufferedReader(
+//                    new FileReader(aSQLScriptFilePath));
+//            // Exctute script
+//            sr.runScript(reader);
+//        } catch (Exception e) {
+//            System.err.println("Failed to Execute" + aSQLScriptFilePath
+//                    + " The error is " + e.getMessage());
+//        }
+
         //INSERT COMPUTE_FALVOURS into DB
+        
 //SCRIPT PATH
-        aSQLScriptFilePath = "..\\dbscripts\\test_topology\\computeFlavour.sql";
+        aSQLScriptFilePath = java.nio.file.Paths.get("..", "dbscripts", "test_topology", "computeFlavour.sql").toString();
+// aSQLScriptFilePath = "..\\dbscripts\\test_topology\\computeFlavour.sql";
 //Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/mtpdomdb?allowPublicKeyRetrieval=true&useSSL=false", "mtp", "mtp");
         // con = DriverManager.getConnection("jdbc:mysql://localhost:3306/", "mtp", "mtp");
         try {
@@ -150,6 +184,12 @@ public class mtp {
         evbus.register(new AbstractComputeResourcesApi());
         evbus.register(new AbstractNetworkResourcesApi());
         evbus.register(new AbstractResourcesApi());
+        evbus.register(new MecappApi());
+        evbus.register(new PlacementDriver());
+        evbus.register(new PlacementIF());
+        evbus.register(new MonitoringDriver());
+        evbus.register(new MonitoringIF());
+                
 
         //class to register dead event
         evbus.register(new DeadEventListener());

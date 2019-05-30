@@ -45,8 +45,10 @@ public class TerminateWIMNetworkThread extends Thread {
             ArrayList<Integer> errorcodeList = new ArrayList();
             ArrayList<String> errormsgList = new ArrayList();
             for (int i = 0; i < dominfoMap.get(j).size(); i++) { 
+//                String basepath = "http://" + dominfoMap.get(j).get(i).getIp() + ":" 
+//                        + dominfoMap.get(j).get(i).getPort() + "/" + dominfoMap.get(j).get(i).getName();
                 String basepath = "http://" + dominfoMap.get(j).get(i).getIp() + ":" 
-                        + dominfoMap.get(j).get(i).getPort() + "/" + dominfoMap.get(j).get(i).getName();
+                        + dominfoMap.get(j).get(i).getPort();
                 ApiClient capi = new ApiClient();
                 capi.setBasePath(basepath);
                 WimNetworkResourcesApi api = new WimNetworkResourcesApi(capi);

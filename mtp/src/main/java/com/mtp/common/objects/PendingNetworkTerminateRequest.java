@@ -6,7 +6,6 @@
 package com.mtp.common.objects;
 
 
-import com.mtp.extinterface.nbi.swagger.model.VirtualNetwork;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

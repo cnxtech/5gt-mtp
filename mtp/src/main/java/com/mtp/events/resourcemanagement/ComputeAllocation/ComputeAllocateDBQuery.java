@@ -7,6 +7,8 @@ package com.mtp.events.resourcemanagement.ComputeAllocation;
 
 import com.mtp.extinterface.nbi.swagger.model.AllocateComputeRequest;
 
+
+
 public class ComputeAllocateDBQuery {
 
     private long reqid;

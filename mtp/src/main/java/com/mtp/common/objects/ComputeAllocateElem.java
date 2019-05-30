@@ -8,6 +8,7 @@ package com.mtp.common.objects;
 import com.mtp.events.resourcemanagement.ComputeAllocation.E2EComputeAllocateRequest;
 import com.mtp.extinterface.nbi.swagger.model.VirtualCompute;
 
+
 /**
  *
  * @author efabuba

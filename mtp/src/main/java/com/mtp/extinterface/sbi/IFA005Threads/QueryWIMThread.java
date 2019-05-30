@@ -11,19 +11,16 @@ import com.mtp.common.objects.MapResources;
 import com.mtp.common.objects.NetworkResElem;
 import com.mtp.events.abstraction.Creation.WIMResAbstractionEvent;
 import com.mtp.extinterface.nbi.swagger.model.AllocateNetworkResultNetworkDataNetworkQoS;
-import io.swagger.client.ApiClient;
-import io.swagger.client.ApiException;
 import com.mtp.extinterface.nbi.swagger.model.CapacityInformation;
-import com.mtp.extinterface.nbi.swagger.model.Filter;
-import com.mtp.extinterface.nbi.swagger.model.InlineResponse200;
+import com.mtp.extinterface.nbi.swagger.model.InlineResponse2002;
 import com.mtp.extinterface.nbi.swagger.model.LogicalLinkAttributes;
 import com.mtp.extinterface.nbi.swagger.model.NfviPop;
 import com.mtp.extinterface.nbi.swagger.model.ResourceZone;
-import com.mtp.extinterface.nbi.swagger.model.VirtualLinks;
 import com.mtp.extinterface.nbi.swagger.model.VirtualLinksInnerVirtualLink;
 import com.mtp.extinterface.nbi.swagger.model.VirtualNetworkResourceInformation;
+import io.swagger.client.ApiClient;
+import io.swagger.client.ApiException;
 import io.swagger.client.api.WimNetworkResourcesApi;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,7 +36,8 @@ public class QueryWIMThread extends Thread {
     
     @Override
     public void run() {
-        String basepath = "http://" + dominfo.getIp() + ":" + dominfo.getPort()+ "/" + dominfo.getName();
+        //String basepath = "http://" + dominfo.getIp() + ":" + dominfo.getPort()+ "/" + dominfo.getName();
+        String basepath = "http://" + dominfo.getIp() + ":" + dominfo.getPort();
         ApiClient capi = new ApiClient();
         capi.setBasePath(basepath);
         
@@ -53,7 +51,7 @@ public class QueryWIMThread extends Thread {
         CapacityInformation caprep;
         
         WIMResAbstractionEvent ev = new WIMResAbstractionEvent(dominfo.getId());
-        InlineResponse200 resp = new InlineResponse200();
+        InlineResponse2002 resp = new InlineResponse2002();
         //Retrieve nfvipop query, no filter
         try {
             resp = api.collectWimAbstractedInformation();

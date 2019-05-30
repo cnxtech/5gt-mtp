@@ -1,8 +1,17 @@
-# Copyright 2018 b<>com. All rights reserved.
-# This software is the confidential intellectual property of b<>com. You shall
-# not disclose it and shall use it only in accordance with the terms of the
-# license agreement you entered into with b<>com.
-# IDDN number:
+# Copyright 2018 b<>com.
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+# IDDN number: IDDN.FR.001.470053.000.S.C.2018.000.00000.
 #
 # -*- coding: utf-8 -*-
 
@@ -330,6 +339,12 @@ class VirtualInterfaceData(Schema):
         description='The MAC address desired for the virtual network '
                     'interface. The cardinality can be 0 to allow for network '
                     'interface without specific MAC address configuration.')
+
+    networkId = fields.Str(
+        required=True,
+        description='Field not included in the IFA005 norm and added by BCOM '
+                    'This field is needed by openstack to create the interface on the '
+                    'specific subnet.')
 
     @validates('ipAddress')
     def validate_ipAddress(self, value):

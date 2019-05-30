@@ -17,6 +17,3 @@ python-novaclient # Apache-2.0
 python-openstackclient # Apache-2.0
 requests # Apache-2.0
 simplejson # MIT
-
-# b<>com libs
-apisdk

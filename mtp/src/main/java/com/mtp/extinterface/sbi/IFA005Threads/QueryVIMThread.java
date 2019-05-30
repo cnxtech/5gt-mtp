@@ -7,23 +7,17 @@ package com.mtp.extinterface.sbi.IFA005Threads;
 
 import com.mtp.SingletonEventBus;
 import com.mtp.common.objects.ComputeResElem;
-import com.mtp.common.objects.NetworkResElem;
 import com.mtp.common.objects.DomainElem;
 import com.mtp.common.objects.MapResources;
 import com.mtp.events.abstraction.Creation.VIMResAbstractionEvent;
 import com.mtp.extinterface.nbi.swagger.model.CapacityInformation;
-import com.mtp.extinterface.nbi.swagger.model.Filter;
 import com.mtp.extinterface.nbi.swagger.model.NfviPop;
-import com.mtp.extinterface.nbi.swagger.model.QueryComputeCapacityRequest;
-import com.mtp.extinterface.nbi.swagger.model.QueryNetworkCapacityRequest;
 import com.mtp.extinterface.nbi.swagger.model.ResourceZone;
 import com.mtp.extinterface.nbi.swagger.model.VirtualComputeResourceInformation;
 import com.mtp.extinterface.nbi.swagger.model.VirtualNetworkResourceInformation;
 import io.swagger.client.ApiClient;
 import io.swagger.client.ApiException;
-import io.swagger.client.api.VirtualisedComputeResourcesApi;
-import io.swagger.client.api.VirtualisedNetworkResourcesApi;
-import io.swagger.client.api.VirtualisedNetworkResourcesInformationApi;
+import io.swagger.client.api.VimComputeResourcesApi;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,10 +36,11 @@ public class QueryVIMThread extends Thread {
     @Override
     public void run() {
         
-        String basepath = "http://" + dominfo.getIp() + ":" + dominfo.getPort() + "/" + dominfo.getName();
+        //String basepath = "http://" + dominfo.getIp() + ":" + dominfo.getPort() + "/" + dominfo.getName();
+        String basepath = "http://" + dominfo.getIp() + ":" + dominfo.getPort();
         ApiClient capi = new ApiClient();
         capi.setBasePath(basepath);
-        VirtualisedComputeResourcesApi api = new VirtualisedComputeResourcesApi(capi);
+        VimComputeResourcesApi api = new VimComputeResourcesApi(capi);
 
         List<NfviPop> poplist = new ArrayList(); 
         List<ResourceZone> zonelist= new ArrayList();
@@ -106,7 +101,7 @@ public class QueryVIMThread extends Thread {
                     }
                     //Add element to compute list in the event
                     ComputeResElem el = new ComputeResElem();
-                    el.setComputeElem(resinfolist.get(i));
+                    el.setComputeElem(resinfolist.get(j));
                     el.setCapacityElem(caprep);
                     ev.setComputeResElem(el);
                     //create element in map
@@ -127,7 +122,7 @@ public class QueryVIMThread extends Thread {
                     }
                     //Add element to compute list in the event
                     ComputeResElem el = new ComputeResElem();
-                    el.setComputeElem(resinfolist.get(i));
+                    el.setComputeElem(resinfolist.get(j));
                     el.setCapacityElem(caprep);
                     ev.setComputeResElem(el);
                     //create element in map

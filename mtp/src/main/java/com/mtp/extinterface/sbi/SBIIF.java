@@ -21,17 +21,30 @@ import com.mtp.SingletonEventBus;
 import com.mtp.common.objects.DomainElem;
 import com.mtp.common.objects.NetworkEndpoints;
 import com.mtp.events.abstraction.Creation.DomainSubscriber;
+import com.mtp.events.resourcemanagement.ComputeAllocation.ComputeAllocateMECReply;
+import com.mtp.events.resourcemanagement.ComputeAllocation.ComputeAllocateMECReq;
 import com.mtp.events.resourcemanagement.ComputeAllocation.ComputeAllocateVIMReply;
 import com.mtp.events.resourcemanagement.ComputeAllocation.ComputeAllocateVIMReq;
+import com.mtp.events.resourcemanagement.ComputeAllocation.ComputeOperateReq;
+import com.mtp.events.resourcemanagement.ComputeAllocation.ComputeOperateVIMReply;
+import com.mtp.events.resourcemanagement.ComputeTermination.ComputeTerminateMECReq;
 import com.mtp.events.resourcemanagement.ComputeTermination.ComputeTerminateVIMReq;
+import com.mtp.events.resourcemanagement.NetworkAllocation.IntraPoPAllocateVIMRequest;
 import com.mtp.events.resourcemanagement.NetworkAllocation.NetworkAllocateVIMReply;
 import com.mtp.events.resourcemanagement.NetworkAllocation.NetworkAllocateVIMReq;
 import com.mtp.events.resourcemanagement.NetworkAllocation.NetworkAllocateWIMReply;
 import com.mtp.events.resourcemanagement.NetworkAllocation.NetworkAllocateWIMReq;
+import com.mtp.events.resourcemanagement.NetworkTermination.IntraPoPTerminateVIMRequest;
 import com.mtp.events.resourcemanagement.NetworkTermination.NetworkTerminateVIMReply;
 import com.mtp.events.resourcemanagement.NetworkTermination.NetworkTerminateVIMReq;
 import com.mtp.events.resourcemanagement.NetworkTermination.NetworkTerminateWIMReply;
 import com.mtp.events.resourcemanagement.NetworkTermination.NetworkTerminateWIMReq;
+import com.mtp.extinterface.sbi.IFA005Threads.AllocateIntraPopVIMNetworkThread;
+import com.mtp.extinterface.sbi.IFA005Threads.AllocateMECThread;
+import com.mtp.extinterface.sbi.IFA005Threads.OperateVIMComputeThread;
+import com.mtp.extinterface.sbi.IFA005Threads.TerminateIntraPoPVIMNetworkThread;
+import com.mtp.extinterface.sbi.IFA005Threads.TerminateMECThread;
+import com.mtp.extinterface.sbi.StubThreads.AllocateMECThreadStub;
 import com.mtp.extinterface.sbi.StubThreads.AllocateVIMComputeStub;
 import com.mtp.extinterface.sbi.StubThreads.AllocateVIMNetworkStub;
 import com.mtp.extinterface.sbi.StubThreads.AllocateWIMNetworkStub;
@@ -39,6 +52,7 @@ import com.mtp.extinterface.sbi.StubThreads.QueryMECStub;
 import com.mtp.extinterface.sbi.StubThreads.QueryRadioStub;
 import com.mtp.extinterface.sbi.StubThreads.QueryVIMStub;
 import com.mtp.extinterface.sbi.StubThreads.QueryWIMStub;
+import com.mtp.extinterface.sbi.StubThreads.TerminateMECThreadStub;
 import com.mtp.extinterface.sbi.StubThreads.TerminateVIMComputeStub;
 import com.mtp.extinterface.sbi.StubThreads.TerminateVIMNetworkStub;
 import com.mtp.extinterface.sbi.StubThreads.TerminateWIMNetworkStub;
@@ -149,6 +163,7 @@ public class SBIIF {
 
     }
 
+    
     @Subscribe
     public void handle_ComputeAllocateVIMReq(ComputeAllocateVIMReq allvimreq) {
         System.out.println("SBIIF --> Handle ComputeAllocateVIMReq Event");
@@ -164,7 +179,7 @@ public class SBIIF {
 
         try {
             java.sql.Connection conn = DbDomainDatasource.getInstance().getConnection();
-            PreparedStatement ps = conn.prepareStatement("Select domId,name,type,ip,port from domain where domId=?");
+            PreparedStatement ps = conn.prepareStatement("Select domId,name,type,ip,port, from domain where domId=?");
             ps.setLong(1, allvimreq.getDomid());
             java.sql.ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -204,12 +219,179 @@ public class SBIIF {
                 thr.start();
             }
         }
-
+  
         //R0.1 Just trigger the outcome (loopback)  
 //        ComputeAllocateVIMReply allvimrep = new ComputeAllocateVIMReply(allvimreq.getReqId(),
 //                                                    allvimreq.getServId(), allvimreq.getDomId(),
 //                                                    allvimreq.getVIMElem(),true);
 //        System.out.println("SBIIF --> Post ComputeAllocateVIMReply Event");
+//        SingletonEventBus.getBus().post(allvimrep);
+    }
+    
+    
+    
+      
+    
+   @Subscribe
+    public void handle_ComputeOperateVIMReq(ComputeOperateReq opcompreq) {
+        System.out.println("SBIIF --> Handle ComputeoperateVIMReq Event");
+        
+        //TODO R2: Call VIM Change operate thread
+
+        //START - Retrieve Domain el from domid using database connection
+        String typeval = null;
+        String nameval = null;
+        String ipval = null;
+        Long portval = null;
+        Long idval = null;
+
+        try {
+            java.sql.Connection conn = DbDomainDatasource.getInstance().getConnection();
+            PreparedStatement ps = conn.prepareStatement("Select domId,name,type,ip,port from domain where domId=?");
+            ps.setLong(1, opcompreq.getDomid());
+            java.sql.ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+
+                typeval = rs.getString("type");
+                nameval = rs.getString("name");
+                ipval = rs.getString("ip");
+                portval = rs.getLong("port");
+                idval = rs.getLong("domId");
+
+            }
+            rs.close();
+            ps.close();
+
+        } catch (SQLException ex) {
+            Logger.getLogger(SBIIF.class
+                    .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+        }
+
+        DomainElem el = new DomainElem(typeval, nameval, ipval, portval, idval);
+       // END - Retrieve
+        if (el == null) {
+            ComputeOperateVIMReply opvimrep = new ComputeOperateVIMReply(opcompreq.getReqid(),
+                    null, 0, null);
+            opvimrep.setErrcode(-1);
+            opvimrep.setErrmsg("Domid= " + opcompreq.getDomid() + " not present");
+
+            SingletonEventBus.getBus().post(opvimrep);
+        } else {
+                OperateVIMComputeThread thr = new OperateVIMComputeThread(el, opcompreq);
+                thr.start();
+        }
+    }
+    
+  @Subscribe
+    public void handle_ComputeAllocateMECReq(ComputeAllocateMECReq allmecreq) {
+        System.out.println("SBIIF --> Handle ComputeAllocateVIMReq Event");
+        
+
+        //Retrieve Domain el from domid using domainlist.xml
+        //DomainElem el = dommap.get(allvimreq.getDomId());
+        //START - Retrieve Domain el from domid using database connection
+        String typeval = null;
+        String nameval = null;
+        String ipval = null;
+        Long portval = null;
+        Long idval = null;
+
+        try {
+            java.sql.Connection conn = DbDomainDatasource.getInstance().getConnection();
+            PreparedStatement ps = conn.prepareStatement("Select domId,name,type,ip,port, from domain where domId=?");
+            ps.setLong(1, allmecreq.getMecdomid());
+            java.sql.ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+
+                typeval = rs.getString("type");
+                nameval = rs.getString("name");
+                ipval = rs.getString("ip");
+                portval = rs.getLong("port");
+                idval = rs.getLong("domId");
+
+            }
+            rs.close();
+            ps.close();
+
+        } catch (SQLException ex) {
+            Logger.getLogger(SBIIF.class
+                    .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+        }
+
+        DomainElem el = new DomainElem(typeval, nameval, ipval, portval, idval);
+
+        // END - Retrieve
+        if (el == null) {
+            ComputeAllocateMECReply allmecrep = new ComputeAllocateMECReply(allmecreq.getReqid(),allmecreq.getServid(),
+                    allmecreq.getMecdomid(),"", allmecreq.getVmreq());
+
+
+            SingletonEventBus.getBus().post(allmecrep);
+        } else {
+            if (stubmode) {
+                AllocateMECThreadStub thr = new AllocateMECThreadStub(el, allmecreq);
+                thr.start();
+            } else {
+                AllocateMECThread thr = new AllocateMECThread(el, allmecreq);
+                thr.start();
+            }
+        }
+  
+        //R0.1 Just trigger the outcome (loopback)  
+//        ComputeAllocateVIMReply allvimrep = new ComputeAllocateVIMReply(allvimreq.getReqId(),
+//                                                    allvimreq.getServId(), allvimreq.getDomId(),
+//                                                    allvimreq.getVIMElem(),true);
+//        System.out.println("SBIIF --> Post ComputeAllocateVIMReply Event");
+//        SingletonEventBus.getBus().post(allvimrep);
+    }
+    
+    @Subscribe
+    public void handle_IntraPoPAllocateVIMRequest(IntraPoPAllocateVIMRequest allvimreq) {
+        System.out.println("SBIIF --> Handle IntraPoPAllocateVIMRequest Event");
+
+        String typeval = null;
+        String nameval = null;
+        String ipval = null;
+        Long portval = null;
+        Long idval = null;
+
+        try {
+            java.sql.Connection conn = DbDomainDatasource.getInstance().getConnection();
+            PreparedStatement ps = conn.prepareStatement("Select name,type,ip,port from domain where domId=?");
+            ps.setLong(1, allvimreq.getVimid());
+            java.sql.ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+
+                typeval = rs.getString("type");
+                nameval = rs.getString("name");
+                ipval = rs.getString("ip");
+                portval = rs.getLong("port");
+                idval = allvimreq.getVimid();
+
+            }
+            rs.close();
+            ps.close();
+
+        } catch (SQLException ex) {
+            Logger.getLogger(SBIIF.class
+                    .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+        }
+
+        DomainElem el = new DomainElem(typeval, nameval, ipval, portval, idval);
+
+        if (stubmode) {
+            //AllocateVIMNetworkStub thr = new AllocateVIMNetworkStub(domElemList, allvimreq);
+            //thr.start();
+        } else {
+            AllocateIntraPopVIMNetworkThread thr = new AllocateIntraPopVIMNetworkThread(el, allvimreq);
+            thr.start();
+        }
+
+        //R0.1 Just trigger the outcome (loopback)
+//        NetworkAllocateVIMReply allvimrep = new NetworkAllocateVIMReply(allvimreq.getReqId(),
+//                                                    allvimreq.getServId(), allvimreq.getDomId(),
+//                                                    allvimreq.getVIMElem(),true);
+//        System.out.println("SBIIF --> Post NetworkAllocateVIMReply Event");
 //        SingletonEventBus.getBus().post(allvimrep);
     }
 
@@ -394,7 +576,7 @@ public class SBIIF {
                     }
                     
                     //create endpoint
-                    NetworkEndpoints endp = new NetworkEndpoints(ingrip, ingrport, egrip, egrport);
+                    NetworkEndpoints endp = new NetworkEndpoints(ingrip, egrip, ingrport, egrport);
                     endpointlist.add(endp);
                 }
 
@@ -481,7 +663,128 @@ public class SBIIF {
 //        System.out.println("SBIIF --> Post ComputeTerminateVIMReply Event");
 //        SingletonEventBus.getBus().post(allvimrep);
     }
+    
+    
+  @Subscribe
+    public void handle_ComputeTerminateMECReq(ComputeTerminateMECReq termvimreq) {
+        System.out.println("SBIIF --> Handle ComputeTerminateVIMReq Event");
+        
+ //START - For each domid retrieve from DB the domain info
+        ArrayList<DomainElem> domElemList = new ArrayList();
+        List<Long> domList = termvimreq.getMecdom();
+        long size = domList.size();
 
+        // while (!computeIdList.isEmpty()){
+        for (int i = 0; i < size; i++) {
+
+            String typeval = null;
+            String nameval = null;
+            String ipval = null;
+            Long portval = null;
+            Long idval = null;
+            long domId = domList.get(i);
+
+            try {
+
+                java.sql.Connection conn = DbDomainDatasource.getInstance().getConnection();
+                PreparedStatement ps = conn.prepareStatement("Select domId,name,type,ip,port from domain where domId=?");
+                ps.setLong(1, domId);
+                java.sql.ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+
+                    typeval = rs.getString("type");
+                    nameval = rs.getString("name");
+                    ipval = rs.getString("ip");
+                    portval = rs.getLong("port");
+                    idval = rs.getLong("domId");
+
+                }
+                rs.close();
+                ps.close();
+
+            } catch (SQLException ex) {
+                Logger.getLogger(SBIIF.class
+                        .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+            }
+
+            DomainElem el = new DomainElem(typeval, nameval, ipval, portval, idval);
+
+            domElemList.add(el);
+
+            // END - Retrieve
+        }
+
+
+        if (stubmode) {
+            //TerminateVIMComputeStub thr = new TerminateVIMComputeStub(el, termvimreq);
+            TerminateMECThreadStub thr = new TerminateMECThreadStub(domElemList, termvimreq);
+            thr.start();
+        } else {
+            //TerminateVIMComputeThread thr = new TerminateVIMComputeThread(el, termvimreq);
+            TerminateMECThread thr = new TerminateMECThread(domElemList, termvimreq);
+            thr.start();
+        }
+
+        //R0.1 Just trigger the outcome (loopback)
+//        ComputeTerminateVIMReply allvimrep = new ComputeTerminateVIMReply(allvimreq.getReqId(),
+//                                                    allvimreq.getServId(), allvimreq.getDomId(),
+//                                                    allvimreq.getVIMElem(),true);
+//        System.out.println("SBIIF --> Post ComputeTerminateVIMReply Event");
+//        SingletonEventBus.getBus().post(allvimrep);
+    }
+
+    @Subscribe
+    public void handle_IntraPoPTerminateVIMRequest(IntraPoPTerminateVIMRequest termvimreq) {
+        System.out.println("SBIIF --> Handle IntraPoPTerminateVIMRequest Event");
+        
+        ArrayList<DomainElem> domElemList = new ArrayList();
+        for (int i = 0; i < termvimreq.getDomlist().size(); i++) {
+            //START - Retrieve Domain el from domid using database connection
+            String typeval = null;
+            String nameval = null;
+            String ipval = null;
+            Long portval = null;
+            Long idval = null;
+
+            try {
+                java.sql.Connection conn = DbDomainDatasource.getInstance().getConnection();
+                PreparedStatement ps = conn.prepareStatement("Select name,type,ip,port from domain where domId=?");
+                ps.setLong(1, termvimreq.getDomlist().get(i));
+
+                java.sql.ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+
+                    typeval = rs.getString("type");
+                    nameval = rs.getString("name");
+                    ipval = rs.getString("ip");
+                    portval = rs.getLong("port");
+                    idval = termvimreq.getDomlist().get(i);
+                }
+                rs.close();
+                ps.close();
+
+            } catch (SQLException ex) {
+                Logger.getLogger(SBIIF.class
+                        .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+            }
+
+            DomainElem el = new DomainElem(typeval, nameval, ipval, portval, idval);
+            domElemList.add(el);
+
+        } //END - Loop on domaIds
+
+        if (stubmode) {
+            //TerminateIntraPoPVIMNetworkThread thr = new TerminateWIMNetworkStub(elMap, termwimreq);
+            //thr.start();
+        } else {
+            TerminateIntraPoPVIMNetworkThread thr = new TerminateIntraPoPVIMNetworkThread(domElemList, termvimreq);
+            thr.start();
+        }
+}
+
+    
+    
+    
     @Subscribe
     public void handle_NetworkTerminateVIMReq(NetworkTerminateVIMReq termvimreq) {
         System.out.println("SBIIF --> Handle NetworkTerminateVIMReq Event");

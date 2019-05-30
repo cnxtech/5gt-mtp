@@ -157,7 +157,7 @@ public class XMLDomainParser {
         
         //Parse RANElement
         Element xmlramlist = rootNode.getChild("RANInfoList");
-        List<Element> xmlran = xmlzonelist.getChildren("RANinfo");
+        List<Element> xmlran = xmlramlist.getChildren("RANinfo");
         for (int i = 0; i < xmlran.size(); i++) {
 
             Element xmlranNode = (Element) xmlran.get(i);
@@ -188,7 +188,19 @@ public class XMLDomainParser {
             String serviceid = xmlranNode.getChildText("serviceid");
             System.out.println("XMLDomainParser --> serviceid : " + xmlranNode.getChildText("serviceid"));
             
-            RANService el = new RANService(id, providerid, tenantid, srcip, dstip, qosprofile, serviceid);
+            //ip
+            String ip = xmlranNode.getChildText("ip");
+            System.out.println("XMLDomainParser --> ip : " + xmlranNode.getChildText("ip"));
+            
+            //rxport
+            String rxport = xmlranNode.getChildText("rxport");
+            System.out.println("XMLDomainParser --> rxport : " + xmlranNode.getChildText("rxport"));
+            
+            //rxport
+            String txport = xmlranNode.getChildText("rtxport");
+            System.out.println("XMLDomainParser --> txport : " + xmlranNode.getChildText("txport"));
+            
+            RANService el = new RANService(id, providerid, tenantid, srcip, dstip, qosprofile, serviceid, ip , rxport, txport);
 
             raninfolist.put(id, el);
         }

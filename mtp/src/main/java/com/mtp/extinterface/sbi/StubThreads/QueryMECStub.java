@@ -24,7 +24,7 @@ public class QueryMECStub extends Thread {
         //TODO: perform query list for MEC domain
         
         
-        MECResAbstractionEvent ev = new MECResAbstractionEvent(dominfo.getId());
+        MECResAbstractionEvent ev = new MECResAbstractionEvent(dominfo.getId(), null );
         //TODO: prepare event to collect info
         //send event
         SingletonEventBus.getBus().post(ev);

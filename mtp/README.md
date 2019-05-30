@@ -16,8 +16,12 @@ MTP is a maven project that can be compiled via command line or via a Java IDE (
 
 ### COMPILATION VIA CLI
 Compile the swagger java rest client (used by MTP as library)
-1. enter in the ` java-client-generated ` directory
+1. enter in the ` sbi-client ` directory
 2. execute ` mvn install package `
+3. enter in the ` pa_lib ` directory
+4. execute ` mvn install package `
+5. enter in the ` mon-client ` directory
+6. execute ` mvn install package `
 
 Compile the mtp
 1. enter in the ` mtp ` directory
@@ -26,8 +30,12 @@ Compile the mtp
 
 ### COMPILATION VIA NETBEANS
 Compile the swagger java rest client (used by MTP as library)
-1. Open ` java-client-generated ` in Netbeans (under ` File->Open Project `)
+1. Open ` sbi-client ` in Netbeans (under ` File->Open Project `)
 2. Compile the java rest client (click on build button)
+3. Open ` pa_lib ` in Netbeans (under ` File->Open Project `)
+4. Compile the java rest client (click on build button)
+5. Open ` mon-client ` in Netbeans (under ` File->Open Project `)
+6. Compile the java rest client (click on build button)
 
 Compile the mtp
 1. Open ` mtp ` in Netbeans (under ` File->Open Project `)
@@ -130,37 +138,91 @@ An example of computeFlavour.sql script is already present. The file represents 
  that is used for test. 
 
 
+####  Prepare appDlist.sql file
+MTP needs a file containing all MEC service descriptors (appD) that are used by MEC plugin. 
+The scheme follows the [ETSI MEC 0-10-2] (https://www.etsi.org/deliver/etsi_gs/MEC/001_099/01002/01.01.01_60/gs_MEC01002v010101p.pdf) standard. Plese refer to this standard for details
+
+AppD examples are present in ``` MECAppD ``` folder. 
    
 ### Domain configuration file 
-as input MTP needs to know the list of VIM and WIM domains that can controls. The syntax is:
+as input MTP needs to know the list of VIM and WIM domains that can controls, configuration policy for placement and monitoring configuration file. The syntax is:
 
 ```
 <?xml version="1.0" encoding="UTF-8"?>
-<Domains>
-    <Domain >
-        <Type>type</Type>
-        <Name>name</Name>
-        <Id>id</Id>
-        <Ip>127.0.0.1</Ip>
-        <Port>10000</Port>
-    </Domain>
-	.....
+<MTPConfig>
+    <Domains> 
+        <Domain>
+            <Type>VIM</Type>
+            <Name>vimdummy</Name>
+            <Id>1</Id>
+            <MecId>-1</MecId>
+            <Ip>127.0.0.1</Ip>
+            <Port>51000</Port>
+        </Domain>
+        <Domain>
+            <Type>T-WIM</Type>
+            <Name>wimdummy</Name>
+            <Id>3</Id>
+            <MecId>-1</MecId>
+            <Ip>127.0.0.1</Ip>
+            <Port>53000</Port>
+        </Domain>
+        <Domain>
+            <Type>VIM</Type>
+            <Name>vimdummy</Name>
+            <Id>2</Id>
+            <MecId>-1</MecId>
+            <Ip>127.0.0.1</Ip>
+            <Port>52000</Port>
+        </Domain>
+    </Domains>
 
-    <Domain >
-        <Type>type</Type>
-        <Name>name</Name>
-        <Id>id</Id>
+    <LocalPAConfig>
+        <Compute>
+            <Status>disable</Status>
+            <Name>PAalg1</Name>
+            <Ip>127.0.0.1</Ip>
+            <Port>81000</Port>
+        </Compute>
+        <Network>
+            <Status>disable</Status>
+            <Name>PAalg2</Name>
+            <Ip>127.0.0.1</Ip>
+            <Port>82000</Port>
+        </Network>
+    </LocalPAConfig>
+    
+    <MonitoringConfig>
+        <Name>Prometheus</Name>
         <Ip>127.0.0.1</Ip>
-        <Port>10000</Port>
-    </Domain>
-</Domains>
+        <Port>91000</Port>
+    </MonitoringConfig>
+
+    <AppDConfig> 
+
+
+    </AppDConfig>
+</MTPConfig>
+
 ```
-XML file is a list of "Domain" entries where each entry represent the information for a specific domain. Specifically:
+XML file contains  list of "Domain" entries where each entry represent the information for a specific domain. Specifically:
 <Type>: identifies the domain type ("T-WIM" or "VIM")
 <Name>: identifies the domain name (same reported in IFA005)
 <Id>:   identifies the domain id (same reported in IFA005)
+<MecId>: identifies the MEC domain Id associated to this domain (valid only for VIM domain, "-1" for other domains).
 <Ip>:   identifies the IP of the server HTTP (use for REST call)
 <Port>: identifies the port of the server HTTP (use for REST call)
+
+XML file contains  Placement Algorithm configuration policy. There are two entries, one is applied to the compute resource and the other to the networking. Specifically:
+<Status>: identifies if MTP has to use PA policy algorithm for optimization of the resources.
+<Name>: identifies the PA algorithm name 
+<Ip>:   identifies the IP of the PA algorithm server HTTP (use for REST call)
+<Port>: identifies the port of the PA algorithm server HTTP (use for REST call)
+
+XML file contains  Monitoring specific information. Specifically:
+<Name>: identifies the monitoring platform name.
+<Ip>:   identifies the IP of the monitoring server HTTP (use for REST call)
+<Port>: identifies the port of the monitoring server HTTP (use for REST call)
  
 
 ## RUN MTP IN STUB MODE

@@ -12,7 +12,10 @@ import com.mtp.SingletonEventBus;
 import com.mtp.events.abstraction.Creation.ComputeE2EAbstractionReply;
 import com.mtp.events.abstraction.Creation.ComputeE2EAbstractionRequest;
 import com.mtp.events.abstraction.Creation.DomainNumbers;
+import com.mtp.extinterface.nbi.swagger.model.LocationInfo;
+import com.mtp.extinterface.nbi.swagger.model.MECRegionInfoMECRegionInfo;
 import com.mtp.extinterface.nbi.swagger.model.NfviPop;
+import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -68,6 +71,9 @@ public class E2EAbstractionLogic {
     }
 
     public void computevirtualPop() {
+        
+        // TODO R2: Report MEC and Radio info to the node
+        
         ArrayList<NfviPop> dompoplist = new ArrayList();
         ArrayList<Long> domid_nfvipop = new ArrayList();
         //ArrayList <ResourceZone> domzonelist = new ArrayList();
@@ -76,7 +82,11 @@ public class E2EAbstractionLogic {
         String zonename = null, zonestate = null, zoneproperty = null, metadata = null;
         long abstrzoneid = -1;
         String totCapacity = null;
+        String allocatedCapacity = null;
+        String reservedCapacity = null;
+        String availableCapacity = null;
         String domtype = null;
+        String associatedmecdom = null;
 
         //retrieve domain nfvipop
         try {
@@ -150,11 +160,12 @@ public class E2EAbstractionLogic {
 
                 //PreparedStatement ps = conn.prepareStatement("Select * from abstrnfvipop where AbstrNfviPopId=?");
                 //ps.setInt(1, 1);
-                PreparedStatement ps = conn.prepareStatement("SELECT type FROM domain WHERE domId=?");
+                PreparedStatement ps = conn.prepareStatement("SELECT type,mecAssociatedDomainID FROM domain WHERE domId=?");
                 ps.setLong(1, domval);
                 java.sql.ResultSet rs = ps.executeQuery();
                 while (rs.next()) {
                     domtype = rs.getString("type");
+                    associatedmecdom = rs.getString("mecAssociatedDomainID");
                 }
                 rs.close();
                 ps.close();
@@ -164,7 +175,7 @@ public class E2EAbstractionLogic {
                         .getName()).log(Level.SEVERE, null, ex);
             }
 
-            if (!domtype.equals("VIM")) {
+            if ((!domtype.equals("VIM")) || (!domtype.equals("R-WIM"))) {
                 continue;
             }
 
@@ -173,21 +184,26 @@ public class E2EAbstractionLogic {
 
                 // Insert  data into abstract nfvipop table
                 PreparedStatement ps = conn.prepareStatement("INSERT INTO abstrnfvipop"
-                        + "(vimId,geographicalLocationInfo,networkConnectivityEndpoint,abstrDomId) VALUES(?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
-                ps.setLong(1, abstrdomid);
-                ps.setString(2, popel.getGeographicalLocationInfo());
-                ps.setString(3, popel.getNetworkConnectivityEndpoint());
-                ps.setLong(4, abstrdomid);
+                        + "(abstrNfviPopId, vimId,geographicalLocationInfo,networkConnectivityEndpoint,abstrDomId) VALUES(?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
+               
+                
+                ps.setString(1, dompoplist.get(i).getNfviPopId());
+                ps.setLong(2, Long.parseLong(dompoplist.get(i).getVimId()));
+                ps.setString(3, popel.getGeographicalLocationInfo());
+                ps.setString(4, popel.getNetworkConnectivityEndpoint());
+                ps.setLong(5, abstrdomid);
 
                 ps.executeUpdate();
                 System.out.println("E2EAbstractionLogic--> Abstract nfvipop data inserted into DB");
-                ResultSet rs = ps.getGeneratedKeys();
+               // ResultSet rs = ps.getGeneratedKeys();
 
-                if (rs != null && rs.next()) {
-                    abstrpopid = rs.getLong(1);
-                    System.out.println("E2EAbstractionLogic--> abstrdomid:" + abstrpopid + "");
-                }
-                rs.close();
+               // if (rs != null && rs.next()) {
+               //     abstrpopid = rs.getLong(1);
+               //     System.out.println("E2EAbstractionLogic--> abstrdomid:" + abstrpopid + "");
+               // }
+               // rs.close();
+               abstrpopid = Long.parseLong(dompoplist.get(i).getNfviPopId());
+              
                 ps.close();
 
             } catch (SQLException ex) {
@@ -218,6 +234,73 @@ public class E2EAbstractionLogic {
                 Logger.getLogger(E2EAbstractionLogic.class
                         .getName()).log(Level.SEVERE, ex.getMessage(), ex);
             }
+            //if a associated MEC domain is associated to VIM domain fill the MEC region Info
+            int assmec = Integer.valueOf(associatedmecdom);
+            if( assmec != -1) {
+                //Retrieve MEC region Info from dom db 
+                ArrayList<MECRegionInfoMECRegionInfo> regionlist = new ArrayList();
+                long regionid = -1;
+                String latitude = null;
+                String longitude = null;
+                String altitude = null;
+                String range = null;               
+                
+                try {
+                    java.sql.Connection conn = DbDomainDatasource.getInstance().getConnection();
+                    PreparedStatement ps = conn.prepareStatement("SELECT  (regionId,latitude,longitude,altitude,range_) "
+                            + " from mec_region_info where domId=?");
+
+                    ps.setLong(1, assmec);
+
+                    java.sql.ResultSet rs = ps.executeQuery();
+                    while (rs.next()) {
+                        regionid = rs.getLong("regionId");
+                        latitude = rs.getString("latitude");
+                        longitude = rs.getString("longitude");
+                        altitude = rs.getString("altitude");
+                        range = rs.getString("range_");
+                        
+                        MECRegionInfoMECRegionInfo regionel = new MECRegionInfoMECRegionInfo();
+                        LocationInfo locinfo = new LocationInfo();
+                        locinfo.setLatitude(new BigDecimal(altitude));
+                        locinfo.setAltitude(new BigDecimal(latitude));
+                        locinfo.setLongitude(new BigDecimal(longitude));
+                        locinfo.setRange(new BigDecimal(range));
+                        regionel.setRegionId(String.valueOf(regionid));
+                        regionel.setLocationInfo(locinfo);
+                        regionlist.add(regionel);
+                    }
+
+                    rs.close();
+                    ps.close();
+                } catch (SQLException ex) {
+                    Logger.getLogger(E2EAbstractionLogic.class
+                            .getName()).log(Level.SEVERE, null, ex);
+                }
+                
+                //Insert MEC region info
+                for (int j = 0; j < regionlist.size(); j++) {
+                    try {
+                        java.sql.Connection conn = DbAbstractionDatasource.getInstance().getConnection();
+                        PreparedStatement ps = conn.prepareStatement("INSERT INTO mec_region_info"
+                                + "(regionId,latitude,longitude,altitude,range_,abstrNfviPopId) VALUES(?,?,?,?,?,?)");
+                        ps.setLong(1, Long.valueOf(regionlist.get(j).getRegionId()));
+                        ps.setString(2, String.valueOf(regionlist.get(j).getLocationInfo().getLatitude()));
+                        ps.setString(3, String.valueOf(regionlist.get(j).getLocationInfo().getLongitude()));
+                        ps.setString(4, String.valueOf(regionlist.get(j).getLocationInfo().getAltitude()));
+                        ps.setString(5, String.valueOf(regionlist.get(j).getLocationInfo().getRange()));
+                        ps.setLong(6,abstrpopid );
+
+                        ps.executeUpdate();
+                        System.out.println("E2EAbstractionLogic--> Abstract mec region info data inserted into abstract DB");
+                        ps.close();
+                    } catch (SQLException ex) {
+                        Logger.getLogger(E2EAbstractionLogic.class
+                                .getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+            
             //retrieve zoneid associated to the resource popid
 
             try {
@@ -267,7 +350,7 @@ public class E2EAbstractionLogic {
                 
                 
                 
- PreparedStatement ps = conn.prepareStatement("INSERT INTO abstrzoneid"
+                PreparedStatement ps = conn.prepareStatement("INSERT INTO abstrzoneid"
                         + "(abstrResourceZoneId, abstrZoneId,zoneName,zoneState,zoneProperty,metadata,abstrNfviPopId) VALUES(?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
                 ps.setLong(1, zoneid);
                 ps.setLong(2, zoneid);
@@ -276,8 +359,6 @@ public class E2EAbstractionLogic {
                 ps.setString(5, zoneproperty);
                 ps.setString(6, metadata);
                 ps.setLong(7, abstrpopid);
-
-
 
                 ps.executeUpdate();
                 System.out.println("E2EAbstractionLogic--> Abstract zoneid data inserted into DB");
@@ -294,7 +375,7 @@ public class E2EAbstractionLogic {
                 Logger.getLogger(E2EAbstractionLogic.class
                         .getName()).log(Level.SEVERE, null, ex);
             }
- 
+
 //UNCOMMENT when storage resources are available            
 //            //retrieve storage from domain DB for the zoneid
 //            try {
@@ -348,13 +429,17 @@ public class E2EAbstractionLogic {
             try {
                 java.sql.Connection conn = DbDomainDatasource.getInstance().getConnection();
 
-                PreparedStatement ps = conn.prepareStatement("SELECT totalCapacity "
+                PreparedStatement ps = conn.prepareStatement("SELECT availableCapacity, reservedCapacity, allocatedCapacity, totalCapacity "
                         + "FROM memoryresources WHERE resourceZoneId=?");
 
                 ps.setLong(1, reszoneid);
                 java.sql.ResultSet rs = ps.executeQuery();
                 while (rs.next()) {
                     totCapacity = rs.getString("totalCapacity");
+                    allocatedCapacity = rs.getString("allocatedCapacity");
+                    reservedCapacity = rs.getString("reservedCapacity");
+                    availableCapacity = rs.getString("availableCapacity");
+        
                     System.out.println("E2EAbstractionLogic--> memoryresources.totalCapacity " + totCapacity + "");
                 }
 
@@ -372,10 +457,10 @@ public class E2EAbstractionLogic {
                 // Insert  data into abstract nfvipop table
                 PreparedStatement ps = conn.prepareStatement("INSERT INTO abstrmemoryresources"
                         + "(availableCapacity,reservedCapacity,totalCapacity,allocatedCapacity,abstrResourceZoneId) VALUES(?,?,?,?,?)"/*, Statement.RETURN_GENERATED_KEYS*/);
-                ps.setString(1, totCapacity);
-                ps.setString(2, "0");
+                ps.setString(1, availableCapacity);
+                ps.setString(2, reservedCapacity);
                 ps.setString(3, totCapacity);
-                ps.setString(4, "0");
+                ps.setString(4, allocatedCapacity);
                 ps.setLong(5, abstrzoneid);
 
                 ps.executeUpdate();
@@ -392,17 +477,29 @@ public class E2EAbstractionLogic {
                 Logger.getLogger(E2EAbstractionLogic.class
                         .getName()).log(Level.SEVERE, null, ex);
             }
+            
+    // RESET CAPACITY VALUES
+                    totCapacity = null;
+                    allocatedCapacity = null;
+                    reservedCapacity = null;
+                    availableCapacity = null;
+            
+            
             //retrieve cpu from domain DB for the zoneid
             try {
                 java.sql.Connection conn = DbDomainDatasource.getInstance().getConnection();
 
-                PreparedStatement ps = conn.prepareStatement("SELECT totalCapacity "
+                PreparedStatement ps = conn.prepareStatement("SELECT availableCapacity, reservedCapacity, allocatedCapacity, totalCapacity "
                         + "from cpuresources WHERE resourceZoneId=?");
 
                 ps.setLong(1, reszoneid);
                 java.sql.ResultSet rs = ps.executeQuery();
                 while (rs.next()) {
                     totCapacity = rs.getString("totalCapacity");
+                    allocatedCapacity = rs.getString("allocatedCapacity");
+                    reservedCapacity = rs.getString("reservedCapacity");
+                    availableCapacity = rs.getString("availableCapacity");
+                    
                     System.out.println("E2EAbstractionLogic--> cpuresources.totalCapacity " + totCapacity + "");
                 }
 
@@ -420,10 +517,10 @@ public class E2EAbstractionLogic {
                 // Insert  data into abstract nfvipop table
                 PreparedStatement ps = conn.prepareStatement("INSERT INTO abstrcpuresources"
                         + "(availableCapacity,reservedCapacity,totalCapacity,allocatedCapacity,abstrResourceZoneId) VALUES(?,?,?,?,?)"/*, Statement.RETURN_GENERATED_KEYS*/);
-                ps.setString(1, totCapacity);
-                ps.setString(2, "0");
+                ps.setString(1, availableCapacity);
+                ps.setString(2, reservedCapacity);
                 ps.setString(3, totCapacity);
-                ps.setString(4, "0");
+                ps.setString(4, allocatedCapacity);
                 ps.setLong(5, abstrzoneid);
 
                 ps.executeUpdate();
@@ -444,6 +541,9 @@ public class E2EAbstractionLogic {
     }
 
     public void computeLogicalLink() {
+        
+        //TODO R2: Insert abstraction of Radio and MEC 
+        
         DirectedWeightedMultigraph graph = new DirectedWeightedMultigraph<String, DefaultWeightedEdge>(DefaultWeightedEdge.class);
 
         ArrayList<NfviPop> domPopList = new ArrayList();
@@ -602,7 +702,6 @@ public class E2EAbstractionLogic {
                     continue;
                 }
                 //compute up to 2 logical paths
-                //TODO: Set the max number paths as configuration parameters
                 //List<GraphPath<String, DefaultWeightedEdge>> paths = allDirectedPaths.getAllPaths(src, dst, true, 20);
                 List<GraphPath<String, DefaultWeightedEdge>> paths = kshortpaths.getPaths(src, dst, 3);    
                 //order the paths accoridng their weigth

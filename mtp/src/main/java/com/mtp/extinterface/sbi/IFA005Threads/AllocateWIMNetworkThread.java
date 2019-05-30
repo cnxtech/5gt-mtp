@@ -10,9 +10,9 @@ import com.mtp.common.objects.DomainElem;
 import com.mtp.common.objects.NetworkEndpoints;
 import com.mtp.events.resourcemanagement.NetworkAllocation.NetworkAllocateWIMReply;
 import com.mtp.events.resourcemanagement.NetworkAllocation.NetworkAllocateWIMReq;
+import com.mtp.extinterface.nbi.swagger.model.AllocateNetworkResultNetworkDataNetworkQoS;
 import com.mtp.extinterface.nbi.swagger.model.AllocateParameters;
 import com.mtp.extinterface.nbi.swagger.model.AllocateReply;
-
 import com.mtp.extinterface.nbi.swagger.model.VirtualNetwork;
 import io.swagger.client.ApiClient;
 import io.swagger.client.ApiException;
@@ -51,14 +51,15 @@ public class AllocateWIMNetworkThread extends Thread {
         ArrayList<VirtualNetwork> wimnetlist = new ArrayList();
 
         for (int i = 0; i < request.getWimdomlist().size(); i++) {
-            String basepath = "http://" + dominfo.get(i).getIp() + ":" + dominfo.get(i).getPort() + "/" + dominfo.get(i).getName();
+            //String basepath = "http://" + dominfo.get(i).getIp() + ":" + dominfo.get(i).getPort() + "/" + dominfo.get(i).getName();
+            String basepath = "http://" + dominfo.get(i).getIp() + ":" + dominfo.get(i).getPort();
             ApiClient capi = new ApiClient();
             capi.setBasePath(basepath);
             WimNetworkResourcesApi api = new WimNetworkResourcesApi(capi);
             
             AllocateParameters param = new AllocateParameters();
-            param.setBandwidth(request.getNetworkRequest().getReqBandwidth());
-            param.setDelay(request.getNetworkRequest().getReqLatency().toString());
+            param.setBandwidth(request.getNetworkRequest().getLogicalLinkPathList().get(i).getReqBandwidth());
+            param.setDelay(request.getNetworkRequest().getLogicalLinkPathList().get(i).getReqLatency().toString());
             param.setEgressPointIPAddress(endpoints.get(i).getEgressIp());
             param.setEgressPointPortAddress(endpoints.get(i).getEgressPort());
             param.setIngressPointIPAddress(endpoints.get(i).getIngressIp());
@@ -85,10 +86,19 @@ public class AllocateWIMNetworkThread extends Thread {
             }
             
             VirtualNetwork netel= new VirtualNetwork();
+            List<AllocateNetworkResultNetworkDataNetworkQoS> networkQoS = new ArrayList();
             
             netel.setNetworkResourceId(networkresponse.getNetworkId());
             netel.setSegmentType(networkresponse.getSegmentType());
             netel.setNetworkType(networkresponse.getNetworkType());
+            netel.setIsShared(Boolean.FALSE);
+            netel.setBandwidth(request.getNetworkRequest().getLogicalLinkPathList().get(i).getReqBandwidth());
+            AllocateNetworkResultNetworkDataNetworkQoS qosel = new AllocateNetworkResultNetworkDataNetworkQoS();
+            qosel.setQosName("delay");
+            qosel.setQosValue(request.getNetworkRequest().getLogicalLinkPathList().get(i).getReqLatency().toString());
+            networkQoS.add(qosel);
+            netel.setNetworkQoS(networkQoS);
+            netel.setOperationalState("enabled");
             wimnetlist.add(netel);
         }
         //send event

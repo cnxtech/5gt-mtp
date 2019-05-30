@@ -1,3 +1,468 @@
+CREATE DATABASE mtpappddb;
+
+CREATE TABLE mtpappddb.appd (
+  	
+appDId INT UNSIGNED NOT NULL AUTO_INCREMENT,
+appName VARCHAR (50), 
+appProvider VARCHAR (50),
+appSoftVersion VARCHAR (50),
+appDVersion VARCHAR (50),
+mecVersion VARCHAR (50),
+appInfoName VARCHAR (50),
+appDescription VARCHAR (50),
+/*virtualComputeDescriptor*/ 
+/*swImageDescriptor*/
+/*virtualStorageDescriptor*/
+/*appExtCpd *//*This is a struct, See IFA011  */
+
+
+/*appServiceRequired*/ 
+/*appServiceOptional*/ 
+/*appServiceProduced*/    /*not used  */  
+/*appFeatureRequired */   /*not used  */ 
+/*appFeatureOptional*/    /*not used  */ 
+/*transportDependencies*/
+/*appTrafficRule*/ 
+/*appDNSRule */
+/*appLatency*/ 
+/*terminateAppInstanceOpConfig*/
+/*changeAppInstanceStateOpConfig*/	
+PRIMARY KEY (appDId) 
+);
+
+
+/*********************appServiceRequired*********************************************/
+	
+	CREATE TABLE mtpappddb.appservicerequired  (
+
+	serviceRequiredId  INT UNSIGNED NOT NULL AUTO_INCREMENT,
+	serName VARCHAR (50),
+	/*serCategory VARCHAR (50),*/ /* this is a struct. See  ETSI GS MEC 011 */
+	version VARCHAR (50),
+	/* serTransportDependencies*/
+	requestedPermissions VARCHAR (50), /*not specified in MEC010-02 */
+
+	appDId INT UNSIGNED, /*key used for stored in 		domain tables */
+	FOREIGN KEY (appDId) REFERENCES mtpappddb.appd (appDId),
+	PRIMARY KEY (serviceRequiredId)
+				);
+
+
+		CREATE TABLE mtpappddb.sercategory  (
+
+		href VARCHAR (50),
+		id  VARCHAR (50),
+		name VARCHAR (50),
+		version VARCHAR (50),
+
+		serviceRequiredId INT UNSIGNED, /* */
+		FOREIGN KEY (serviceRequiredId) REFERENCES mtpappddb.appservicerequired (serviceRequiredId),
+		PRIMARY KEY (serviceRequiredId)
+					);			
+			
+
+		CREATE TABLE mtpappddb.sertransportdependencies  (
+
+		serTransportDependenciesId INT UNSIGNED NOT NULL AUTO_INCREMENT,
+		/*transport*/ 
+		serializers ENUM('JSON', 'XML', 'PROTOBUF3') NOT NULL,
+		labels VARCHAR (50),
+
+		serviceRequiredId INT UNSIGNED, /*key used for stored in 		domain tables */
+		FOREIGN KEY (serviceRequiredId) REFERENCES mtpappddb.appservicerequired (serviceRequiredId),
+		PRIMARY KEY (serTransportDependenciesId)
+
+					);
+
+			
+			CREATE TABLE mtpappddb.sertransport  (
+
+			transportType ENUM('REST_HTTP', 'MB_TOPIC_BASED', 'MB_ROUTING','MB_PUBSUB','RPC','RPC_STREAMING','WEBSOCKET') NOT NULL,
+			protocol  VARCHAR (50),
+			version  VARCHAR (50),
+			security  VARCHAR (50), /* this is a struct. See  ETSI GS MEC 011 */
+
+			serTransportDependenciesId INT UNSIGNED,
+			FOREIGN KEY (serTransportDependenciesId) REFERENCES mtpappddb.sertransportdependencies (serTransportDependenciesId),
+				PRIMARY KEY (serTransportDependenciesId)
+						);
+/******************************************************************/
+
+/****************appFeatureOptional**************************************************/
+	
+	CREATE TABLE mtpappddb.appserviceoptional  (
+
+	serviceRequiredId  INT UNSIGNED NOT NULL AUTO_INCREMENT,
+	serName VARCHAR (50),
+	/*serCategory VARCHAR (50),*/ /* this is a struct. See  ETSI GS MEC 011 */
+	version VARCHAR (50),
+	/* serTransportDependencies*/
+	requestedPermissions VARCHAR (50), /*not specified in MEC010-02 */
+
+	appDId INT UNSIGNED, /*key used for stored in 		domain tables */
+	FOREIGN KEY (appDId) REFERENCES mtpappddb.appd (appDId),
+	PRIMARY KEY (serviceRequiredId)
+				);
+
+
+		CREATE TABLE mtpappddb.sercategoryoptional  (
+
+		href VARCHAR (50),
+		id  VARCHAR (50),
+		name VARCHAR (50),
+		version VARCHAR (50),
+
+		serviceRequiredId INT UNSIGNED, /* */
+		FOREIGN KEY (serviceRequiredId) REFERENCES mtpappddb.appserviceoptional (serviceRequiredId),
+		PRIMARY KEY (serviceRequiredId)
+					);			
+			
+
+		CREATE TABLE mtpappddb.sertransportdependenciesoptional  (
+
+		serTransportDependenciesId INT UNSIGNED NOT NULL AUTO_INCREMENT,
+		/*transport*/ 
+		serializers ENUM('JSON', 'XML', 'PROTOBUF3') NOT NULL,
+		labels VARCHAR (50),
+
+		serviceRequiredId INT UNSIGNED, /*key used for stored in 		domain tables */
+		FOREIGN KEY (serviceRequiredId) REFERENCES mtpappddb.appserviceoptional (serviceRequiredId),
+		PRIMARY KEY (serTransportDependenciesId)
+					);
+
+			
+			CREATE TABLE mtpappddb.transportdescriptoroptional  (
+
+			transportType ENUM('REST_HTTP', 'MB_TOPIC_BASED', 'MB_ROUTING','MB_PUBSUB','RPC','RPC_STREAMING','WEBSOCKET') NOT NULL,
+			protocol  VARCHAR (50),
+			version  VARCHAR (50),
+			security  VARCHAR (50), /* this is a struct. See  ETSI GS MEC 011 */
+
+			serTransportDependenciesId INT UNSIGNED,
+			FOREIGN KEY (serTransportDependenciesId) REFERENCES mtpappddb.sertransportdependenciesoptional (serTransportDependenciesId),
+				PRIMARY KEY (serTransportDependenciesId)
+						);
+/******************************************************************/
+
+
+/****************transportDependencies**************************************************/
+	
+	CREATE TABLE mtpappddb.transportdependencies  (
+
+	transportdependenciesId INT UNSIGNED NOT NULL AUTO_INCREMENT,
+	/*transport*/
+	/*serializers*/
+    serializers ENUM('JSON', 'XML', 'PROTOBUF3') NOT NULL,
+	labels VARCHAR (50),
+	
+	appDId INT UNSIGNED, /*key used for stored in 		domain tables */
+	FOREIGN KEY (appDId) REFERENCES mtpappddb.appd (appDId),
+	PRIMARY KEY (transportdependenciesId)	
+				);
+
+
+				
+		CREATE TABLE mtpappddb.transport  (
+
+			transportType ENUM('REST_HTTP', 'MB_TOPIC_BASED', 'MB_ROUTING','MB_PUBSUB','RPC','RPC_STREAMING','WEBSOCKET') NOT NULL,
+			protocol  VARCHAR (50),
+			version  VARCHAR (50),
+			security  VARCHAR (50), /* this is a struct. See  ETSI GS MEC 011 */
+
+			transportDependenciesId INT UNSIGNED,
+			FOREIGN KEY (transportDependenciesId) REFERENCES mtpappddb.transportdependencies (transportDependenciesId),
+				PRIMARY KEY (transportDependenciesId)
+						);		
+		
+/******************************************************************/
+
+
+/****************appTrafficRule**************************************************/
+
+	CREATE TABLE mtpappddb.apptrafficrule  (
+
+	trafficRuleId  INT UNSIGNED NOT NULL AUTO_INCREMENT,
+	filterType  ENUM('FLOW', 'PACKET') NOT NULL,
+	priority   VARCHAR (50),
+	/*trafficFilter*/
+	action ENUM('DROP', 'FORWARD','DECAPSULATED','FORWARD_AS_IS', 'PASSTHROUGH', 'DUPLICATED_DECAPSULATED', 'DUPLICATE_AS_IS') NOT NULL,
+	/*dstInterface*/
+	
+	appDId INT UNSIGNED, /*key used for stored in 		domain tables */
+	FOREIGN KEY (appDId) REFERENCES mtpappddb.appd (appDId),
+	PRIMARY KEY (trafficRuleId)	
+				);
+		
+				
+		CREATE TABLE mtpappddb.trafficfilter  (
+		
+		trafficFilterId INT UNSIGNED NOT NULL AUTO_INCREMENT,
+		srcAddress VARCHAR (50),
+		dstAddress VARCHAR (50),
+		srcPort VARCHAR (50),
+		dstPort VARCHAR (50),
+		protocol VARCHAR (50),
+		token VARCHAR (50),
+		srcTunnelAddress VARCHAR (50),
+		dstTunnelAddress VARCHAR (50),
+		srcTunnelPort VARCHAR (50),
+		dstTunnelPort VARCHAR (50),
+		qci VARCHAR (50),
+		dscp VARCHAR (50),
+		tc VARCHAR (50),
+		
+		trafficRuleId INT UNSIGNED,
+		FOREIGN KEY (trafficRuleId) REFERENCES mtpappddb.apptrafficrule (trafficRuleId),
+		PRIMARY KEY (trafficFilterId)
+						);
+
+
+		CREATE TABLE mtpappddb.dstinterface  (
+		
+		dstInterfaceId INT UNSIGNED NOT NULL AUTO_INCREMENT,
+		interfaceType ENUM('TUNNEL', 'MAC','IP') NOT NULL,
+		/*TunnelInfo tunnelInfo */
+		srcMACAddress VARCHAR (50),
+		dstMACAddress VARCHAR (50),
+		dstIPAddress VARCHAR (50),
+		
+		trafficRuleId INT UNSIGNED,
+		FOREIGN KEY (trafficRuleId) REFERENCES mtpappddb.apptrafficrule (trafficRuleId),
+		PRIMARY KEY (dstInterfaceId)
+						);		
+									
+						
+			CREATE TABLE mtpappddb.tunnelinfo  (
+		
+			tunnelType ENUM('GTP-U','GRE') NOT NULL,
+			tunnelDstAddress  VARCHAR (50),
+			tunnelSrcAddress  VARCHAR (50),
+			tunnelSpecificData  VARCHAR (50),
+		
+			dstInterfaceId INT UNSIGNED,
+			FOREIGN KEY (dstInterfaceId) REFERENCES mtpappddb.dstinterface (dstInterfaceId),
+			PRIMARY KEY (dstInterfaceId)
+						);				
+		
+/******************************************************************/
+ 
+
+/****************appDNSRule**************************************************/
+
+	CREATE TABLE mtpappddb.appdnsrule  (
+
+	dnsRuleId 	INT UNSIGNED NOT NULL AUTO_INCREMENT,
+	domainName  VARCHAR (50),
+	ipAddressType ENUM('IP_V6','IP_V4') NOT NULL,
+    ipAddress VARCHAR (50),
+    ttl VARCHAR (50),
+	
+	appDId INT UNSIGNED, /*key used for stored in 		domain tables */
+	FOREIGN KEY (appDId) REFERENCES mtpappddb.appd (appDId),
+	PRIMARY KEY (dnsRuleId)	
+				);			
+/******************************************************************/
+
+/****************appLatency**************************************************/
+
+	CREATE TABLE mtpappddb.applatency  (
+
+	timeUnit VARCHAR (50),
+	latency VARCHAR (50),
+
+	appDId INT UNSIGNED, /*key used for stored in 		domain tables */
+	FOREIGN KEY (appDId) REFERENCES mtpappddb.appd (appDId),
+	PRIMARY KEY (appDId)	
+				);			
+		
+/******************************************************************/
+
+/****************terminateAppInstanceOpConfig**************************************************/
+
+	CREATE TABLE mtpappddb.terminateappinstanceopconfig  (
+	  
+	minGracefulTerminationTimeout  VARCHAR (50),
+	macRecommendedGracefulTerminationTimeout  VARCHAR (50),
+
+	appDId INT UNSIGNED, /*key used for stored in 		domain tables */
+	FOREIGN KEY (appDId) REFERENCES mtpappddb.appd (appDId),
+	PRIMARY KEY (appDId)	
+				);			
+		
+/******************************************************************/
+
+
+/****************changeAppInstanceStateOpConfig**************************************************/
+
+	CREATE TABLE mtpappddb.changeappinstancestateopconfig  (
+	  
+	minGracefulTerminationTimeout  VARCHAR (50),
+	macRecommendedGracefulTerminationTimeout  VARCHAR (50),
+
+	appDId INT UNSIGNED, /*key used for stored in 		domain tables */
+	FOREIGN KEY (appDId) REFERENCES mtpappddb.appd (appDId),
+	PRIMARY KEY (appDId)	
+				);			
+		
+/******************************************************************/
+
+
+/****************appExtCpd**************************************************/
+
+	CREATE TABLE mtpappddb.appextcpd  (
+	  
+	cpdId 	INT UNSIGNED NOT NULL AUTO_INCREMENT,
+	layerProtocol ENUM('Ethernet','MPLS','ODU2','IPV4','IPV6','Pseudo-Wire') NOT NULL,
+	cpRole VARCHAR (50),
+	description VARCHAR (50),
+	/*addressData*/
+	/*virtualNetworkInterfaceRequirements*/
+	
+	appDId INT UNSIGNED, /*key used for stored in 		domain tables */
+	FOREIGN KEY (appDId) REFERENCES mtpappddb.appd (appDId),
+	PRIMARY KEY (cpdId )	
+				);			
+	
+	
+		CREATE TABLE mtpappddb.addressdata  (
+	
+	    addressdataId INT UNSIGNED NOT NULL AUTO_INCREMENT,
+		addressType ENUM('MAC','IPV4','IPV6') NOT NULL,
+		l2AddressData VARCHAR (50), 
+		l3AddressData  VARCHAR (50),
+	
+		cpdId INT UNSIGNED, /*key used for stored in 		domain tables */
+		FOREIGN KEY (cpdId) REFERENCES mtpappddb.appextcpd (cpdId),
+		PRIMARY KEY (addressdataId)	
+				);	
+		
+		
+		CREATE TABLE mtpappddb.virtualnetworkinterfacerequirements  (
+		
+		virtualNetworkInterfaceRequirementsId INT UNSIGNED NOT NULL AUTO_INCREMENT,
+	    name  VARCHAR (50),
+		description  VARCHAR (50),
+		supportMandatory BOOL NOT NULL,
+		requirement VARCHAR (50),
+		
+		cpdId INT UNSIGNED, /*key used for stored in 		domain tables */
+		FOREIGN KEY (cpdId) REFERENCES mtpappddb.appextcpd (cpdId),
+		PRIMARY KEY (virtualNetworkInterfaceRequirementsId)	
+				);
+		
+/******************************************************************/
+
+/****************virtualStorageDescriptor**************************************************/
+
+	CREATE TABLE mtpappddb.virtualstoragedescriptor (
+	  
+	id 	INT UNSIGNED NOT NULL AUTO_INCREMENT,
+	typeOfStorage VARCHAR (50),
+	sizeOfStorage VARCHAR (50),
+	rdmaEnabled BOOL,
+	swImageDesc VARCHAR (50),
+	
+	appDId INT UNSIGNED, /*key used for stored in 		domain tables */
+	FOREIGN KEY (appDId) REFERENCES mtpappddb.appd (appDId),
+	PRIMARY KEY (id)	
+				);			
+/***************************************************************************/
+
+/****************swImageDescriptor**************************************************/
+
+	CREATE TABLE mtpappddb.swimagedescriptor (
+	  
+	id  INT UNSIGNED NOT NULL AUTO_INCREMENT,
+	name  VARCHAR (50),
+	version  VARCHAR (50),
+	checksum_   VARCHAR (50),
+	containerFormat  VARCHAR (50),
+	diskFormat  VARCHAR (50),
+	minDisk  VARCHAR (50),
+	minRam  VARCHAR (50),
+	size_  VARCHAR (50),
+	swImage  VARCHAR (50),
+	operatingSystem  VARCHAR (50),
+	supportedVirtualizationEnvironment VARCHAR (50),
+	
+	appDId INT UNSIGNED, /*key used for stored in 		domain tables */
+	FOREIGN KEY (appDId) REFERENCES mtpappddb.appd (appDId),
+	PRIMARY KEY (id)	
+				);	
+
+/***************************************************************************/
+
+/****************virtualComputeDescriptor**************************************************/
+
+	CREATE TABLE mtpappddb.virtualcomputedescriptor  (
+	  
+	virtualComputeDescId  VARCHAR (50),
+	/*List<RequestAdditionalCapabilityData> requestAdditionalCapabilities*/
+	/*VirtualMemoryData virtualMemory*/
+	/*VirtualCpuData virtualCpu*/
+
+	appDId INT UNSIGNED, /*key used for stored in 		domain tables */
+	FOREIGN KEY (appDId) REFERENCES mtpappddb.appd (appDId),
+	PRIMARY KEY (appDId)	
+				);		
+
+		CREATE TABLE mtpappddb.requestadditionalcapabilities  (
+	  
+		capabilitiesId INT UNSIGNED NOT NULL AUTO_INCREMENT,
+		requestedAdditionalCapabilityName VARCHAR (50),
+		supportMandatory  BOOL NOT NULL,
+		minRequestedAdditionalCapabilityVersion VARCHAR (50),
+		preferredRequestedAdditionalCapabilityVersion VARCHAR (50),
+		targetPerformanceParameters VARCHAR (50),
+
+		appDId INT UNSIGNED, /*key used for stored in 		domain tables */
+		FOREIGN KEY (appDId) REFERENCES mtpappddb.virtualcomputedescriptor (appDId),
+		PRIMARY KEY (capabilitiesId)	
+					);			
+
+					
+		CREATE TABLE mtpappddb.virtualmemory  (
+	  
+		virtualMemSize VARCHAR (50),
+		numaEnabled BOOL,
+		virtualMemOversubscriptionPolicy VARCHAR (50),
+
+		appDId INT UNSIGNED, /*key used for stored in 		domain tables */
+		FOREIGN KEY (appDId) REFERENCES mtpappddb.virtualcomputedescriptor (appDId),
+		PRIMARY KEY (appDId)	
+					);	
+		
+		
+		CREATE TABLE mtpappddb.virtualcpu  (
+	  
+		cpuArchitecture VARCHAR (50),
+		numVirtualCpu VARCHAR (50),
+		virtualCpuClock VARCHAR (50),
+		virtualCpuOversubscriptionPolicy VARCHAR (50),
+		/*VirtualCpuPinningData virtualCpuPinning*/
+	
+		appDId INT UNSIGNED, /*key used for stored in 		domain tables */
+		FOREIGN KEY (appDId) REFERENCES mtpappddb.virtualcomputedescriptor (appDId),
+		PRIMARY KEY (appDId)	
+					);	
+					
+					
+			CREATE TABLE mtpappddb.virtualcpupinning  (
+	
+		    cpuPinningPolicy ENUM('static','dynamic'),
+			cpuPinningMap VARCHAR (50),
+		
+			appDId INT UNSIGNED, /*key used for stored in 		domain tables */
+			FOREIGN KEY (appDId) REFERENCES mtpappddb.virtualcpu (appDId),
+			PRIMARY KEY (appDId)	
+					);	
+		
+		
+/******************************************************************/
+
+
+
+
 CREATE DATABASE mtpabstrdb;
 
 
@@ -22,7 +487,47 @@ PRIMARY KEY (abstrNfviPopId)
     		);
 
 
+	/* Radio specific table*/
+	/**********Radio coverage area table********************************************************/
 
+		CREATE TABLE mtpabstrdb.radio_coverage_area (
+		
+			coverageAreaId INT UNSIGNED NOT NULL AUTO_INCREMENT,
+			coverageAreaMinBandwidth VARCHAR (50), 
+			coverageAreaMaxBandwidth VARCHAR (50), 
+			coverageAreaDelay VARCHAR (50), 
+  
+			latitude  VARCHAR (50), 
+			longitude  VARCHAR (50), 
+			altitude  VARCHAR (50), 
+			range_  VARCHAR (50), 
+				
+			abstrNfviPopId INT UNSIGNED, /*key used for stored in 		domain tables */
+			FOREIGN KEY (abstrNfviPopId) REFERENCES mtpabstrdb.abstrnfvipop (abstrNfviPopId),
+			PRIMARY KEY (coverageAreaId)		
+		);
+	/******************************************************************/	
+
+/* MEC specific table*/
+/**********MEC Regions table********************************************************/
+
+	CREATE TABLE mtpabstrdb.mec_region_info (
+	
+			regionId INT UNSIGNED NOT NULL AUTO_INCREMENT,
+			latitude  VARCHAR (50), 
+			longitude  VARCHAR (50), 
+			altitude  VARCHAR (50), 
+			range_  VARCHAR (50), 
+			
+			abstrNfviPopId INT UNSIGNED, /*key used for stored in 		domain tables */
+			FOREIGN KEY (abstrNfviPopId) REFERENCES mtpabstrdb.abstrnfvipop (abstrNfviPopId),
+			PRIMARY KEY (regionId)		
+	);
+/******************************************************************/
+			
+					
+			
+			
 /* List of zoneid (useful for TD1.3) */
 CREATE TABLE mtpabstrdb.abstrzoneid (
  abstrResourceZoneId INT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -150,11 +655,36 @@ CREATE TABLE mtpdomdb.domain (
         type VARCHAR (50), /*Radio, Transport, VIM, MEC*/
         ip VARCHAR (50), /*From xml files*/
     	port VARCHAR (50), /*From xml files*/
+		mecAssociatedDomainID VARCHAR (50), /*From xml files*/
+		
 	abstrDomId INT UNSIGNED, 
 	FOREIGN KEY (AbstrDomId) REFERENCES mtpabstrdb.abstrdomain (AbstrDomId),
     	PRIMARY KEY (domId) 
     		);
 
+/* MEC specific table*/
+/**********MEC Regions table********************************************************/
+
+	CREATE TABLE mtpdomdb.mec_region_info (
+	
+			regionId INT UNSIGNED NOT NULL AUTO_INCREMENT,
+			latitude  VARCHAR (50), 
+			longitude  VARCHAR (50), 
+			altitude  VARCHAR (50), 
+			range_  VARCHAR (50), 
+			
+			domId INT UNSIGNED, /*key used for stored in 		domain tables */
+			FOREIGN KEY (domId) REFERENCES mtpdomdb.domain (domId),
+			PRIMARY KEY (regionId)		
+	);
+/******************************************************************/
+
+			
+			
+			
+			
+			
+			
 /* List of NFVI POP */
 CREATE TABLE mtpdomdb.nfvipop (
     	nfviPopId INT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -162,12 +692,36 @@ CREATE TABLE mtpdomdb.nfvipop (
     	geographicalLocationInfo VARCHAR (50),
     	networkConnectivityEndpoint VARCHAR (50),
 	domId INT UNSIGNED, /*key used for stored in domain tables */
-	FOREIGN KEY (domId) REFERENCES mtpdomdb.DOMAIN (domId),	
+	FOREIGN KEY (domId) REFERENCES mtpdomdb.domain (domId),	
 abstrNfviPopId INT UNSIGNED, /*key used for stored in domain tables */
 	FOREIGN KEY (abstrNfviPopId) REFERENCES mtpabstrdb.abstrnfvipop  (abstrNfviPopId),
     	PRIMARY KEY (nfviPopId)
     		);
 
+			
+	/* Radio specific table*/
+	/**********Radio coverage area table********************************************************/
+
+		CREATE TABLE mtpdomdb.radio_coverage_area (
+		
+			coverageAreaId INT UNSIGNED NOT NULL AUTO_INCREMENT,
+			coverageAreaMinBandwidth VARCHAR (50), 
+			coverageAreaMaxBandwidth VARCHAR (50), 
+			coverageAreaDelay VARCHAR (50), 
+  
+			latitude  VARCHAR (50), 
+			longitude  VARCHAR (50), 
+			altitude  VARCHAR (50), 
+			range_  VARCHAR (50), 
+				
+			nfviPopId INT UNSIGNED, /*key used for stored in 		domain tables */
+			FOREIGN KEY (nfviPopId) REFERENCES mtpdomdb.nfvipop (nfviPopId),
+			PRIMARY KEY (coverageAreaId)		
+		);
+	/******************************************************************/			
+			
+			
+			
 /* List of Resource Zones */
 CREATE TABLE mtpdomdb.zoneid (
     	resourceZoneId INT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -324,7 +878,7 @@ flavourId INT UNSIGNED NOT NULL,
 accelerationCapability 	VARCHAR (50),
 /* Primary and Foreign Keys*/
 nfviPopId INT UNSIGNED, /*key used for stored in domain tables */
-FOREIGN KEY (nfviPopId) REFERENCES mtpdomdb.NFVIPOP (nfviPopId),    
+FOREIGN KEY (nfviPopId) REFERENCES mtpdomdb.nfvipop (nfviPopId),    
 PRIMARY KEY (computeFlavourId) 
     		);
 
@@ -419,16 +973,17 @@ CREATE TABLE mtpservdb.computeservices (
      outcome VARCHAR (50),
 	/*Primary and Foreign Keys*/
       servId INT UNSIGNED, /*key used for stored in service tables */
-	FOREIGN KEY (servId) REFERENCES mtpservdb.SERVICE (servId),
+	FOREIGN KEY (servId) REFERENCES mtpservdb.service (servId),
 nfviPopId INT UNSIGNED, /*key used for stored in domain tables */
 	FOREIGN KEY (nfviPopId) REFERENCES mtpdomdb.nfvipop (nfviPopId),
     	PRIMARY KEY (computeServiceId) 
     		);
+			
+			
 
 /* List of network allocation request */
 CREATE TABLE mtpservdb.networkservices (
     	netServId INT UNSIGNED NOT NULL AUTO_INCREMENT, /*key used for stored in service tables */
-
     	reqId INT UNSIGNED,  /*used for retrieve and set the outcome*/
 status VARCHAR (50), /*status of request “pending”, “OK”, “NOK”*/
 /*list of parameters for IFA005 network allocate*/
@@ -439,12 +994,23 @@ FOREIGN KEY (logicalPathId) REFERENCES mtpabstrdb.logicalpath (logicalPathId),
     	PRIMARY KEY (netServId) 
     		);
 
-/* List of network allocation request */
+/* List MEC App instance ids  */
 
+CREATE TABLE mtpservdb.mec_service_instances (
+appInstanceId VARCHAR (50),
+	mecdomId VARCHAR(50), /* used to retrieve mecid*/
+/* Primary and Foreign Keys */
+computeServiceId INT UNSIGNED UNIQUE, 
+FOREIGN KEY (computeServiceId) REFERENCES mtpservdb.computeservices (computeServiceId),
+PRIMARY KEY (computeServiceId) 
+    		);
+			
+			
+/* List of network allocation request */
 
 CREATE TABLE mtpservdb.virtualcompute (
 /*list of parameters for IFA005 network allocate*/
-computeId 		INT UNSIGNED,
+computeId 		VARCHAR (50),
 zoneId 		INT UNSIGNED,
 virtualDisks 	VARCHAR (50),
 vcImageId		VARCHAR (50),
@@ -495,18 +1061,6 @@ PRIMARY KEY (netInterfaceId)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 CREATE TABLE mtpservdb.virtualmemory (
 /**/
 virtualMemSize 	DECIMAL,
@@ -541,6 +1095,7 @@ locationConstraints VARCHAR (50),
   metadata VARCHAR (50), /*it is a list*/
   vcImageId VARCHAR (50),
   computeName VARCHAR (50),
+  appDId VARCHAR (50),
 /*Primary and Foreign Keys*/
 	computeServiceId INT UNSIGNED NOT NULL,	
 FOREIGN KEY (computeServiceId) REFERENCES mtpservdb.computeservices (computeServiceId),
@@ -559,7 +1114,7 @@ PRIMARY KEY (interfaceDataId)
     		);
 
 
-CREATE TABLE mtpservdb.AffinityOrAntiAffinityConstraint (
+CREATE TABLE mtpservdb.affinityorantiaffinityconstraint (
 affinityConstraintId INT UNSIGNED NOT NULL AUTO_INCREMENT,
 type VARCHAR (50),
 scope VARCHAR (50),
@@ -659,7 +1214,7 @@ CREATE TABLE mtpservdb.networkqos
 qosValue VARCHAR (50),
 /*Primary and Foreign Keys*/
 netServId INT UNSIGNED,
-	FOREIGN KEY (netServId) REFERENCES mtpservdb.VIRTUALNETWORKDATA (netServId),
+	FOREIGN KEY (netServId) REFERENCES mtpservdb.virtualnetworkdata (netServId),
 PRIMARY KEY (netQosId)
      		);
 
@@ -751,7 +1306,7 @@ addressPool	VARCHAR (50),
 metadata		VARCHAR (50),
 	/*Primary and Foreign Keys*/
 virtualNetworkId INT UNSIGNED,
-	FOREIGN KEY (virtualNetworkId) REFERENCES mtpservdb.virtualNetwork (virtualNetworkId), 
+	FOREIGN KEY (virtualNetworkId) REFERENCES mtpservdb.virtualnetwork (virtualNetworkId), 
 PRIMARY KEY (netSubnetId)
     		);
 
@@ -785,7 +1340,7 @@ CREATE TABLE mtpdomdb.logicalpath_networkresources (
 PRIMARY KEY (id)
 	     	);
 
-CREATE TABLE mtpdomdb.logicalpath_interdomainLink (
+CREATE TABLE mtpdomdb.logicalpath_interdomainlink (
     	id INT UNSIGNED NOT NULL AUTO_INCREMENT,
 	logicalPathId INT UNSIGNED,
 	interDomainLinkId INT UNSIGNED,

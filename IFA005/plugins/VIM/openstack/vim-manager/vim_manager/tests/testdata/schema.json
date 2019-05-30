@@ -21,7 +21,9 @@
                     "type": "array"
                   }
                 },
-                "required": ["resource"],
+                "required": [
+                  "resource"
+                ],
                 "type": "object"
               },
               "scope": {
@@ -64,7 +66,10 @@
                 "type": "string"
               }
             },
-            "required": ["ipAddress", "macAddress"],
+            "required": [
+              "ipAddress",
+              "macAddress"
+            ],
             "type": "object"
           },
           "type": "array"
@@ -97,7 +102,10 @@
               "type": "string"
             }
           },
-          "required": ["content", "method"],
+          "required": [
+            "content",
+            "method"
+          ],
           "type": "object"
         },
         "vcImageId": {
@@ -131,7 +139,22 @@
         },
         "metadata": {
           "description": "The binary software image file.",
-          "type": "string"
+          "items": {
+            "properties": {
+              "key": {
+                "type": "string"
+              },
+              "value": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "key",
+              "value"
+            ],
+            "type": "object"
+          },
+          "type": "array"
         },
         "networkResourceName": {
           "description": "Name provided by the consumer for the virtualised network resource to allocate. It can be used for identifying resources from consumer side.",
@@ -173,6 +196,291 @@
         "typeNetworkData",
         "typeNetworkPortData",
         "typeSubnetData"
+      ],
+      "type": "object"
+    },
+    "AllocateNetworkResult": {
+      "properties": {
+        "networkData": {
+          "description": "If network types are created satisfactorily, it contains the data relative to the instantiated virtualised network resource. Cardinality can be \"0\" if the request did not include creation of such type of resource.",
+          "properties": {
+            "bandwidth": {
+              "description": "Minimum network bandwidth (in Mbps).",
+              "type": "number"
+            },
+            "isShared": {
+              "description": "It defines whether the virtualised network is shared among consumers.",
+              "type": "boolean"
+            },
+            "networkPort": {
+              "description": "Element providing information of an instantiated virtual network port.",
+              "items": {
+                "properties": {
+                  "attachedResourceId": {
+                    "description": "Identifier of the attached resource to the network port (e.g. a virtualised compute resource, or identifier of the virtual network interface). The cardinality can be \"0\" if there is no specific resource connected to the network port.",
+                    "type": "string"
+                  },
+                  "bandwidth": {
+                    "description": "The bandwidth of the virtual network port (in Mbps). Cardinality can be \"0\" for virtual network ports without any specific allocated bandwidth.",
+                    "type": "number"
+                  },
+                  "metadata": {
+                    "description": "List of metadata key-value pairs used by the consumer to associate meaningful metadata to the related virtualised resource.",
+                    "items": {
+                      "properties": {
+                        "key": {
+                          "type": "string"
+                        },
+                        "value": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "key",
+                        "value"
+                      ],
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "networkId": {
+                    "description": "Identifier of the network that the port belongs to. When creating a port, such port needs to be part of a network.",
+                    "type": "string"
+                  },
+                  "operationalState": {
+                    "description": "The operational state of the virtual network port.",
+                    "type": "string"
+                  },
+                  "portType": {
+                    "description": "Type of network port. Examples of types are access ports (layer 2 or 3), or trunk ports (layer 1) that become transport for multiple layer 2 or layer 3 networks.",
+                    "type": "string"
+                  },
+                  "resourceId": {
+                    "description": "Identifier of the virtual network port.",
+                    "type": "string"
+                  },
+                  "segmentId": {
+                    "description": "The isolated segment the network port belongs to. For instance, for a \"vlan\", it corresponds to the vlan identifier; and for a \"gre\", this corresponds to a gre key. The cardinality can be \"0\" for flat networks without any specific segmentation.",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "attachedResourceId",
+                  "bandwidth",
+                  "networkId",
+                  "operationalState",
+                  "portType",
+                  "resourceId",
+                  "segmentId"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "networkQoS": {
+              "description": "Element providing information about Quality of Service attributes that the network shall support. The cardinality can be \"0\" to allow for networks without any specified QoS requirements.",
+              "items": {
+                "properties": {
+                  "qosName": {
+                    "description": "Name given to the QoS parameter.",
+                    "type": "string"
+                  },
+                  "qosValue": {
+                    "description": "Value of the QoS parameter.",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "qosName",
+                  "qosValue"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "networkResourceId": {
+              "description": "Identifier of the virtualised network resource.",
+              "type": "string"
+            },
+            "networkResourceName": {
+              "description": "Name of the virtualised network resource.",
+              "type": "string"
+            },
+            "networkType": {
+              "description": "The type of network that maps to the virtualised network. This list is extensible. Examples are: \"local\", \"vlan\", \"vxlan\", \"gre\", \"l3-vpn\", etc. The cardinality can be \"0\" to cover the case where this attribute is not required to create the virtualised network.",
+              "type": "string"
+            },
+            "operationalState": {
+              "description": "The operational state of the virtualised network.",
+              "type": "string"
+            },
+            "segmentType": {
+              "description": "The isolated segment for the virtualised network. For instance, for a \"vlan\" networkType, it corresponds to the vlan identifier; and for a \"gre\" networkType, this corresponds to a gre key. The cardinality can be \"0\" to allow for flat networks without any specific segmentation.",
+              "type": "string"
+            },
+            "sharingCriteria": {
+              "description": "Only present for shared networks. Indicate the sharing criteria for this network. This criteria might be a list of authorized consumers.",
+              "type": "string"
+            },
+            "subnet": {
+              "description": "Only present if the network provides layer 3 connectivity.",
+              "type": "string"
+            },
+            "zoneId": {
+              "description": "If present, it identifies the Resource Zone where the virtual network resources have been allocated.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "bandwidth",
+            "isShared",
+            "networkPort",
+            "networkQoS",
+            "networkResourceId",
+            "networkResourceName",
+            "networkType",
+            "operationalState",
+            "segmentType",
+            "sharingCriteria",
+            "subnet",
+            "zoneId"
+          ],
+          "type": "object"
+        },
+        "networkPortData": {
+          "description": "If network types are created satisfactorily, it contains the data relative to the instantiated virtualised network resource. Cardinality can be \"0\" if the request did not include creation of such type of resource.",
+          "properties": {
+            "attachedResourceId": {
+              "description": "Identifier of the attached resource to the network port (e.g. a virtualised compute resource, or identifier of the virtual network interface). The cardinality can be \"0\" if there is no specific resource connected to the network port.",
+              "type": "string"
+            },
+            "bandwidth": {
+              "description": "The bandwidth of the virtual network port (in Mbps). Cardinality can be \"0\" for virtual network ports without any specific allocated bandwidth.",
+              "type": "number"
+            },
+            "metadata": {
+              "description": "List of metadata key-value pairs used by the consumer to associate meaningful metadata to the related virtualised resource.",
+              "items": {
+                "properties": {
+                  "key": {
+                    "type": "string"
+                  },
+                  "value": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "key",
+                  "value"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "networkId": {
+              "description": "Identifier of the network that the port belongs to. When creating a port, such port needs to be part of a network.",
+              "type": "string"
+            },
+            "operationalState": {
+              "description": "The operational state of the virtual network port.",
+              "type": "string"
+            },
+            "portType": {
+              "description": "Type of network port. Examples of types are access ports (layer 2 or 3), or trunk ports (layer 1) that become transport for multiple layer 2 or layer 3 networks.",
+              "type": "string"
+            },
+            "resourceId": {
+              "description": "Identifier of the virtual network port.",
+              "type": "string"
+            },
+            "segmentId": {
+              "description": "The isolated segment the network port belongs to. For instance, for a \"vlan\", it corresponds to the vlan identifier; and for a \"gre\", this corresponds to a gre key. The cardinality can be \"0\" for flat networks without any specific segmentation.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "attachedResourceId",
+            "bandwidth",
+            "networkId",
+            "operationalState",
+            "portType",
+            "resourceId",
+            "segmentId"
+          ],
+          "type": "object"
+        },
+        "subnetData": {
+          "description": "If subnet types are created satisfactorily, it contains the data relative to the allocated subnet. Cardinality can be \"0\" if the request did not include creation of such type of resource.",
+          "properties": {
+            "addressPool": {
+              "description": "Address pools for the network/subnetwork. The cardinality can be 0 when VIM is allowed to allocate all addresses in the CIDR except for the address of the network/subnetwork gateway.",
+              "type": "string"
+            },
+            "cidr": {
+              "description": "The CIDR of the network/subnetwork, i.e. network address and subnet mask.",
+              "type": "string"
+            },
+            "gatewayIp": {
+              "description": "The IP address of the network/subnetwork gateway.",
+              "type": "string"
+            },
+            "ipVersion": {
+              "description": "The IP version of the network/subnetwork.",
+              "type": "string"
+            },
+            "isDhcpEnabled": {
+              "description": "True when DHCP is enabled for this network/subnetwork, or false otherwise.",
+              "type": "boolean"
+            },
+            "metadata": {
+              "description": "List of metadata key-value pairs used by the consumer to associate meaningful metadata to the related virtualised resource.",
+              "items": {
+                "properties": {
+                  "key": {
+                    "type": "string"
+                  },
+                  "value": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "key",
+                  "value"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "networkId": {
+              "description": "The identifier of the virtualised network that the virtualised sub-network is attached to. The cardinality can be 0 to cover the case where this type is used to describe the L3 attributes of a network rather than a subnetwork.",
+              "type": "string"
+            },
+            "operationalState": {
+              "description": "The operational state of the virtualised sub-network.",
+              "type": "string"
+            },
+            "resourceId": {
+              "description": "Identifier of the virtualised sub-network.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "addressPool",
+            "cidr",
+            "gatewayIp",
+            "ipVersion",
+            "isDhcpEnabled",
+            "networkId",
+            "operationalState",
+            "resourceId"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "networkData",
+        "networkPortData",
+        "subnetData"
       ],
       "type": "object"
     },
@@ -227,11 +535,18 @@
               "type": "number"
             }
           },
-          "required": ["numVCPUs", "numVcInstances", "virtualMemSize"],
+          "required": [
+            "numVCPUs",
+            "numVcInstances",
+            "virtualMemSize"
+          ],
           "type": "object"
         }
       },
-      "required": ["resourceGroupId", "virtualComputeQuota"],
+      "required": [
+        "resourceGroupId",
+        "virtualComputeQuota"
+      ],
       "type": "object"
     },
     "CreateComputeResourceReservationRequest": {
@@ -255,7 +570,9 @@
                     "type": "array"
                   }
                 },
-                "required": ["resource"],
+                "required": [
+                  "resource"
+                ],
                 "type": "object"
               },
               "scope": {
@@ -296,7 +613,9 @@
                     "type": "array"
                   }
                 },
-                "required": ["resource"],
+                "required": [
+                  "resource"
+                ],
                 "type": "object"
               },
               "scope": {
@@ -624,7 +943,10 @@
                 "type": "string"
               }
             },
-            "required": ["containerFlavour", "containerId"],
+            "required": [
+              "containerFlavour",
+              "containerId"
+            ],
             "type": "object"
           },
           "type": "array"
@@ -668,11 +990,18 @@
               "type": "integer"
             }
           },
-          "required": ["numPorts", "numPublicIps", "numSubnets"],
+          "required": [
+            "numPorts",
+            "numPublicIps",
+            "numSubnets"
+          ],
           "type": "object"
         }
       },
-      "required": ["resourceGroupId", "virtualComputeQuota"],
+      "required": [
+        "resourceGroupId",
+        "virtualComputeQuota"
+      ],
       "type": "object"
     },
     "CreateNetworkResourceReservationRequest": {
@@ -696,7 +1025,9 @@
                     "type": "array"
                   }
                 },
-                "required": ["resource"],
+                "required": [
+                  "resource"
+                ],
                 "type": "object"
               },
               "scope": {
@@ -737,7 +1068,9 @@
                     "type": "array"
                   }
                 },
-                "required": ["resource"],
+                "required": [
+                  "resource"
+                ],
                 "type": "object"
               },
               "scope": {
@@ -798,7 +1131,10 @@
                         "type": "string"
                       }
                     },
-                    "required": ["key", "value"],
+                    "required": [
+                      "key",
+                      "value"
+                    ],
                     "type": "object"
                   },
                   "type": "array"
@@ -839,7 +1175,10 @@
                           "type": "string"
                         }
                       },
-                      "required": ["key", "value"],
+                      "required": [
+                        "key",
+                        "value"
+                      ],
                       "type": "object"
                     },
                     "type": "array"
@@ -858,7 +1197,12 @@
                     "type": "string"
                   }
                 },
-                "required": ["bandwidth", "portId", "portType", "segmentId"],
+                "required": [
+                  "bandwidth",
+                  "portId",
+                  "portType",
+                  "segmentId"
+                ],
                 "type": "object"
               },
               "type": "array"
@@ -869,7 +1213,11 @@
               "type": "integer"
             }
           },
-          "required": ["networkAttributes", "networkPorts", "numPublicIps"],
+          "required": [
+            "networkAttributes",
+            "networkPorts",
+            "numPublicIps"
+          ],
           "type": "object"
         },
         "resourceGroupId": {
@@ -901,7 +1249,9 @@
           "type": "object"
         }
       },
-      "required": ["filter"],
+      "required": [
+        "filter"
+      ],
       "type": "object"
     },
     "NfviPop": {
@@ -959,7 +1309,10 @@
               "type": "string"
             }
           },
-          "required": ["startTime", "stopTime"],
+          "required": [
+            "startTime",
+            "stopTime"
+          ],
           "type": "object"
         },
         "zoneId": {
@@ -1004,7 +1357,10 @@
               "type": "string"
             }
           },
-          "required": ["startTime", "stopTime"],
+          "required": [
+            "startTime",
+            "stopTime"
+          ],
           "type": "object"
         },
         "zoneId": {
@@ -1204,7 +1560,11 @@
                       "type": "string"
                     }
                   },
-                  "required": ["cpuMap", "cpuPinningPolicy", "cpuPinningRules"],
+                  "required": [
+                    "cpuMap",
+                    "cpuPinningPolicy",
+                    "cpuPinningRules"
+                  ],
                   "type": "object"
                 }
               },
@@ -1430,7 +1790,10 @@
                     "type": "string"
                   }
                 },
-                "required": ["key", "value"],
+                "required": [
+                  "key",
+                  "value"
+                ],
                 "type": "object"
               },
               "type": "array"
@@ -1444,7 +1807,12 @@
               "type": "string"
             }
           },
-          "required": ["bandwidth", "isShared", "networkType", "segmentType"],
+          "required": [
+            "bandwidth",
+            "isShared",
+            "networkType",
+            "segmentType"
+          ],
           "type": "object"
         },
         "networkPorts": {
@@ -1466,7 +1834,10 @@
                       "type": "string"
                     }
                   },
-                  "required": ["key", "value"],
+                  "required": [
+                    "key",
+                    "value"
+                  ],
                   "type": "object"
                 },
                 "type": "array"
@@ -1484,7 +1855,12 @@
                 "type": "string"
               }
             },
-            "required": ["bandwidth", "portId", "portType", "segmentId"],
+            "required": [
+              "bandwidth",
+              "portId",
+              "portType",
+              "segmentId"
+            ],
             "type": "object"
           },
           "type": "array"
@@ -1531,7 +1907,9 @@
           "type": "string"
         }
       },
-      "required": ["resourceGroupId"],
+      "required": [
+        "resourceGroupId"
+      ],
       "type": "object"
     },
     "ResourceZone": {
@@ -1547,7 +1925,10 @@
                 "type": "string"
               }
             },
-            "required": ["key", "value"],
+            "required": [
+              "key",
+              "value"
+            ],
             "type": "object"
           },
           "type": "array"
@@ -1611,7 +1992,10 @@
                 "type": "string"
               }
             },
-            "required": ["key", "value"],
+            "required": [
+              "key",
+              "value"
+            ],
             "type": "object"
           },
           "type": "array"
@@ -1779,7 +2163,11 @@
                   "type": "string"
                 }
               },
-              "required": ["cpuMap", "cpuPinningPolicy", "cpuPinningRules"],
+              "required": [
+                "cpuMap",
+                "cpuPinningPolicy",
+                "cpuPinningRules"
+              ],
               "type": "object"
             }
           },
@@ -2014,7 +2402,11 @@
                     "type": "string"
                   }
                 },
-                "required": ["cpuMap", "cpuPinningPolicy", "cpuPinningRules"],
+                "required": [
+                  "cpuMap",
+                  "cpuPinningPolicy",
+                  "cpuPinningRules"
+                ],
                 "type": "object"
               }
             },
@@ -2253,8 +2645,35 @@
                 "description": "Identifier of the attached resource to the network port (e.g. a virtualised compute resource, or identifier of the virtual network interface). The cardinality can be \"0\" if there is no specific resource connected to the network port.",
                 "type": "string"
               },
+              "bandwidth": {
+                "description": "The bandwidth of the virtual network port (in Mbps). Cardinality can be \"0\" for virtual network ports without any specific allocated bandwidth.",
+                "type": "number"
+              },
+              "metadata": {
+                "description": "List of metadata key-value pairs used by the consumer to associate meaningful metadata to the related virtualised resource.",
+                "items": {
+                  "properties": {
+                    "key": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "key",
+                    "value"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
               "networkId": {
                 "description": "Identifier of the network that the port belongs to. When creating a port, such port needs to be part of a network.",
+                "type": "string"
+              },
+              "operationalState": {
+                "description": "The operational state of the virtual network port.",
                 "type": "string"
               },
               "portType": {
@@ -2264,13 +2683,20 @@
               "resourceId": {
                 "description": "Identifier of the virtual network port.",
                 "type": "string"
+              },
+              "segmentId": {
+                "description": "The isolated segment the network port belongs to. For instance, for a \"vlan\", it corresponds to the vlan identifier; and for a \"gre\", this corresponds to a gre key. The cardinality can be \"0\" for flat networks without any specific segmentation.",
+                "type": "string"
               }
             },
             "required": [
               "attachedResourceId",
+              "bandwidth",
               "networkId",
+              "operationalState",
               "portType",
-              "resourceId"
+              "resourceId",
+              "segmentId"
             ],
             "type": "object"
           },
@@ -2289,7 +2715,10 @@
                 "type": "string"
               }
             },
-            "required": ["qosName", "qosValue"],
+            "required": [
+              "qosName",
+              "qosValue"
+            ],
             "type": "object"
           },
           "type": "array"
@@ -2365,7 +2794,12 @@
           "type": "string"
         }
       },
-      "required": ["numPorts", "numPublicIps", "numSubnets", "resourceGroupId"],
+      "required": [
+        "numPorts",
+        "numPublicIps",
+        "numSubnets",
+        "resourceGroupId"
+      ],
       "type": "object"
     },
     "VirtualNetworkResourceInformation": {
@@ -2387,7 +2821,10 @@
                 "type": "string"
               }
             },
-            "required": ["qosName", "qosValue"],
+            "required": [
+              "qosName",
+              "qosValue"
+            ],
             "type": "object"
           },
           "type": "array"
@@ -2411,16 +2848,28 @@
     }
   },
   "info": {
-    "description": "VIM Manager API",
+    "description": "VIM Manager API based on ETSI GS NFV-IFA 005 V2.3.1",
     "termsOfService": "/tos",
-    "title": "VIM Manager API",
-    "version": "0.0.8"
+    "title": "VIM Manager API"
   },
   "paths": {
-    "/compute_resources": {
+    "/healthz": {
+      "get": {
+        "description": "<br/>",
+        "responses": {
+          "200": {
+            "description": "Healthcheck"
+          }
+        },
+        "summary": "Healthcheck"
+      }
+    },
+    "/v1/compute_resources": {
       "delete": {
-        "consumes": ["application/json"],
-        "operationId": "terminateResources",
+        "consumes": [
+          "application/json"
+        ],
+        "operationId": "TerminateComputeResources",
         "parameters": [
           {
             "description": "Identifier(s) of the virtualised compute resource(s) to be terminated.",
@@ -2433,7 +2882,9 @@
             "type": "array"
           }
         ],
-        "produces": ["application/json"],
+        "produces": [
+          "application/json"
+        ],
         "responses": {
           "200": {
             "description": "Identifier(s) of the virtualised compute resource(s) successfully terminated.",
@@ -2454,37 +2905,15 @@
             "description": "Forbidden"
           }
         },
-        "tags": ["virtualisedComputeResources"]
-      },
-      "get": {
-        "consumes": ["application/json"],
-        "operationId": "queryResources",
-        "produces": ["application/json"],
-        "responses": {
-          "200": {
-            "description": "Element containing information about the virtual compute resource(s) matching the filter. The cardinality can be 0 if no matching compute resources exist.",
-            "schema": {
-              "items": {
-                "$ref": "#/definitions/VirtualCompute"
-              },
-              "type": "array"
-            }
-          },
-          "400": {
-            "description": "Bad request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        },
-        "tags": ["virtualisedComputeResources"]
+        "tags": [
+          "virtualisedComputeResources"
+        ]
       },
       "post": {
-        "consumes": ["application/json"],
-        "operationId": "allocateCompute",
+        "consumes": [
+          "application/json"
+        ],
+        "operationId": "allocateComputeResources",
         "parameters": [
           {
             "in": "body",
@@ -2495,7 +2924,9 @@
             }
           }
         ],
-        "produces": ["application/json"],
+        "produces": [
+          "application/json"
+        ],
         "responses": {
           "201": {
             "description": "Element containing information of the newly instantiated virtualised compute resource.",
@@ -2516,12 +2947,16 @@
             "description": "software image already added"
           }
         },
-        "tags": ["virtualisedComputeResources"]
+        "tags": [
+          "virtualisedComputeResources"
+        ]
       }
     },
-    "/compute_resources/capacities": {
-      "get": {
-        "consumes": ["application/json"],
+    "/v1/compute_resources/capacities/query": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
         "operationId": "queryComputeCapacity",
         "parameters": [
           {
@@ -2533,7 +2968,9 @@
             }
           }
         ],
-        "produces": ["application/json"],
+        "produces": [
+          "application/json"
+        ],
         "responses": {
           "200": {
             "description": "The capacity during the requested time period. The scope is according to parameter zoneId of the request during the time interval.",
@@ -2551,38 +2988,16 @@
             "description": "Forbidden"
           }
         },
-        "tags": ["virtualisedComputeResources"]
+        "tags": [
+          "virtualisedComputeResources"
+        ]
       }
     },
-    "/compute_resources/flavours": {
-      "get": {
-        "consumes": ["application/json"],
-        "operationId": "queryFlavors",
-        "produces": ["application/json"],
-        "responses": {
-          "200": {
-            "description": "Element containing information about the virtual compute resource(s) matching the filter. The cardinality can be 0 if no matching compute resources exist.",
-            "schema": {
-              "items": {
-                "$ref": "#/definitions/VirtualComputeFlavour"
-              },
-              "type": "array"
-            }
-          },
-          "400": {
-            "description": "Bad request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        },
-        "tags": ["virtualisedComputeResources"]
-      },
+    "/v1/compute_resources/flavours": {
       "post": {
-        "consumes": ["application/json"],
+        "consumes": [
+          "application/json"
+        ],
         "operationId": "createFlavour",
         "parameters": [
           {
@@ -2594,7 +3009,9 @@
             }
           }
         ],
-        "produces": ["application/json"],
+        "produces": [
+          "application/json"
+        ],
         "responses": {
           "201": {
             "description": "Identifier of the created Compute Flavour.",
@@ -2615,12 +3032,61 @@
             "description": "flavour already added"
           }
         },
-        "tags": ["virtualisedComputeResources"]
+        "tags": [
+          "virtualisedComputeResources"
+        ]
       }
     },
-    "/compute_resources/flavours/{id}": {
+    "/v1/compute_resources/flavours/query": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "operationId": "queryFlavors",
+        "parameters": [
+          {
+            "description": "Query filter based on e.g. name, identifier, meta-data information or status information, expressing the type of information to be retrieved. It can also be used to specify one or more Compute Flavours to be queried by providing their identifiers.",
+            "in": "body",
+            "name": "queryComputeFlavourFilter",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Filter"
+            }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of Compute Flavours matching the query.",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/VirtualComputeFlavour"
+              },
+              "type": "array"
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "tags": [
+          "virtualisedComputeResources"
+        ]
+      }
+    },
+    "/v1/compute_resources/flavours/{id}": {
       "delete": {
-        "consumes": ["application/json"],
+        "consumes": [
+          "application/json"
+        ],
         "operationId": "deleteFlavours",
         "parameters": [
           {
@@ -2631,7 +3097,9 @@
             "type": "string"
           }
         ],
-        "produces": ["application/json"],
+        "produces": [
+          "application/json"
+        ],
         "responses": {
           "200": {
             "description": "No output parameters"
@@ -2646,14 +3114,31 @@
             "description": "Forbidden"
           }
         },
-        "tags": ["virtualisedComputeResources"]
+        "tags": [
+          "virtualisedComputeResources"
+        ]
       }
     },
-    "/compute_resources/information": {
-      "get": {
-        "consumes": ["application/json"],
+    "/v1/compute_resources/information/query": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
         "operationId": "queryComputeInformation",
-        "produces": ["application/json"],
+        "parameters": [
+          {
+            "description": "Filter defining the information of consumable virtualised resources on which the query applies.",
+            "in": "body",
+            "name": "informationQueryFilter",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Filter"
+            }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
         "responses": {
           "200": {
             "description": "Virtualised compute resource information in the VIM that satisfies the query condition.",
@@ -2674,14 +3159,31 @@
             "description": "Forbidden"
           }
         },
-        "tags": ["virtualisedComputeResources"]
+        "tags": [
+          "virtualisedComputeResources"
+        ]
       }
     },
-    "/compute_resources/nfvi_pop_compute_information": {
-      "get": {
-        "consumes": ["application/json"],
+    "/v1/compute_resources/nfvi_pop_compute_information/query": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
         "operationId": "queryNFVIPoPComputeInformation",
-        "produces": ["application/json"],
+        "parameters": [
+          {
+            "description": "Input filter for selecting information to query.",
+            "in": "body",
+            "name": "filter",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Filter"
+            }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
         "responses": {
           "200": {
             "description": "The filtered information that has been retrieved. The cardinality can be 0 if no matching information exist.",
@@ -2702,14 +3204,76 @@
             "description": "Forbidden"
           }
         },
-        "tags": ["virtualisedComputeResources"]
+        "tags": [
+          "virtualisedComputeResources"
+        ]
       }
     },
-    "/compute_resources/resource_zones": {
-      "get": {
-        "consumes": ["application/json"],
+    "/v1/compute_resources/query": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "operationId": "queryComputeResources",
+        "parameters": [
+          {
+            "description": "Query filter based on e.g. name, identifier, meta-data information or status information, expressing the type of information to be retrieved. It can also be used to specify one or more resources to be queried by providing their identifiers.",
+            "in": "body",
+            "name": "queryComputeFilter",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Filter"
+            }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Element containing information about the virtual compute resource(s) matching the filter. The cardinality can be 0 if no matching compute resources exist.",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/VirtualCompute"
+              },
+              "type": "array"
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "tags": [
+          "virtualisedComputeResources"
+        ]
+      }
+    },
+    "/v1/compute_resources/resource_zones/query": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
         "operationId": "queryComputeResourceZone",
-        "produces": ["application/json"],
+        "parameters": [
+          {
+            "description": "Input filter for selecting information to query. For instance, based on identifier of the Resource Zone, identifier of the NFVI-PoP, properties of the Resource Zone, or other meta-data.",
+            "in": "body",
+            "name": "filter",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Filter"
+            }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
         "responses": {
           "200": {
             "description": "The filtered information that has been retrieved about the Resource Zone. The cardinality can be 0 if no matching information exist.",
@@ -2730,23 +3294,16 @@
             "description": "Forbidden"
           }
         },
-        "tags": ["virtualisedComputeResources"]
+        "tags": [
+          "virtualisedComputeResources"
+        ]
       }
     },
-    "/healthz": {
-      "get": {
-        "description": "<br/>",
-        "responses": {
-          "200": {
-            "description": "Healthcheck"
-          }
-        },
-        "summary": "Healthcheck"
-      }
-    },
-    "/information": {
-      "get": {
-        "consumes": ["application/json"],
+    "/v1/information/query": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
         "operationId": "queryNetworkInformation",
         "parameters": [
           {
@@ -2759,7 +3316,9 @@
             }
           }
         ],
-        "produces": ["application/json"],
+        "produces": [
+          "application/json"
+        ],
         "responses": {
           "200": {
             "description": "Virtualised network resource information in the VIM that satisfies the query condition.",
@@ -2780,12 +3339,16 @@
             "description": "Forbidden"
           }
         },
-        "tags": ["virtualisedNetworkResourcesInformation"]
+        "tags": [
+          "virtualisedNetworkResourcesInformation"
+        ]
       }
     },
-    "/network_resources": {
+    "/v1/network_resources": {
       "delete": {
-        "consumes": ["application/json"],
+        "consumes": [
+          "application/json"
+        ],
         "operationId": "terminateNetworks",
         "parameters": [
           {
@@ -2799,7 +3362,9 @@
             "type": "array"
           }
         ],
-        "produces": ["application/json"],
+        "produces": [
+          "application/json"
+        ],
         "responses": {
           "200": {
             "description": "Identifier(s) of the virtualised network resource(s) successfully terminated.",
@@ -2820,47 +3385,14 @@
             "description": "Forbidden"
           }
         },
-        "tags": ["virtualisedNetworkResources"]
-      },
-      "get": {
-        "consumes": ["application/json"],
-        "operationId": "queryNetworks",
-        "parameters": [
-          {
-            "description": "Query filter based on e.g. name, identifier, meta-data information or status information, expressing the type of information to be retrieved. It can also be used to specify one or more resources to be queried by providing their identifiers.",
-            "in": "body",
-            "name": "networkQueryFilter",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/Filter"
-            }
-          }
-        ],
-        "produces": ["application/json"],
-        "responses": {
-          "200": {
-            "description": "Element containing information about the virtual network resource(s) matching the filter. The cardinality can be 0 if no matching network resources exist.",
-            "schema": {
-              "items": {
-                "$ref": "#/definitions/VirtualNetwork"
-              },
-              "type": "array"
-            }
-          },
-          "400": {
-            "description": "Bad request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        },
-        "tags": ["virtualisedNetworkResources"]
+        "tags": [
+          "virtualisedNetworkResources"
+        ]
       },
       "post": {
-        "consumes": ["application/json"],
+        "consumes": [
+          "application/json"
+        ],
         "operationId": "allocateNetwork",
         "parameters": [
           {
@@ -2872,12 +3404,14 @@
             }
           }
         ],
-        "produces": ["application/json"],
+        "produces": [
+          "application/json"
+        ],
         "responses": {
           "201": {
             "description": "Identifier of the created Compute Flavour.",
             "schema": {
-              "type": "string"
+              "$ref": "#/definitions/AllocateNetworkResult"
             }
           },
           "400": {
@@ -2893,12 +3427,16 @@
             "description": "network already added"
           }
         },
-        "tags": ["virtualisedNetworkResources"]
+        "tags": [
+          "virtualisedNetworkResources"
+        ]
       }
     },
-    "/network_resources/capacities": {
-      "get": {
-        "consumes": ["application/json"],
+    "/v1/network_resources/capacities/query": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
         "operationId": "queryNetworkCapacity",
         "parameters": [
           {
@@ -2910,7 +3448,9 @@
             }
           }
         ],
-        "produces": ["application/json"],
+        "produces": [
+          "application/json"
+        ],
         "responses": {
           "200": {
             "description": "The capacity during the requested time period. The scope is according to parameter zoneId of the request during the time interval.",
@@ -2928,12 +3468,16 @@
             "description": "Forbidden"
           }
         },
-        "tags": ["virtualisedNetworkResources"]
+        "tags": [
+          "virtualisedNetworkResources"
+        ]
       }
     },
-    "/network_resources/nfvi-pop-network-information": {
-      "get": {
-        "consumes": ["application/json"],
+    "/v1/network_resources/nfvi-pop-network-information/query": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
         "operationId": "queryNFVIPoPNetworkInformation",
         "parameters": [
           {
@@ -2946,7 +3490,9 @@
             }
           }
         ],
-        "produces": ["application/json"],
+        "produces": [
+          "application/json"
+        ],
         "responses": {
           "200": {
             "description": "The filtered information that has been retrieved. The cardinality can be 0 if no matching information exist.",
@@ -2967,12 +3513,61 @@
             "description": "Forbidden"
           }
         },
-        "tags": ["virtualisedNetworkResources"]
+        "tags": [
+          "virtualisedNetworkResources"
+        ]
       }
     },
-    "/quotas/compute_resources": {
+    "/v1/network_resources/query": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "operationId": "queryNetworks",
+        "parameters": [
+          {
+            "description": "Query filter based on e.g. name, identifier, meta-data information or status information, expressing the type of information to be retrieved. It can also be used to specify one or more resources to be queried by providing their identifiers.",
+            "in": "body",
+            "name": "queryNetworkFilter",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Filter"
+            }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Element containing information about the virtual network resource(s) matching the filter. The cardinality can be 0 if no matching network resources exist.",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/VirtualNetwork"
+              },
+              "type": "array"
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "tags": [
+          "virtualisedNetworkResources"
+        ]
+      }
+    },
+    "/v1/quotas/compute_resources": {
       "delete": {
-        "consumes": ["application/json"],
+        "consumes": [
+          "application/json"
+        ],
         "operationId": "terminateComputeQuota",
         "parameters": [
           {
@@ -2986,7 +3581,9 @@
             "type": "array"
           }
         ],
-        "produces": ["application/json"],
+        "produces": [
+          "application/json"
+        ],
         "responses": {
           "200": {
             "description": "Unique identifier of the \"infrastructure resource group\", logical grouping of virtual resources assigned to a tenant within an Infrastructure Domain.",
@@ -3007,12 +3604,70 @@
             "description": "Forbidden"
           }
         },
-        "tags": ["virtualisedResourceQuota"]
+        "tags": [
+          "virtualisedResourceQuota"
+        ]
       },
-      "get": {
-        "consumes": ["application/json"],
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "operationId": "createComputeQuota",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CreateComputeResourceQuotaRequest"
+            }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "201": {
+            "description": "Element containing information about the quota resource.",
+            "schema": {
+              "$ref": "#/definitions/VirtualComputeQuota"
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "tags": [
+          "virtualisedResourceQuota"
+        ]
+      }
+    },
+    "/v1/quotas/compute_resources/query": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
         "operationId": "queryComputeQuota",
-        "produces": ["application/json"],
+        "parameters": [
+          {
+            "description": "Query filter based on e.g. name, identifier, meta-data information or status information expressing the type of information to be retrieved. It can also be used to specify one or more quotas to be queried by providing their identifiers.",
+            "in": "body",
+            "name": "queryQuotaFilter",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Filter"
+            }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
         "responses": {
           "200": {
             "description": "Element containing information about the quota resource. The cardinality can be 0 if no matching quota exists.",
@@ -3033,58 +3688,32 @@
             "description": "Forbidden"
           }
         },
-        "tags": ["virtualisedResourceQuota"]
-      },
-      "post": {
-        "consumes": ["application/json"],
-        "operationId": "createComputeQuota",
-        "parameters": [
-          {
-            "in": "body",
-            "name": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/CreateComputeResourceQuotaRequest"
-            }
-          }
-        ],
-        "produces": ["application/json"],
-        "responses": {
-          "201": {
-            "description": "Element containing information about the quota resource.",
-            "schema": {
-              "$ref": "#/definitions/VirtualComputeQuota"
-            }
-          },
-          "400": {
-            "description": "Bad request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        },
-        "tags": ["virtualisedResourceQuota"]
+        "tags": [
+          "virtualisedResourceQuota"
+        ]
       }
     },
-    "/quotas/network_resources": {
+    "/v1/quotas/network_resources": {
       "delete": {
-        "consumes": ["application/json"],
+        "consumes": [
+          "application/json"
+        ],
         "operationId": "terminateNetworkQuota",
         "parameters": [
           {
             "description": "Unique identifier of the \"infrastructure resource group\", logical grouping of virtual resources assigned to a tenant within an Infrastructure Domain.",
-            "in": "body",
-            "name": "resourceGroupIds",
+            "in": "query",
+            "items": {
+              "type": "string"
+            },
+            "name": "resourceGroupId",
             "required": true,
-            "schema": {
-              "$ref": "#/definitions/ResourceGroupIds"
-            }
+            "type": "array"
           }
         ],
-        "produces": ["application/json"],
+        "produces": [
+          "application/json"
+        ],
         "responses": {
           "200": {
             "description": "Unique identifier of the \"infrastructure resource group\", logical grouping of virtual resources assigned to a tenant within an Infrastructure Domain.",
@@ -3102,36 +3731,14 @@
             "description": "Forbidden"
           }
         },
-        "tags": ["virtualisedResourceQuota"]
-      },
-      "get": {
-        "consumes": ["application/json"],
-        "operationId": "queryNetworkQuota",
-        "produces": ["application/json"],
-        "responses": {
-          "200": {
-            "description": "Element containing information about the quota resource(s) matching the filter. The cardinality can be 0 if no matching quota exists.",
-            "schema": {
-              "items": {
-                "$ref": "#/definitions/VirtualNetworkQuota"
-              },
-              "type": "array"
-            }
-          },
-          "400": {
-            "description": "Bad request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        },
-        "tags": ["virtualisedResourceQuota"]
+        "tags": [
+          "virtualisedResourceQuota"
+        ]
       },
       "post": {
-        "consumes": ["application/json"],
+        "consumes": [
+          "application/json"
+        ],
         "operationId": "createNetworkQuota",
         "parameters": [
           {
@@ -3143,7 +3750,9 @@
             }
           }
         ],
-        "produces": ["application/json"],
+        "produces": [
+          "application/json"
+        ],
         "responses": {
           "201": {
             "description": "Element containing information about the quota resource.",
@@ -3164,12 +3773,61 @@
             "description": ""
           }
         },
-        "tags": ["virtualisedResourceQuota"]
+        "tags": [
+          "virtualisedResourceQuota"
+        ]
       }
     },
-    "/reservations/compute_resources": {
+    "/v1/quotas/network_resources/query": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "operationId": "queryNetworkQuota",
+        "parameters": [
+          {
+            "description": "Query filter based on e.g. name, identifier, meta-data information or status information, expressing the type of information to be retrieved. It can also be used to specify one or more quotas to be queried by providing their identifiers.",
+            "in": "body",
+            "name": "queryQuotaFilter",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Filter"
+            }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Element containing information about the quota resource(s) matching the filter. The cardinality can be 0 if no matching quota exists.",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/VirtualNetworkQuota"
+              },
+              "type": "array"
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "tags": [
+          "virtualisedResourceQuota"
+        ]
+      }
+    },
+    "/v1/reservations/compute_resources": {
       "delete": {
-        "consumes": ["application/json"],
+        "consumes": [
+          "application/json"
+        ],
         "operationId": "terminateComputeReservation",
         "parameters": [
           {
@@ -3183,7 +3841,9 @@
             "type": "array"
           }
         ],
-        "produces": ["application/json"],
+        "produces": [
+          "application/json"
+        ],
         "responses": {
           "200": {
             "description": "Identifier of the resource reservation(s) successfully terminated.",
@@ -3204,36 +3864,14 @@
             "description": "Forbidden"
           }
         },
-        "tags": ["virtualisedResourceReservation"]
-      },
-      "get": {
-        "consumes": ["application/json"],
-        "operationId": "queryComputeReservation",
-        "produces": ["application/json"],
-        "responses": {
-          "200": {
-            "description": "Element containing information about the reserved resource. Cardinality is 0 if the query did not return any result.",
-            "schema": {
-              "items": {
-                "$ref": "#/definitions/ReservedVirtualCompute"
-              },
-              "type": "array"
-            }
-          },
-          "400": {
-            "description": "Bad request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        },
-        "tags": ["virtualisedResourceReservation"]
+        "tags": [
+          "virtualisedResourceReservation"
+        ]
       },
       "post": {
-        "consumes": ["application/json"],
+        "consumes": [
+          "application/json"
+        ],
         "operationId": "createComputeReservation",
         "parameters": [
           {
@@ -3245,7 +3883,9 @@
             }
           }
         ],
-        "produces": ["application/json"],
+        "produces": [
+          "application/json"
+        ],
         "responses": {
           "201": {
             "description": "Element containing information about the reserved resource.",
@@ -3266,12 +3906,61 @@
             "description": ""
           }
         },
-        "tags": ["virtualisedResourceReservation"]
+        "tags": [
+          "virtualisedResourceReservation"
+        ]
       }
     },
-    "/reservations/network_resources": {
+    "/v1/reservations/compute_resources/query": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "operationId": "queryComputeReservation",
+        "parameters": [
+          {
+            "description": "Query filter based on e.g. name, identifier, meta-data information or status information, expressing the type of information to be retrieved. It can also be used to specify one or more resources to be queried by providing their identifiers.",
+            "in": "body",
+            "name": "queryComputeFilter",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Filter"
+            }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Element containing information about the reserved resource. Cardinality is 0 if the query did not return any result.",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/ReservedVirtualCompute"
+              },
+              "type": "array"
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "tags": [
+          "virtualisedResourceReservation"
+        ]
+      }
+    },
+    "/v1/reservations/network_resources": {
       "delete": {
-        "consumes": ["application/json"],
+        "consumes": [
+          "application/json"
+        ],
         "operationId": "terminateNetworkReservation",
         "parameters": [
           {
@@ -3285,7 +3974,9 @@
             "type": "array"
           }
         ],
-        "produces": ["application/json"],
+        "produces": [
+          "application/json"
+        ],
         "responses": {
           "200": {
             "description": "Identifier of the resource reservation(s) successfully terminated.",
@@ -3306,36 +3997,14 @@
             "description": "Forbidden"
           }
         },
-        "tags": ["virtualisedResourceReservation"]
-      },
-      "get": {
-        "consumes": ["application/json"],
-        "operationId": "queryNetworkReservation",
-        "produces": ["application/json"],
-        "responses": {
-          "200": {
-            "description": "Element containing information about the reserved resource. Cardinality is 0 if the query did not return any result.",
-            "schema": {
-              "items": {
-                "$ref": "#/definitions/ReservedVirtualNetwork"
-              },
-              "type": "array"
-            }
-          },
-          "400": {
-            "description": "Bad request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        },
-        "tags": ["virtualisedResourceReservation"]
+        "tags": [
+          "virtualisedResourceReservation"
+        ]
       },
       "post": {
-        "consumes": ["application/json"],
+        "consumes": [
+          "application/json"
+        ],
         "operationId": "createNetworkReservation",
         "parameters": [
           {
@@ -3347,7 +4016,9 @@
             }
           }
         ],
-        "produces": ["application/json"],
+        "produces": [
+          "application/json"
+        ],
         "responses": {
           "201": {
             "description": "Element containing information about the reserved resource.",
@@ -3368,20 +4039,37 @@
             "description": ""
           }
         },
-        "tags": ["virtualisedResourceReservation"]
+        "tags": [
+          "virtualisedResourceReservation"
+        ]
       }
     },
-    "/software_images": {
-      "get": {
-        "consumes": ["application/json"],
-        "operationId": "querySoftwareImages",
-        "produces": ["application/json"],
+    "/v1/reservations/network_resources/query": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "operationId": "queryNetworkReservation",
+        "parameters": [
+          {
+            "description": "Query filter based on e.g. name, identifier, meta-data information or status information, expressing the type of information to be retrieved. It can also be used to specify one or more resources to be queried by providing their identifiers.",
+            "in": "body",
+            "name": "queryComputeFilter",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Filter"
+            }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
         "responses": {
           "200": {
-            "description": "The information of all software images matching the query.",
+            "description": "Element containing information about the reserved resource. Cardinality is 0 if the query did not return any result.",
             "schema": {
               "items": {
-                "$ref": "#/definitions/SoftwareImageInformation"
+                "$ref": "#/definitions/ReservedVirtualNetwork"
               },
               "type": "array"
             }
@@ -3396,10 +4084,16 @@
             "description": "Forbidden"
           }
         },
-        "tags": ["softwareImages"]
-      },
+        "tags": [
+          "virtualisedResourceReservation"
+        ]
+      }
+    },
+    "/v1/software_images": {
       "post": {
-        "consumes": ["application/json"],
+        "consumes": [
+          "application/json"
+        ],
         "operationId": "addSoftwareImage",
         "parameters": [
           {
@@ -3411,7 +4105,9 @@
             }
           }
         ],
-        "produces": ["application/json"],
+        "produces": [
+          "application/json"
+        ],
         "responses": {
           "201": {
             "description": "Metadata about the Software Image that has been added.",
@@ -3432,12 +4128,61 @@
             "description": "software image already added"
           }
         },
-        "tags": ["softwareImages"]
+        "tags": [
+          "softwareImages"
+        ]
       }
     },
-    "/software_images/{id}": {
+    "/v1/software_images/query": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "operationId": "querySoftwareImages",
+        "parameters": [
+          {
+            "description": "The filter is used to select the software image instances on which this operation is to act.",
+            "in": "body",
+            "name": "imageQueryFilter",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Filter"
+            }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "The information of all software images matching the query.",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/SoftwareImageInformation"
+              },
+              "type": "array"
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "tags": [
+          "softwareImages"
+        ]
+      }
+    },
+    "/v1/software_images/{id}": {
       "delete": {
-        "consumes": ["application/json"],
+        "consumes": [
+          "application/json"
+        ],
         "operationId": "deleteSoftwareImage",
         "parameters": [
           {
@@ -3448,7 +4193,9 @@
             "type": "string"
           }
         ],
-        "produces": ["application/json"],
+        "produces": [
+          "application/json"
+        ],
         "responses": {
           "200": {
             "description": "The identifier of the software image successfully deleted.",
@@ -3469,10 +4216,14 @@
             "description": "Not found"
           }
         },
-        "tags": ["softwareImages"]
+        "tags": [
+          "softwareImages"
+        ]
       },
       "get": {
-        "consumes": ["application/json"],
+        "consumes": [
+          "application/json"
+        ],
         "operationId": "querySoftwareImage",
         "parameters": [
           {
@@ -3483,7 +4234,9 @@
             "type": "string"
           }
         ],
-        "produces": ["application/json"],
+        "produces": [
+          "application/json"
+        ],
         "responses": {
           "200": {
             "description": "The information of the software image matching the query.",
@@ -3501,7 +4254,9 @@
             "description": "Forbidden"
           }
         },
-        "tags": ["softwareImages"]
+        "tags": [
+          "softwareImages"
+        ]
       }
     }
   },

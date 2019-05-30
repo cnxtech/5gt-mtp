@@ -11,7 +11,6 @@
 | SQLAlchemy             | 1.2.11    | MIT License                        | http://www.sqlalchemy.org                                 |
 | Werkzeug               | 0.14.1    | BSD                                | https://www.palletsprojects.org/p/werkzeug/               |
 | alembic                | 1.0.0     | MIT                                | http://bitbucket.org/zzzeek/alembic                       |
-| apisdk                 | 0.0.10    | Proprietary License                | http://www.b-com.com/                                     |
 | apispec                | 0.38.0    | MIT                                | https://github.com/marshmallow-code/apispec               |
 | appdirs                | 1.4.3     | MIT                                | http://github.com/ActiveState/appdirs                     |
 | arrow                  | 0.12.1    | Apache 2.0                         | https://github.com/crsmithdev/arrow/                      |
@@ -27,7 +26,6 @@
 | cliff                  | 2.13.0    | Apache 2.0                         | https://docs.openstack.org/cliff/latest/                  |
 | cmd2                   | 0.9.4     | MIT                                | https://github.com/python-cmd2/cmd2                       |
 | colorama               | 0.3.9     | BSD                                | https://github.com/tartley/colorama                       |
-| conveyer               | 0.0.16    | Proprietary License                | http://www.b-com.com/                                     |
 | cryptography           | 2.3.1     | BSD or Apache License, Version 2.0 | https://github.com/pyca/cryptography                      |
 | daiquiri               | 1.5.0     | Apache 2.0                         | https://github.com/jd/daiquiri                            |
 | debtcollector          | 1.20.0    | Apache 2.0                         | https://docs.openstack.org/debtcollector/latest           |

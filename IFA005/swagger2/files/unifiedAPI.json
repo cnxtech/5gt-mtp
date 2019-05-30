@@ -1,6 +1,6 @@
 {
   "definitions": {
-	"Gateways": {
+	"gateways": {
 		"type": "array",
 		"items": {
 			"required": [
@@ -3605,8 +3605,8 @@
 					"schema": {
 						"type": "object",
 						"properties": {
-							"Gateways": {
-								"$ref": "#/definitions/Gateways"
+							"gateways": {
+								"$ref": "#/definitions/gateways"
 							},
 							"virtualLinks": {
 								"$ref": "#/definitions/virtualLinks"
@@ -4032,6 +4032,18 @@
           "application/json"
         ],
         "operationId": "queryResources",
+        "parameters": [
+          {
+            "description": "Identifier(s) of the abstract compute resource(s) to be terminated.",
+            "in": "query",
+            "items": {
+              "type": "string"
+            },
+            "name": "computeId",
+            "required": false,
+            "type": "array"
+          }
+        ],
         "produces": [
           "application/json"
         ],

@@ -7,7 +7,7 @@ package com.mtp.events.abstraction.Advertisement;
 
 //import com.mtp.common.objects.VIME2EAbstractElem;
 //import com.mtp.common.objects.WIME2EAbstractElem;
-import com.mtp.extinterface.nbi.swagger.model.InlineResponse2001;
+import com.mtp.extinterface.nbi.swagger.model.InlineResponse2003;
 
 /**
  *
@@ -15,11 +15,11 @@ import com.mtp.extinterface.nbi.swagger.model.InlineResponse2001;
  */
 public class AdvertiseE2EAbstractionReply {
     private long reqid;
-    private InlineResponse2001 response;
+    private InlineResponse2003 response;
     //private ArrayList<VIME2EAbstractElem> e2evimlist; //list of e2e vim resources
     //private ArrayList<WIME2EAbstractElem> e2ewimlist; //list of e2e wim resources
 
-    public AdvertiseE2EAbstractionReply(long reqid, InlineResponse2001 response) {
+    public AdvertiseE2EAbstractionReply(long reqid, InlineResponse2003 response) {
         this.reqid = reqid;
         this.response = response;
     }
@@ -32,11 +32,11 @@ public class AdvertiseE2EAbstractionReply {
         this.reqid = reqid;
     }
 
-    public InlineResponse2001 getResponse() {
+    public InlineResponse2003 getResponse() {
         return response;
     }
 
-    public void setResponse(InlineResponse2001 response) {
+    public void setResponse(InlineResponse2003 response) {
         this.response = response;
     }
     

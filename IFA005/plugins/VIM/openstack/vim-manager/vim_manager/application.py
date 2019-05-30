@@ -1,8 +1,17 @@
-# Copyright 2018 b<>com. All rights reserved.
-# This software is the confidential intellectual property of b<>com. You shall
-# not disclose it and shall use it only in accordance with the terms of the
-# license agreement you entered into with b<>com.
-# IDDN number:
+# Copyright 2018 b<>com.
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+# IDDN number: IDDN.FR.001.470053.000.S.C.2018.000.00000.
 #
 # -*- coding: utf-8 -*-
 
@@ -98,12 +107,15 @@ def get_app_config(conf):
         # 'AUTH_JWT_KEY': conf.auth.jwt_key,
         # Swagger config
         'SWAGGER': {
-            "title": "VIM Manager API",
-            "description": "VIM Manager API",
-            "version": version.version_string(),
-            "uiversion": 3,
+            "title":
+                "VIM Manager API",
+            "description":
+                "VIM Manager API based on ETSI GS NFV-IFA 005 V2.3.1",
+            "version":
+                version.version_string(),
+            "uiversion":
+                3
         }
-
     }
 
 

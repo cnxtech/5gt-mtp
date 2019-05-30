@@ -5,9 +5,10 @@
  */
 package com.mtp.events.resourcemanagement.ComputeAllocation;
 
-;
 import com.mtp.extinterface.nbi.swagger.model.AllocateComputeRequest;
 import com.mtp.extinterface.nbi.swagger.model.VirtualCompute;
+
+
 
 
 

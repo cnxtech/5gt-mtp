@@ -5,9 +5,10 @@
  */
 package com.mtp.events.resourcemanagement.NetworkAllocation;
 
+import com.mtp.extinterface.nbi.swagger.model.InterNfviPopConnectivityRequest;
 import java.util.ArrayList;
 
-import com.mtp.extinterface.nbi.swagger.model.InterNfviPopConnectivityRequest;
+
 
 public class E2ENetworkAllocateInstance {
 

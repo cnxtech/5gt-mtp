@@ -77,13 +77,13 @@ ______________
 .. code-block:: bash
 
  # Add
- curl -X POST --form 'softwareImage=@/home/userid/alpine-standard-3.8.0-x86_64.iso' --form 'name=my-flavor' --form 'visibility=private'  --form 'version=v3' http://127.0.0.1:8000/software_images
+ curl -X POST --form 'softwareImage=@/home/userid/alpine-standard-3.8.0-x86_64.iso' --form 'name=my-flavor' --form 'visibility=private'  --form 'version=v3' http://127.0.0.1:8000/v1/software_images
 
  # Get images data
- curl http://127.0.0.1:8000/software_images
+ curl -X POST http://127.0.0.1:8000/v1/software_images/query
 
  # Delete image
- curl -X DELETE http://127.0.0.1:8000/software_images/ce2fa73e-99ac-40aa-97b4-1ab44e745e67
+ curl -X DELETE http://127.0.0.1:8000/v1/software_images/ce2fa73e-99ac-40aa-97b4-1ab44e745e67
 
 
 Nerwork resources
@@ -92,19 +92,19 @@ _________________
 .. code-block:: bash
 
  # Create Network
- curl -H 'Content-Type: application/json' -X POST -d '{"networkResourceName": "my-network", "reservationId": "my-network-id", "networkResourceType": "network"}'  http://127.0.0.1:8000/network_resources
+ curl -H 'Content-Type: application/json' -X POST -d '{"networkResourceName": "my-network", "reservationId": "my-network-id", "networkResourceType": "network"}'  http://127.0.0.1:8000/v1/network_resources
 
  # Create Subnet (remember to replace network id with the one created just above)
- curl -H 'Content-Type: application/json' -X POST -d '{"networkResourceName": "my-subnet-network", "reservationId": "my-subnet-id", "networkResourceType": "subnet", "typeSubnetData": {"networkId": "50402b53-06c2-4fcf-b2d1-2cbeb4e72d45", "ipVersion": "IPv4", "cidr": "192.168.0.0/24", "gatewayIp": "192.168.0.1", "isDhcpEnabled": 1}}' http://127.0.0.1:8000/network_resources
+ curl -H 'Content-Type: application/json' -X POST -d '{"networkResourceName": "my-subnet-network", "reservationId": "my-subnet-id", "networkResourceType": "subnet", "typeSubnetData": {"networkId": "50402b53-06c2-4fcf-b2d1-2cbeb4e72d45", "ipVersion": "IPv4", "cidr": "192.168.0.0/24", "gatewayIp": "192.168.0.1", "isDhcpEnabled": 1}}' http://127.0.0.1:8000/v1/network_resources
 
  # Create Network Port
- curl -H 'Content-Type: application/json' -X POST -d '{"networkResourceName": "my-port-network", "reservationId": "my-port-id", "networkResourceType": "network-port", "typeNetworkPortData": {"networkId": "50402b53-06c2-4fcf-b2d1-2cbeb4e72d45"}}'  http://127.0.0.1:8000/network_resources
+ curl -H 'Content-Type: application/json' -X POST -d '{"networkResourceName": "my-port-network", "reservationId": "my-port-id", "networkResourceType": "network-port", "typeNetworkPortData": {"networkId": "50402b53-06c2-4fcf-b2d1-2cbeb4e72d45"}}'  http://127.0.0.1:8000/v1/network_resources
 
  # Get
- curl http://127.0.0.1:8000/network_resources
+ curl -X POST http://127.0.0.1:8000/v1/network_resources/query
 
  # Delete
- curl -X DELETE "http://127.0.0.1:8000/network_resources?networkResourceId=50402b53-06c2-4fcf-b2d1-2cbeb4e72d45"
+ curl -X DELETE "http://127.0.0.1:8000/v1/network_resources?networkResourceId=50402b53-06c2-4fcf-b2d1-2cbeb4e72d45"
 
 
 Compute resources
@@ -114,25 +114,25 @@ _________________
 
  # Allocate
  # Remember to create a network first
- curl -H 'Content-Type: application/json' -X POST -d '{"computeName":"cdatest", "computeFlavourId": "2", "vcImageId": "4c55e188-36b4-4858-afa9-74d8dbeed771", "networkId": "50402b53-06c2-4fcf-b2d1-2cbeb4e72d45"}'  http://127.0.0.1:8000/compute_resources
+ curl -H 'Content-Type: application/json' -X POST -d '{"computeName":"cdatest", "computeFlavourId": "2", "vcImageId": "4c55e188-36b4-4858-afa9-74d8dbeed771", "networkId": "50402b53-06c2-4fcf-b2d1-2cbeb4e72d45"}'  http://127.0.0.1:8000/v1/compute_resources
 
  # Get
- curl http://127.0.0.1:8000/compute_resources
+ curl -X POST http://127.0.0.1:8000/v1/compute_resources/query
 
  # Terminate
- curl -H 'Content-Type: application/json' -X DELETE  http://127.0.0.1:8000/compute_resources?computeIdcb766877-b5fe-4b1d-81a1-d5a452223d16
+ curl -H 'Content-Type: application/json' -X DELETE  http://127.0.0.1:8000/v1/compute_resources?computeIdcb766877-b5fe-4b1d-81a1-d5a452223d16
 
 
 .. code-block:: bash
 
  # Flavour Creation
- curl -H 'Content-Type: application/json' -X POST -d '{"flavourId": "my-flavor", "virtualMemory": {"virtualMemSize": 2}, "virtualCpu": {"numVirtualCpu": 1}, "storageAttributes": {"sizeOfStorage": 1}}'  http://127.0.0.1:8000/compute_resources/flavours
+ curl -H 'Content-Type: application/json' -X POST -d '{"flavourId": "my-flavor", "virtualMemory": {"virtualMemSize": 2}, "virtualCpu": {"numVirtualCpu": 1}, "storageAttributes": {"sizeOfStorage": 1}}'  http://127.0.0.1:8000/v1/compute_resources/flavours
 
  # Get all flavours
- curl http://127.0.0.1:8000/compute_resources/flavours
+ curl -X POST http://127.0.0.1:8000/v1/compute_resources/flavours/query
 
  # Delete one flavour
- curl -X DELETE http://127.0.0.1:8000/compute_resources/flavors/my-flavor
+ curl -X DELETE http://127.0.0.1:8000/v1/compute_resources/flavors/my-flavor
 
 
 
@@ -145,26 +145,26 @@ Compute
 .. code-block:: bash
 
  # Create (ResourceGroupId represent a project id in OpenStack)
- curl -H 'Content-Type: application/json' -X POST -d '{"resourceGroupId": "de30d94754e3482983d10121b0c76fd2", "virtualComputeQuota": {"numVCPUs": 2, "numVcInstances": 2, "virtualMemSize": 4096}}'  http://127.0.0.1:8000/quotas/compute_resources
+ curl -H 'Content-Type: application/json' -X POST -d '{"resourceGroupId": "de30d94754e3482983d10121b0c76fd2", "virtualComputeQuota": {"numVCPUs": 2, "numVcInstances": 2, "virtualMemSize": 4096}}'  http://127.0.0.1:8000/v1/quotas/compute_resources
 
  # Delete
- curl -H 'Content-Type: application/json' -X DELETE http://127.0.0.1:8000/quotas/compute_resources?resourceGroupId=de30d94754e3482983d10121b0c76fd2
+ curl -H 'Content-Type: application/json' -X DELETE http://127.0.0.1:8000/v1/quotas/compute_resources?resourceGroupId=de30d94754e3482983d10121b0c76fd2
 
  # Get
- curl -H 'Content-Type: application/json' -X GET http://127.0.0.1:8000/quotas/compute_resources
+ curl -H 'Content-Type: application/json' -X POST http://127.0.0.1:8000/v1/quotas/compute_resources/query
 
 Network
 
 .. code-block:: bash
 
  # Create
- curl -H 'Content-Type: application/json' -X POST -d '{"resourceGroupId": "de30d94754e3482983d10121b0c76fd2", "virtualNetworkQuota": {"numPublicIps": 10, "numPorts": 5, "numSubnets": 2}}'  http://127.0.0.1:8000/quotas/network_resources
+ curl -H 'Content-Type: application/json' -X POST -d '{"resourceGroupId": "de30d94754e3482983d10121b0c76fd2", "virtualNetworkQuota": {"numPublicIps": 10, "numPorts": 5, "numSubnets": 2}}'  http://127.0.0.1:8000/v1/quotas/network_resources
 
  # Delete
- curl -H 'Content-Type: application/json' -X DELETE http://127.0.0.1:8000/quotas/network_resources?resourceGroupId=de30d94754e3482983d10121b0c76fd2
+ curl -H 'Content-Type: application/json' -X DELETE http://127.0.0.1:8000/v1/quotas/network_resources?resourceGroupId=de30d94754e3482983d10121b0c76fd2
 
  # Get
- curl -H 'Content-Type: application/json' -X GET http://127.0.0.1:8000/quotas/network_resources
+ curl -H 'Content-Type: application/json' -X POST http://127.0.0.1:8000/v1/quotas/network_resources/query
 
 
 

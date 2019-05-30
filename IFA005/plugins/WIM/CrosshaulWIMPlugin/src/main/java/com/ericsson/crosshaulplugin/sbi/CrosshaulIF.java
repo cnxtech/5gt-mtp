@@ -31,7 +31,13 @@ import com.ericsson.crosshaulplugin.sbi.objects.RANService;
 import com.ericsson.crosshaulplugin.sbi.objects.NetworkService;
 import com.ericsson.crosshaulplugin.sbi.objects.Zone;
 import com.google.common.eventbus.Subscribe;
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -62,7 +68,6 @@ public class CrosshaulIF {
     @Subscribe
     public void handle_ParseDomainList(Parsedomainlist domlist) {
         System.out.println("CrossHaulIF ---> Parse domlist from xml file");
-        //TODO: Parse list of domain from xml file
         XMLDomainParser xmldom = new XMLDomainParser(domlist.getFilename());
         
         poplist = xmldom.getPoplist();
@@ -73,36 +78,90 @@ public class CrosshaulIF {
         SingletonEventBus.getBus().post(startserv);
     }
     
-    //TODO: Insert other Subscriber for NBI API
+
     @Subscribe
     public void handle_ServiceNetworkAllocateRequest(ServiceNetworkAllocateRequest servallreq) {
-        System.out.println("CrossHaulIF ---> allocate network service request" );
+        System.out.println("CrossHaulIF ---> allocate network service request");
+        DatagramSocket dstx, dsrx;
+        InetAddress ip;
+        DatagramPacket dptx, dprx;
 
-        NetworkResource el = netreslist.get(servallreq.getRequest().getNetworkId());
-        
-        if (el == null) {
-            System.out.println("CrossHaulIF ---> no network resource found for service. resid = " + servallreq.getRequest().getNetworkId());
+        NetworkResource servel = netreslist.get(servallreq.getRequest().getWanLinkId());
+        RANService ranel = ranreslist.get(servallreq.getRequest().getWanLinkId());
+
+        if ((servel == null) || (ranel == null)) {
+            System.out.println("CrossHaulIF ---> no network resource found for service. resid = " + servallreq.getRequest().getWanLinkId());
             ServiceNetworkAllocateReply servallrep = new ServiceNetworkAllocateReply(servallreq.getReqid(), null);
             System.out.println("CrossHaulIF ---> post ServiceNetworkAllocateReply");
-            //TODO: BW and delay fixed with new API. For the moment used a fixed values
             SingletonEventBus.getBus().post(servallrep);
             return;
         }
-        long totbw = Long.getLong(el.getTotcap());
+
+//        try {
+//            dstx = new DatagramSocket();
+//        } catch (SocketException e) {
+//            System.out.println("CrossHaulIF ---> error open tx socket");
+//            System.out.println("CrossHaulIF ---> error message" + e.getMessage());
+//            return;
+//        }
+//        try {
+//            Integer rxport = Integer.parseInt(ranel.getRxport());
+//            dsrx = new DatagramSocket(rxport);
+//        } catch (SocketException e) {
+//            System.out.println("CrossHaulIF ---> error open rx socket");
+//            System.out.println("CrossHaulIF ---> error message" + e.getMessage());
+//            return;
+//        }
+//        String txstr = "SERVICECONFREQ@" + ranel.getProvId() + "," + ranel.getTenId() + ","
+//                + ranel.getServId() + "," + ranel.getSrcId() + "," + ranel.getDstId()
+//                + "," + ranel.getQosId();
+//        try {
+//            ip = InetAddress.getByName(ranel.getIp());
+//        } catch (UnknownHostException e) {
+//            System.out.println("CrossHaulIF ---> error format ip socket");
+//            System.out.println("CrossHaulIF ---> error message" + e.getMessage());
+//            return;
+//        }
+//        byte[] buf = new byte[1024];
+//        dprx = new DatagramPacket(buf, 1024);
+//        Integer txport = Integer.parseInt(ranel.getTxport());
+//        dptx = new DatagramPacket(txstr.getBytes(), txstr.length(), ip, txport);
+//        try {
+//            dstx.send(dptx);
+//        } catch (IOException e) {
+//            System.out.println("CrossHaulIF ---> error sending allocate command");
+//            System.out.println("CrossHaulIF ---> error message" + e.getMessage());
+//            return;
+//        }
+//        try {
+//            dsrx.receive(dprx);
+//        } catch (IOException e) {
+//            System.out.println("CrossHaulIF ---> error receiving allocate command");
+//            System.out.println("CrossHaulIF ---> error message" + e.getMessage());
+//            return;
+//        }
+//        String rxstr = new String(dprx.getData(), 0, dprx.getLength());
+//        String[] tok1 = rxstr.split("@");
+//        String[] tok2 = tok1[1].split(",");
+//        dstx.close();
+//        dsrx.close();
+
+        long totbw = Long.parseLong(servel.getTotcap());
         long bw = servallreq.getRequest().getBandwidth().longValue();
-        NetworkService netservel = new NetworkService(Long.toString(servcounter), Long.toString(bw), el.getDelay(), el.getId(), servallreq.getRequest().getMetadata());
-        
+        NetworkService netservel = new NetworkService(Long.toString(servcounter), Long.toString(bw), servel.getDelay(), servel.getId(), servallreq.getRequest().getMetadata());
+
         //TODO: Send allocation service to CROSSHAUL Control 
         //scale bw from link
-        long allbw = Long.getLong(el.getAllcap()); 
+        long allbw = Long.parseLong(servel.getAllcap());
         long freebw = totbw - bw;
         allbw += bw;
         //Update link
-        el.setFreecap(Long.toString(freebw));
-        el.setAllcap(Long.toString(allbw));
-        
+        servel.setFreecap(Long.toString(freebw));
+        servel.setAllcap(Long.toString(allbw));
+
         //Insert Network Service in HashMap
         netservlist.put(Long.toString(servcounter), netservel);
+
         AllocateReply rep = new AllocateReply();
         rep.setSegmentType(Long.toString(servcounter));
         rep.setNetworkType(servallreq.getRequest().getSegmentType());
@@ -121,13 +180,67 @@ public class CrosshaulIF {
         List<NetworkIds> resplist = new ArrayList();
         String key = servtermreq.getNetlist();
         NetworkService servel = netservlist.get(key);
-        if (servel != null) {
-            // TODO: Send removeservice command to CROSSHAUL Control 
+        RANService ranel = ranreslist.get(key);
+        DatagramSocket dstx, dsrx;
+        InetAddress ip;
+        DatagramPacket dptx, dprx;
+        if ((servel != null) && (ranel != null)) {
+
+//             try {
+//                 dstx = new DatagramSocket();
+//             } catch (SocketException e) {
+//                 System.out.println("CrossHaulIF ---> error open tx socket");
+//                 System.out.println("CrossHaulIF ---> error message" + e.getMessage());
+//                 return;
+//             } 
+//             try {
+//                 Integer rxport = Integer.parseInt(ranel.getRxport());
+//                 dsrx = new DatagramSocket(rxport);
+//             } catch (SocketException e) {
+//                 System.out.println("CrossHaulIF ---> error open rx socket");
+//                 System.out.println("CrossHaulIF ---> error message" + e.getMessage());
+//                 return;
+//             } 
+//            String txstr = "SERVICECREMREQ@" + ranel.getProvId() + "," + ranel.getTenId() + "," +
+//                    ranel.getServId() + "," + ranel.getSrcId() + "," + ranel.getDstId() + 
+//                    "," + ranel.getQosId();
+//            try {
+//                ip = InetAddress.getByName(ranel.getIp());
+//            } catch (UnknownHostException e) {
+//                System.out.println("CrossHaulIF ---> error format ip socket");
+//                System.out.println("CrossHaulIF ---> error message" + e.getMessage());
+//                return;
+//            }
+//            byte[] buf = new byte[1024];  
+//            dprx = new DatagramPacket(buf, 1024);
+//            Integer txport = Integer.parseInt(ranel.getTxport());
+//            dptx = new DatagramPacket(txstr.getBytes(), txstr.length(), ip, txport);
+//            try {
+//                dstx.send(dptx);
+//            } catch (IOException e) {
+//               System.out.println("CrossHaulIF ---> error sending allocate command");
+//               System.out.println("CrossHaulIF ---> error message" + e.getMessage());
+//               return; 
+//            }
+//            try {
+//                dsrx.receive(dprx); 
+//            } catch (IOException e) {
+//               System.out.println("CrossHaulIF ---> error receiving allocate command");
+//               System.out.println("CrossHaulIF ---> error message" + e.getMessage());
+//               return; 
+//            }
+//            String rxstr = new String(dprx.getData(), 0, dprx.getLength()); 
+//            String[] tok1 = rxstr.split("@");
+//            String[] tok2 = tok1[1].split(",");
+//            dstx.close();
+//            dsrx.close();                       
+            
             NetworkResource el = netreslist.get(servel.getNetresid());
+//            if ((el != null) && (tok2[0].compareTo("OK") == 0)) {
             if (el != null) {
-                long totbw = Long.getLong(el.getTotcap());
-                long bw = Long.getLong(servel.getBw());
-                long allbw = Long.getLong(el.getAllcap());
+                long totbw = Long.parseLong(el.getTotcap());
+                long bw = Long.parseLong(servel.getBw());
+                long allbw = Long.parseLong(el.getAllcap());
                 //scale bw from link
                 long freebw = totbw + bw;
                 allbw -= bw;
@@ -170,22 +283,22 @@ public class CrosshaulIF {
             gwlist.add(el);
         }
         
-        for (int i = 0; i < netreslist.size(); i++) {
+        for (NetworkResource value : netreslist.values()) {
            VirtualLinksInner linkel = new VirtualLinksInner();
            VirtualLinksInnerVirtualLink linkattr = new VirtualLinksInnerVirtualLink();
            VirtualLinksInnerVirtualLinkNetworkQoS qos = new VirtualLinksInnerVirtualLinkNetworkQoS();
             qos.setLinkCostValue(BigDecimal.ONE);
             qos.setPacketLossRate(BigDecimal.ZERO);
-            qos.setLinkDelayValue(new BigDecimal(netreslist.get(i).getDelay()));
+            qos.setLinkDelayValue(new BigDecimal(value.getDelay()));
             linkattr.setNetworkQoS(qos);
-            linkattr.setAvailableBandwidth(new BigDecimal(netreslist.get(i).getFreecap()));
-            linkattr.setDstGwId(netreslist.get(i).getDstip());
-            linkattr.setDstLinkId(Integer.parseInt(netreslist.get(i).getRemid()));
-            linkattr.setNetworkLayer(netreslist.get(i).getType());
-            linkattr.setSrcGwId(netreslist.get(i).getSrcip());
-            linkattr.setSrcLinkId(Integer.parseInt(netreslist.get(i).getLocid()));
-            linkattr.setTotalBandwidth(new BigDecimal(netreslist.get(i).getTotcap()));
-            linkattr.setVirtualLinkId(netreslist.get(i).getId());
+            linkattr.setAvailableBandwidth(new BigDecimal(value.getFreecap()));
+            linkattr.setDstGwId(value.getDstip());
+            linkattr.setDstLinkId(Integer.parseInt(value.getRemid()));
+            linkattr.setNetworkLayer(value.getType());
+            linkattr.setSrcGwId(value.getSrcip());
+            linkattr.setSrcLinkId(Integer.parseInt(value.getLocid()));
+            linkattr.setTotalBandwidth(new BigDecimal(value.getTotcap()));
+            linkattr.setVirtualLinkId(value.getId());
             linkel.setVirtualLink(linkattr);
             linklist.add(linkel);
         }

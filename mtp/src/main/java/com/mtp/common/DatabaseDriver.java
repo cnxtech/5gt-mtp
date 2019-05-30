@@ -44,38 +44,69 @@ import com.mtp.events.resourcemanagement.NetworkAllocation.NetworkAllocateDBQuer
 import com.mtp.events.resourcemanagement.NetworkTermination.NetworkTerminateDBQuery;
 import com.mtp.events.resourcemanagement.NetworkTermination.NetworkTerminateDBQueryOutcome;
 import com.mtp.events.resourcemanagement.NetworkTermination.NetworkTerminateDBQueryReply;
-import com.mtp.extinterface.nbi.swagger.model.CapacityInformation;
-import com.mtp.extinterface.nbi.swagger.model.NfviPop;
-import com.mtp.extinterface.nbi.swagger.model.ResourceZone;
-import com.mtp.extinterface.nbi.swagger.model.VirtualComputeResourceInformation;
-import com.mtp.extinterface.nbi.swagger.model.VirtualComputeResourceInformationVirtualCPU;
-import com.mtp.extinterface.nbi.swagger.model.VirtualComputeResourceInformationVirtualMemory;
-import com.mtp.extinterface.nbi.swagger.model.VirtualNetworkResourceInformation;
-import java.math.BigDecimal;
 import com.mtp.DbConnectionPool.DbAbstractionDatasource;
+import com.mtp.DbConnectionPool.DbAppDDatasource;
 import com.mtp.DbConnectionPool.DbDomainDatasource;
 import com.mtp.DbConnectionPool.DbServiceDatasource;
+import com.mtp.events.abstraction.Advertisement.AdvertiseAppDIdReply;
+import com.mtp.events.abstraction.Advertisement.AdvertiseAppDIdRequest;
+import com.mtp.events.abstraction.Advertisement.AdvertiseAppDReply;
+import com.mtp.events.abstraction.Advertisement.AdvertiseAppDRequest;
 import com.mtp.events.abstraction.Creation.DomainNumbers;
+import com.mtp.events.monitoring.MonConfig;
+import com.mtp.events.placement.PAComputeConfig;
+import com.mtp.events.placement.PANetworkConfig;
+import com.mtp.events.placement.PAComputeStatus;
+import com.mtp.events.placement.PANetworkStatus;
+import com.mtp.events.resourcemanagement.ComputeAllocation.ComputeAllocateMECReply;
+import com.mtp.events.resourcemanagement.ComputeAllocation.ComputeAllocateMECReq;
+import com.mtp.events.resourcemanagement.ComputeAllocation.ComputeOperateDBReq;
+import com.mtp.events.resourcemanagement.ComputeAllocation.ComputeOperateRep;
+import com.mtp.events.resourcemanagement.ComputeAllocation.ComputeOperateReq;
+import com.mtp.events.resourcemanagement.ComputeAllocation.ComputeOperateVIMReply;
 import com.mtp.events.resourcemanagement.ComputeAllocation.E2EComputeAllocateInstanceOutcome;
+import com.mtp.events.resourcemanagement.ComputeTermination.ComputeTerminateMECQuery;
+import com.mtp.events.resourcemanagement.ComputeTermination.ComputeTerminateMECReply;
+import com.mtp.events.resourcemanagement.ComputeTermination.ComputeTerminateMECReq;
 import com.mtp.events.resourcemanagement.ComputeTermination.E2EComputeTerminateInstanceOutcome;
 import com.mtp.events.resourcemanagement.NetworkAllocation.E2ENetworkAllocateInstanceOutcome;
+import com.mtp.events.resourcemanagement.NetworkAllocation.IntraPoPAllocateDbReply;
+import com.mtp.events.resourcemanagement.NetworkAllocation.IntraPoPAllocateDbRequest;
+import com.mtp.events.resourcemanagement.NetworkAllocation.IntraPoPAllocateVIMReply;
+import com.mtp.events.resourcemanagement.NetworkAllocation.IntraPoPAllocateVIMRequest;
 import com.mtp.events.resourcemanagement.NetworkTermination.E2ENetworkTerminateInstanceOutcome;
+import com.mtp.events.resourcemanagement.NetworkTermination.IntraPoPTerminateDbReply;
+import com.mtp.events.resourcemanagement.NetworkTermination.IntraPoPTerminateDbRequest;
+import com.mtp.events.resourcemanagement.NetworkTermination.IntraPoPTerminateVIMReply;
+import com.mtp.events.resourcemanagement.NetworkTermination.IntraPoPTerminateVIMRequest;
+import com.mtp.extinterface.nbi.swagger.model.AddressData;
+import com.mtp.extinterface.nbi.swagger.model.AddressData.AddressTypeEnum;
 import com.mtp.extinterface.nbi.swagger.model.AllocateComputeRequest;
 import com.mtp.extinterface.nbi.swagger.model.AllocateComputeRequestAffinityOrAntiAffinityConstraints;
 import com.mtp.extinterface.nbi.swagger.model.AllocateComputeRequestInterfaceData;
 import com.mtp.extinterface.nbi.swagger.model.AllocateComputeRequestUserData;
 import com.mtp.extinterface.nbi.swagger.model.AllocateNetworkResultNetworkDataNetworkQoS;
-
+import com.mtp.extinterface.nbi.swagger.model.AppD;
+import com.mtp.extinterface.nbi.swagger.model.AppExternalCpd;
+import com.mtp.extinterface.nbi.swagger.model.CapacityInformation;
+import com.mtp.extinterface.nbi.swagger.model.CategoryRef;
+import com.mtp.extinterface.nbi.swagger.model.ChangeAppInstanceStateOpConfig;
 import com.mtp.extinterface.nbi.swagger.model.CreateComputeResourceReservationRequestContainerFlavourVirtualCpuPinning;
-import com.mtp.extinterface.nbi.swagger.model.InlineResponse200;
-import com.mtp.extinterface.nbi.swagger.model.InlineResponse2001;
+import com.mtp.extinterface.nbi.swagger.model.DNSRuleDescriptor;
+import com.mtp.extinterface.nbi.swagger.model.InlineResponse2003;
 import com.mtp.extinterface.nbi.swagger.model.InterNfviPopConnectivityRequest;
+import com.mtp.extinterface.nbi.swagger.model.InterfaceDescriptor;
+import com.mtp.extinterface.nbi.swagger.model.LatencyDescriptor;
+import com.mtp.extinterface.nbi.swagger.model.LocationInfo;
 import com.mtp.extinterface.nbi.swagger.model.LogicalLinkInterNfviPops;
 import com.mtp.extinterface.nbi.swagger.model.LogicalLinkInterNfviPopsInner;
 import com.mtp.extinterface.nbi.swagger.model.LogicalLinkInterNfviPopsInnerLogicalLinks;
 import com.mtp.extinterface.nbi.swagger.model.LogicalLinkInterNfviPopsInnerLogicalLinksNetworkQoS;
+import com.mtp.extinterface.nbi.swagger.model.MECRegionInfo;
+import com.mtp.extinterface.nbi.swagger.model.MECRegionInfoMECRegionInfo;
+import com.mtp.extinterface.nbi.swagger.model.MECTrafficServiceCreationRequest;
 import com.mtp.extinterface.nbi.swagger.model.MetaDataInner;
-
+import com.mtp.extinterface.nbi.swagger.model.NfviPop;
 import com.mtp.extinterface.nbi.swagger.model.NfviPops;
 import com.mtp.extinterface.nbi.swagger.model.NfviPopsInner;
 import com.mtp.extinterface.nbi.swagger.model.NfviPopsInnerNfviPopAttributes;
@@ -84,10 +115,32 @@ import com.mtp.extinterface.nbi.swagger.model.NfviPopsInnerNfviPopAttributesMemo
 import com.mtp.extinterface.nbi.swagger.model.NfviPopsInnerNfviPopAttributesNetworkConnectivityEndpoint;
 import com.mtp.extinterface.nbi.swagger.model.NfviPopsInnerNfviPopAttributesResourceZoneAttributes;
 import com.mtp.extinterface.nbi.swagger.model.NfviPopsInnerNfviPopAttributesStorageResourceAttributes;
+import com.mtp.extinterface.nbi.swagger.model.RequestAdditionalCapabilityData;
 import com.mtp.extinterface.nbi.swagger.model.ReservedVirtualComputeVirtualisationContainerReservedVirtualNetworkInterface;
+import com.mtp.extinterface.nbi.swagger.model.ResourceZone;
+import com.mtp.extinterface.nbi.swagger.model.ServiceDependency;
+import com.mtp.extinterface.nbi.swagger.model.SwImageDescriptor;
+import com.mtp.extinterface.nbi.swagger.model.TerminateAppInstanceOpConfig;
+import com.mtp.extinterface.nbi.swagger.model.TrafficFilter;
+import com.mtp.extinterface.nbi.swagger.model.TrafficRuleDescriptor;
+import com.mtp.extinterface.nbi.swagger.model.TrafficRuleDescriptor.ActionEnum;
+import com.mtp.extinterface.nbi.swagger.model.TransportDependency;
+import com.mtp.extinterface.nbi.swagger.model.TransportDescriptor;
+import com.mtp.extinterface.nbi.swagger.model.TunnelInfo;
+import com.mtp.extinterface.nbi.swagger.model.VirtualComputeDescription;
+import com.mtp.extinterface.nbi.swagger.model.VirtualComputeResourceInformation;
+import com.mtp.extinterface.nbi.swagger.model.VirtualComputeResourceInformationVirtualCPU;
+import com.mtp.extinterface.nbi.swagger.model.VirtualComputeResourceInformationVirtualMemory;
 import com.mtp.extinterface.nbi.swagger.model.VirtualComputeVirtualCpu;
 import com.mtp.extinterface.nbi.swagger.model.VirtualComputeVirtualMemory;
+import com.mtp.extinterface.nbi.swagger.model.VirtualCpuData;
+import com.mtp.extinterface.nbi.swagger.model.VirtualCpuPinningData;
+import com.mtp.extinterface.nbi.swagger.model.VirtualMemoryData;
 import com.mtp.extinterface.nbi.swagger.model.VirtualNetwork;
+import com.mtp.extinterface.nbi.swagger.model.VirtualNetworkInterfaceRequirements;
+import com.mtp.extinterface.nbi.swagger.model.VirtualNetworkResourceInformation;
+import com.mtp.extinterface.nbi.swagger.model.VirtualStorageDescriptor;
+import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -137,12 +190,13 @@ public class DatabaseDriver {
 
                     //PreparedStatement ps = conn.prepareStatement("Select * from abstrnfvipop where AbstrNfviPopId=?");
                     //ps.setInt(1, 1);
-                    PreparedStatement ps = conn.prepareStatement("INSERT INTO domain (domId,name,type,ip,port) VALUES(?,?,?,?,?)");
+                    PreparedStatement ps = conn.prepareStatement("INSERT INTO domain (domId,name,type,ip,port,mecAssociatedDomainID) VALUES(?,?,?,?,?,?)");
                     ps.setLong(1, el.getId());
                     ps.setString(2, el.getName());
                     ps.setString(3, el.getType());
                     ps.setString(4, el.getIp());
                     ps.setLong(5, el.getPort());
+                    ps.setLong(6, el.getMecid());
 
                     ps.executeUpdate();
                     System.out.println("IP " + el.getIp() + "");
@@ -165,6 +219,28 @@ public class DatabaseDriver {
 
             portdom = el.getPort();
         }
+        
+        //Send Local PA algorithm configuration to local PA driver 
+        PAComputeConfig comp_pa_config = new PAComputeConfig(xmldom.getPa_comp());
+        PANetworkConfig net_pa_config = new PANetworkConfig(xmldom.getPa_net());
+        System.out.println("DatabaseDriver ---> Post PAComputeConfig event ");
+        SingletonEventBus.getBus().post(comp_pa_config);
+        System.out.println("DatabaseDriver ---> Post PANetworkConfig event ");
+        SingletonEventBus.getBus().post(net_pa_config);
+        //Send Local PA status to Resource Selection Logic
+        PAComputeStatus pa_comp_status = new PAComputeStatus(xmldom.getPa_comp().getStatus());
+        PANetworkStatus pa_net_status = new PANetworkStatus(xmldom.getPa_net().getStatus());
+        System.out.println("DatabaseDriver ---> Post PAComputeStatus event ");
+        SingletonEventBus.getBus().post(pa_comp_status);
+        System.out.println("DatabaseDriver ---> Post PANetworkStatus event ");
+        SingletonEventBus.getBus().post(pa_net_status);
+        
+        //Send Monitoring Config to monitorin IF
+        MonConfig mon_config = new MonConfig(xmldom.getMon());
+        System.out.println("DatabaseDriver ---> Post MonConfig event ");
+        SingletonEventBus.getBus().post(mon_config);
+
+        
         //post Domain Numbers to E2EAbstraction Logic
         DomainNumbers domnumev = new DomainNumbers(domnum);
         System.out.println("DatabaseDriver ---> Post DomainNumber event ");
@@ -203,7 +279,7 @@ public class DatabaseDriver {
                 ps.setLong(5, wimev.getId());
 
                 ps.executeUpdate();
-                System.out.println("DatabaseDriver.handle_WIMResAbstractionEvent ---> NetworkService instance inserted into DB");
+                System.out.println("DatabaseDriver.handle_WIMResAbstractionEvent ---> nfvipop instance inserted into DB");
 //            ResultSet rs = ps.getGeneratedKeys();
 //
 //            if (rs != null && rs.next()) {
@@ -249,7 +325,7 @@ public class DatabaseDriver {
                 //ps.setString(6, wimev.getZoneList().get(i).getMetadata());
 
                 ps.executeUpdate();
-                System.out.println("DatabaseDriver.handle_WIMResAbstractionEvent ---> NetworkService instance inserted into DB");
+                System.out.println("DatabaseDriver.handle_WIMResAbstractionEvent ---> zoneid instance inserted into DB");
 
                 ps.close();
             } catch (SQLException ex) {
@@ -303,7 +379,7 @@ public class DatabaseDriver {
                         + "bandwidth,\n"
                         + "resourceZoneId)"
                         + "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
-                //FABIO FIX WIM abstraction with new API
+                
                 ps.setString(1, wimev.getNetworkResList().get(i).getNetworkElem().getNetworkResourceTypeId());
                 ps.setString(2, wimev.getNetworkResList().get(i).getLinkinfo().getSrcGwIpAddress());
                 ps.setString(3, wimev.getNetworkResList().get(i).getLinkinfo().getDstGwIpAddress());
@@ -573,7 +649,7 @@ public class DatabaseDriver {
                     ps.setLong(10, vimev.getCompMapList().get(i).getZoneId());
 
                     ps.executeUpdate();
-                    System.out.println("DatabaseDriver.handle_VIMResAbstractionEvent ---> NetworkService instance inserted into DB");
+                    System.out.println("DatabaseDriver.handle_VIMResAbstractionEvent ---> memoryresources instance inserted into DB");
 
                     ps.close();
                 } catch (SQLException ex) {
@@ -618,7 +694,7 @@ public class DatabaseDriver {
                     ps.setLong(12, vimev.getCompMapList().get(i).getZoneId());
 
                     ps.executeUpdate();
-                    System.out.println("DatabaseDriver.handle_VIMResAbstractionEvent ---> NetworkService instance inserted into DB");
+                    System.out.println("DatabaseDriver.handle_VIMResAbstractionEvent ---> cpuresources instance inserted into DB");
 
                     ps.close();
                 } catch (SQLException ex) {
@@ -638,7 +714,39 @@ public class DatabaseDriver {
     @Subscribe
     public void handle_MECResAbstractionEvent(MECResAbstractionEvent mecev) {
         System.out.println("DatabaseDriver ---> Handle MECResAbstractionEvent");
+        
+        for (int i = 0; i < mecev.getMecregionlist().size(); i++) {
 
+            try {
+
+                java.sql.Connection conn = DbDomainDatasource.getInstance().getConnection();
+
+                PreparedStatement ps = conn.prepareStatement("INSERT INTO mec_region_info ("
+                        + "regionId,"
+                        + "latitude,"
+                        + "longitude,"
+                        + "altitude,"
+                        + "range_,"
+                        + "domId) "
+                        + "VALUES(?,?,?,?,?,?)");
+
+                ps.setInt(1, Integer.valueOf(mecev.getMecregionlist().get(i).getMeCRegionInfo().getRegionId()));
+                ps.setString(2, String.valueOf(mecev.getMecregionlist().get(i).getMeCRegionInfo().getLocationInfo().getLatitude()));
+                ps.setString(3, String.valueOf(mecev.getMecregionlist().get(i).getMeCRegionInfo().getLocationInfo().getLongitude()));
+                ps.setString(4, String.valueOf(mecev.getMecregionlist().get(i).getMeCRegionInfo().getLocationInfo().getAltitude()));
+                ps.setString(5, String.valueOf(mecev.getMecregionlist().get(i).getMeCRegionInfo().getLocationInfo().getRange()));
+                ps.setLong(6, mecev.getId());
+
+                ps.executeUpdate();
+                System.out.println("DatabaseDriver.handle_MECResAbstractionEvent ---> mec region info instance inserted into DB");
+                ps.close();
+            } catch (SQLException ex) {
+                Logger.getLogger(DatabaseDriver.class
+                        .getName()).log(Level.SEVERE, null, ex);
+            }
+
+        } //END - INSERT on MEC Region Info
+        
         ComputeE2EAbstractionRequest e2ecomputeev = new ComputeE2EAbstractionRequest();
         System.out.println("DatabaseDriver ---> Post ComputeE2EAbstractionRequest Event");
         SingletonEventBus.getBus().post(e2ecomputeev);
@@ -646,30 +754,155 @@ public class DatabaseDriver {
 
     @Subscribe
     public void handle_RadioResAbstractionEvent(RadioResAbstractionEvent radioev) {
+        
+        //TODO R2: Insert and fill DB with Radio Specific Info
+        
         System.out.println("DatabaseDriver ---> Handle RadioResAbstractionEvent");
         ComputeE2EAbstractionRequest e2ecomputeev = new ComputeE2EAbstractionRequest();
         System.out.println("DatabaseDriver ---> Post ComputeE2EAbstractionRequest Event");
         SingletonEventBus.getBus().post(e2ecomputeev);
     }
-
+    
     @Subscribe
     public void handle_ComputeE2EAbstractionReply(ComputeE2EAbstractionReply e2ecomprep) {
         System.out.println("DatabaseDriver ---> Handle ComputeE2EAbstractionReply Event");
-        //TODO: Perform E2E aggregation view and fill DB using JDBC driver
         System.out.println("DatabaseDriver ---> DB filled...");
         StartServer servreq = new StartServer();
         SingletonEventBus.getBus().post(servreq);
         System.out.println("DatabaseDriver ---> Start Server http");
     }
+    
+    @Subscribe
+    public void handle_OperateComputeDBRequest(ComputeOperateDBReq compoperatereq) {
+        System.out.println("DatabaseDriver ---> Handle OperateComputeDBRequest Event");
+        
+        
+        //START - Retrieve from DB the NfviPoP (PopId) and domid where the compute resource is deployed as well as the
+        //resource id for the domain
+        long domid = 0;
+        long popid = 0;
+        String computeDomId = "";
+        String computeServId = compoperatereq.getOperateinfo().getComputeId();
+        try {
+            //String computeServId=computeIdList.remove(0).getNetworkId();
 
+            java.sql.Connection conn = DbServiceDatasource.getInstance().getConnection();
+            PreparedStatement ps = conn.prepareStatement("select domId, mtpdomdb.nfvipop.nfviPopId from mtpdomdb.nfvipop inner join mtpservdb.computeservices\n"
+                    + "on mtpservdb.computeservices.computeServiceId=?\n"
+                    + "where mtpservdb.computeservices.nfviPopId=mtpdomdb.nfvipop.nfviPopId");
+            ps.setString(1, computeServId);
+            java.sql.ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+
+                domid = rs.getLong("domId");
+                popid = rs.getLong("nfviPopId");
+                System.out.println("DatabaseDriver.handle_OperateComputeDBRequest ---> DomId: " + rs.getLong("domid") + "");
+                System.out.println("DatabaseDriver.handle_OperateComputeDBRequest ---> PopId: " + rs.getLong("NfviPopId") + "");
+
+            }
+            rs.close();
+            ps.close();
+
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseDriver.class
+                    .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+        }
+
+        // Retrieve from DB the domain compute ID
+        try {
+            java.sql.Connection conn = DbServiceDatasource.getInstance().getConnection();
+            PreparedStatement ps = conn.prepareStatement("SELECT computeId FROM mtpservdb.virtualcompute where computeServiceId=?");
+            ps.setString(1, computeServId);
+            java.sql.ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                computeDomId = rs.getString("computeId");
+                System.out.println("DatabaseDriver.handle_OperateComputeDBRequest ---> VM ID: " + rs.getString("computeId") + "");
+            }
+            rs.close();
+            ps.close();
+
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseDriver.class
+                    .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+        }
+               
+        System.out.println("DatabaseDriver ---> DB filled...");
+        
+        ComputeOperateReq compopreq = new ComputeOperateReq(compoperatereq.getReqid(), domid, compoperatereq.getOperateinfo());
+        //set the compute id using the domain compute id
+        compopreq.getOperateinfo().setComputeId(computeDomId);
+        
+        SingletonEventBus.getBus().post(compopreq);
+        System.out.println("DatabaseDriver ---> Send ComputeOperateReq event");
+    }
+    
+    
+    @Subscribe
+    public void handle_OperateComputeVIMReply(ComputeOperateVIMReply compoperaterep) {
+        System.out.println("DatabaseDriver ---> Handle OperateComputeVIMReply Event");
+        if(compoperaterep.getErrcode() != 0) {
+            ComputeOperateRep compopreq = new ComputeOperateRep(compoperaterep.getReqid(), compoperaterep.getResponse());
+            compopreq.setOutcome(false);
+            SingletonEventBus.getBus().post(compopreq);
+            System.out.println("DatabaseDriver ---> Send ComputeOperateReq event failure");
+            return;
+        }
+        //Retrieve from DB the ComputeServiceId related to the computeId  
+        long computeServiceId = 0;
+        try {
+
+            java.sql.Connection conn = DbServiceDatasource.getInstance().getConnection();
+            PreparedStatement ps = conn.prepareStatement("SELECT computeServiceId FROM virtualcompute where computeId=?");
+            ps.setString(1, compoperaterep.getResponse().getComputeId());
+            java.sql.ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                computeServiceId = rs.getLong("computeServiceId");
+                System.out.println("DatabaseDriver.handle_OperateComputeVIMReply ---> ComputeServiceId: " + computeServiceId + "");
+            }
+
+            rs.close();
+            ps.close();
+
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseDriver.class
+                    .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+        }
+        
+        //change operational state according the reply
+        try {
+
+            java.sql.Connection conn = DbServiceDatasource.getInstance().getConnection();
+            PreparedStatement ps = conn.prepareStatement("UPDATE virtualcompute SET operationalState=? where computeId=?");
+            ps.setString(1, compoperaterep.getResponse().getOperationalState());
+            ps.setLong(2, Long.valueOf(compoperaterep.getResponse().getComputeId()));
+            java.sql.ResultSet rs = ps.executeQuery();
+            rs.close();
+            ps.close();
+
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseDriver.class
+                    .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+        }
+        System.out.println("DatabaseDriver ---> DB filled...");
+        ComputeOperateRep compopreq = new ComputeOperateRep(compoperaterep.getReqid(), compoperaterep.getResponse());
+        compopreq.getResponse().setComputeId(Long.toString(computeServiceId));
+        if(compoperaterep.getErrcode() != 0) {
+            compopreq.setOutcome(false);
+        }
+        SingletonEventBus.getBus().post(compopreq);
+        System.out.println("DatabaseDriver ---> Send ComputeOperateReq event");
+    }
     //////////////////Advertisement Event Handlers///////////////////////////////
    @Subscribe
     public void handle_AdvertiseE2EAbstractionRequest(AdvertiseE2EAbstractionRequest e2eadvreq) {
        System.out.println("DatabaseDriver ---> Handle AdvertiseE2EAbstractionRequest Event");
        System.out.println("field event: (reqid) = ("
                + e2eadvreq.getReqId() + ")");
-
-       InlineResponse2001 resp = new InlineResponse2001();
+       
+       //TODO R2: Retrieve abstract radio and MEC info
+       
+       //InlineResponse2001 resp = new InlineResponse2001();
+       InlineResponse2003 resp = new InlineResponse2003();
        List<NfviPop> poplist = new ArrayList();
        List<NfviPopsInnerNfviPopAttributes> popattrlist = new ArrayList();
 
@@ -723,6 +956,48 @@ public class DatabaseDriver {
                endplist.add(endpel);
            }
            popattr.setNetworkConnectivityEndpoint(endplist);
+           //retrieve MEC region if exist and fill pop attributes
+           try {
+               java.sql.Connection conn = DbAbstractionDatasource.getInstance().getConnection();
+
+               //PreparedStatement ps = conn.prepareStatement("Select * from abstrnfvipop where AbstrNfviPopId=?");
+               //ps.setInt(1, 1);
+               PreparedStatement ps = conn.prepareStatement("Select * from mec_region_info where abstrNfviPopId=?");
+               
+               ps.setString(1, poplist.get(i).getNfviPopId());
+               java.sql.ResultSet rs = ps.executeQuery();
+               popattr.setMecCapable("disable");
+               List<MECRegionInfo> meclist = new ArrayList();
+               while (rs.next()) {
+                   popattr.setMecCapable("enable");
+                   MECRegionInfo mecel = new MECRegionInfo();
+                   MECRegionInfoMECRegionInfo mecdata = new MECRegionInfoMECRegionInfo();
+                   LocationInfo locinfo = new LocationInfo();
+                   locinfo.setAltitude(new BigDecimal(rs.getString("altitude")));
+                   locinfo.setLatitude(new BigDecimal(rs.getString("latitude")));
+                   locinfo.setLongitude(new BigDecimal(rs.getString("longitude")));
+                   locinfo.setRange(new BigDecimal(rs.getString("range_")));
+                   
+                   mecdata.setRegionId(String.valueOf(rs.getLong("regionId")));
+                   mecdata.setLocationInfo(locinfo);
+                   System.out.println("locinfo.altitude: " + mecdata.getLocationInfo().getAltitude() + "");
+                   System.out.println("locinfo.latitude: " + mecdata.getLocationInfo().getLatitude() + "");
+                   System.out.println("locinfo.longitude: " + mecdata.getLocationInfo().getLongitude() + "");
+                   System.out.println("locinfo.range: " + mecdata.getLocationInfo().getRange() + "");
+                   System.out.println("mecdata.regionid: " + mecdata.getRegionId() + "");
+
+                   meclist.add(mecel);
+                   //nfviPop.add(blog);
+               }
+               popattr.setMecRegions(meclist);
+               rs.close();
+               ps.close();
+
+           } catch (SQLException ex) {
+               Logger.getLogger(DatabaseDriver.class
+                       .getName()).log(Level.SEVERE, null, ex);
+           }
+           
            //retrieve resource zone for nfvipop
            List<NfviPopsInnerNfviPopAttributesResourceZoneAttributes> zonelist = new ArrayList();
 
@@ -930,6 +1205,1463 @@ public class DatabaseDriver {
        AdvertiseE2EAbstractionReply e2eadvrep = new AdvertiseE2EAbstractionReply(e2eadvreq.getReqId(), resp);
        System.out.println("DatabaseDriver --->  Post AdvertiseE2EAbstractionReply Event");
        SingletonEventBus.getBus().post(e2eadvrep);
+    } 
+    
+   @Subscribe
+    public void handle_AdvertiseAppDRequest(AdvertiseAppDRequest appdreq) {
+       System.out.println("DatabaseDriver ---> Handle AdvertiseAppDRequest Event");
+
+       
+       
+       List<AppD> appdlist = new ArrayList();
+       List<Long> appdid = new ArrayList();
+       //select all appd
+       try {
+           java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+           PreparedStatement ps = conn.prepareStatement("Select * from appd");
+           java.sql.ResultSet rs = ps.executeQuery();
+           while (rs.next()) {
+               AppD appdelem = new AppD();
+               appdelem.setAppDId(rs.getString("appDId"));
+               appdelem.setAppDVersion(rs.getString("appDVersion"));
+               appdelem.setAppInfoName(rs.getString("appInfoName"));
+               appdelem.setAppName(rs.getString("appName"));
+               appdelem.setAppProvider(rs.getString("appProvider"));
+               appdelem.setAppSoftVersion(rs.getString("appSoftVersion"));
+               appdelem.setAppDescription(rs.getString("appDescription"));
+               List<String> mecversion = new ArrayList();
+               mecversion.add(rs.getString("mecVersion"));
+               appdelem.setMecVersion(mecversion);
+               appdid.add(Long.valueOf(appdelem.getAppDId()));
+               appdlist.add(appdelem);
+           }
+           rs.close();
+           ps.close();
+
+       } catch (SQLException ex) {
+           Logger.getLogger(DatabaseDriver.class
+                   .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+       }
+       
+       
+       
+       for (int k = 0; k < appdid.size(); k++) {
+           long appdval = appdid.get(k);
+           //set virtual Compute Descriptor
+           VirtualComputeDescription computeelem = new VirtualComputeDescription();
+           VirtualMemoryData memelem = new VirtualMemoryData();
+           VirtualCpuData cpuelem = new VirtualCpuData();
+           List<RequestAdditionalCapabilityData> capdatalist = new ArrayList();
+           
+           //retrieve VirtualCompute Description
+           try {
+                java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+                PreparedStatement ps = conn.prepareStatement("Select virtualComputeDescId from "
+                        + "virtualcomputedescriptor where appDId=?");
+                ps.setLong(1, appdval);
+                java.sql.ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+                    computeelem.setVirtualComputeDescId(rs.getString("virtualComputeDescId"));
+                }
+                rs.close();
+                ps.close();
+
+            } catch (SQLException ex) {
+                Logger.getLogger(DatabaseDriver.class
+                        .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+            }
+           
+           //retrieve cpu descriptor
+           try {
+                java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+                PreparedStatement ps = conn.prepareStatement("Select cpuArchitecture,numVirtualCpu,virtualCpuClock,virtualCpuOversubscriptionPolicy from "
+                        + "virtualcpu where appDId=?");
+                ps.setLong(1, appdval);
+                java.sql.ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+                    cpuelem.setCpuArchitecture(rs.getString("cpuArchitecture"));
+                    cpuelem.setNumVirtualCpu(new BigDecimal(rs.getString("numVirtualCpu")));
+                    cpuelem.setVirtualCpuClock(new BigDecimal(rs.getString("virtualCpuClock")));
+                    cpuelem.setVirtualCpuOversubscriptionPolicy(rs.getString("virtualCpuOversubscriptionPolicy"));
+                }
+                rs.close();
+                ps.close();
+
+            } catch (SQLException ex) {
+                Logger.getLogger(DatabaseDriver.class
+                        .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+            }
+           //retrieve cpu 
+           VirtualCpuPinningData cpupinning = new VirtualCpuPinningData();
+           try {
+                java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+                PreparedStatement ps = conn.prepareStatement("Select cpuPinningPolicy,cpuPinningMap from "
+                        + "virtualcpupinning where appDId=?");
+                ps.setLong(1, appdval);
+                java.sql.ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+                    cpupinning.setCpuPinningMap(rs.getString("cpuPinningMap"));
+                    cpupinning.setCpuPinningPolicy(VirtualCpuPinningData.CpuPinningPolicyEnum.valueOf(rs.getString("numVirtualCpu")));
+                }
+                rs.close();
+                ps.close();
+
+            } catch (SQLException ex) {
+                Logger.getLogger(DatabaseDriver.class
+                        .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+            }
+           cpuelem.setVirtualCpuPinning(cpupinning);
+           computeelem.setVirtualCpu(cpuelem);
+           
+           //retrieve memory descriptor
+           try {
+                java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+                PreparedStatement ps = conn.prepareStatement("Select virtualMemSize,numaEnabled,virtualMemOversubscriptionPolicy from "
+                        + "virtualmemory where appDId=?");
+                ps.setLong(1, appdval);
+                java.sql.ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+                    memelem.setNumaEnabled(rs.getBoolean("numaEnabled"));
+                    memelem.setVirtualMemOversubscriptionPolicy(rs.getString("virtualMemOversubscriptionPolicy"));
+                    memelem.setVirtualMemSize(new BigDecimal(rs.getString("virtualMemSize")));
+                }
+                rs.close();
+                ps.close();
+
+            } catch (SQLException ex) {
+                Logger.getLogger(DatabaseDriver.class
+                        .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+            }
+           computeelem.setVirtualMemory(memelem);
+           
+           //retrieve additional capability descriptor
+           try {
+                java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+                PreparedStatement ps = conn.prepareStatement("Select requestedAdditionalCapabilityName,supportMandatory,"
+                        + "minRequestedAdditionalCapabilityVersion,preferredRequestedAdditionalCapabilityVersion,targetPerformanceParameters from "
+                        + "requestadditionalcapabilities where appDId=?");
+                ps.setLong(1, appdval);
+                java.sql.ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+                    RequestAdditionalCapabilityData capdatael = new RequestAdditionalCapabilityData();
+                    capdatael.setMinRequestedAdditionalCapabilityVersion(rs.getString("minRequestedAdditionalCapabilityVersion"));
+                    capdatael.setPreferredRequestedAdditionalCapabilityVersion(rs.getString("preferredRequestedAdditionalCapabilityVersion"));
+                    capdatael.setRequestedAdditionalCapabilityName(rs.getString("requestedAdditionalCapabilityName"));
+                    capdatael.setSupportMandatory(rs.getBoolean("supportMandatory"));
+                    capdatael.setTargetPerformanceParameters(rs.getString("targetPerformanceParameters"));
+                    capdatalist.add(capdatael);
+                }
+                rs.close();
+                ps.close();
+
+            } catch (SQLException ex) {
+                Logger.getLogger(DatabaseDriver.class
+                        .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+            }
+           computeelem.setRequestAdditionalCapabilities(capdatalist);
+           //set the compute descriptor in appd
+           appdlist.get(k).setVirtualComputeDescriptor(computeelem);
+           
+           //set SW Image Descriptor
+           List<SwImageDescriptor> swImageDescriptor = new ArrayList();
+           //retrieve additional capability descriptor
+           try {
+                java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+                PreparedStatement ps = conn.prepareStatement("Select id,name,version,checksum_,containerFormat,"
+                        + "diskFormat,minDisk,minRam,size,swImage,operatingSystem,supportedVirtualizationEnvironment from "
+                        + "swimagedescriptor where appDId=?");
+                ps.setLong(1, appdval);
+                java.sql.ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+                    SwImageDescriptor swel = new SwImageDescriptor();
+                    swel.setChecksum(rs.getString("checksum_"));
+                    swel.setContainerFormat(rs.getString("containerFormat"));
+                    swel.setDiskFormat(rs.getString("diskFormat"));
+                    swel.setId(rs.getString("id"));
+                    swel.setMinDisk(new BigDecimal(rs.getString("minDisk")));
+                    swel.setMinRam(new BigDecimal(rs.getString("minRam")));
+                    swel.setName(rs.getString("name"));
+                    swel.setOperatingSystem(rs.getString("operatingSystem"));
+                    swel.setSize(new BigDecimal(rs.getString("size")));
+                    List<String> suppvirt = new ArrayList();
+                    String virtel = rs.getString("supportedVirtualizationEnvironment");
+                    suppvirt.add(virtel);
+                    swel.setSupportedVirtualizationEnvironment(suppvirt);
+                    swel.setSwImage(rs.getString("swImage"));
+                    swel.setVersion(rs.getString("version"));
+                    swImageDescriptor.add(swel);
+                }
+                rs.close();
+                ps.close();
+
+            } catch (SQLException ex) {
+                Logger.getLogger(DatabaseDriver.class
+                        .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+            }
+           appdlist.get(k).setSwImageDescriptor(swImageDescriptor);
+           
+           //set Virtual Storage Descriptor
+           List<VirtualStorageDescriptor> virtualStorageDescriptor = new ArrayList();
+           //retrieve additional capability descriptor
+           try {
+                java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+                PreparedStatement ps = conn.prepareStatement("Select id,typeOfStorage,sizeOfStorage,"
+                        + "rdmaEnabled,swImageDesc from "
+                        + "virtualstoragedescriptor where appDId=?");
+                ps.setLong(1, appdval);
+                java.sql.ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+                    VirtualStorageDescriptor storel = new VirtualStorageDescriptor();
+                    storel.setId(rs.getString("id"));
+                    storel.setRdmaEnabled(rs.getBoolean("rdmaEnabled"));
+                    storel.setSizeOfStorage(new BigDecimal(rs.getString("sizeOfStorage")));
+                    storel.setSwImageDesc(rs.getString("swImageDesc"));
+                    storel.setTypeOfStorage(rs.getString("typeOfStorage"));
+                    virtualStorageDescriptor.add(storel);
+                }
+                rs.close();
+                ps.close();
+
+            } catch (SQLException ex) {
+                Logger.getLogger(DatabaseDriver.class
+                        .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+            }
+           appdlist.get(k).setVirtualStorageDescriptor(virtualStorageDescriptor);
+           
+           //set App External Cpd
+           //retrieve App external cpd
+           List<AppExternalCpd> appExtCpd= new ArrayList();
+           List<Long> cpdlist = new ArrayList();
+           //retrieve additional capability descriptor
+           try {
+                java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+                PreparedStatement ps = conn.prepareStatement("Select cpdId,layerProtocol,cpRole,"
+                        + "description from "
+                        + "appextcpd where appDId=?");
+                ps.setLong(1, appdval);
+                java.sql.ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+                    AppExternalCpd extcpd = new AppExternalCpd();
+                    extcpd.setCpRole(rs.getString("cpRole"));
+                    extcpd.setCpdId(rs.getString("cpdId"));
+                    extcpd.setDescription(rs.getString("description"));
+                    extcpd.setLayerProtocol(AppExternalCpd.LayerProtocolEnum.valueOf(rs.getString("cpRole")));
+                    cpdlist.add(Long.valueOf(extcpd.getCpdId()));
+                    appExtCpd.add(extcpd);
+                }
+                rs.close();
+                ps.close();
+
+            } catch (SQLException ex) {
+                Logger.getLogger(DatabaseDriver.class
+                        .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+            }
+           
+           for (int j = 0; j < cpdlist.size(); j++) {
+               //Retrieve address data
+               List<AddressData> addressData = new ArrayList();
+               try {
+                   java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+                   PreparedStatement ps = conn.prepareStatement("Select addressType,l2AddressData,l3AddressData from "
+                           + "addressdata where cpdId=?");
+                   ps.setLong(1, cpdlist.get(j));
+                   java.sql.ResultSet rs = ps.executeQuery();
+                   while (rs.next()) {
+                       AddressData addrel = new AddressData();
+                       addrel.setAddressType(AddressTypeEnum.valueOf(rs.getString("addressType")));
+                       addrel.setL2AddressData(rs.getString("l2AddressData"));
+                       addrel.setL3AddressData(rs.getString("l3AddressData"));
+                       addressData.add(addrel);
+                   }
+                   rs.close();
+                   ps.close();
+
+               } catch (SQLException ex) {
+                   Logger.getLogger(DatabaseDriver.class
+                           .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+               }
+               appExtCpd.get(j).setAddressData(addressData);
+               //retrieve virtual network interfacement requirement
+               List<VirtualNetworkInterfaceRequirements> virtualNetworkInterfaceRequirements = new ArrayList();
+               try {
+                   java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+                   PreparedStatement ps = conn.prepareStatement("Select name,description,supportMandatory,requirement from "
+                           + "virtualnetworkinterfacerequirements where cpdId=?");
+                   ps.setLong(1, cpdlist.get(j));
+                   java.sql.ResultSet rs = ps.executeQuery();
+                   while (rs.next()) {
+                       VirtualNetworkInterfaceRequirements vnintf = new VirtualNetworkInterfaceRequirements();
+                       vnintf.setDescription(rs.getString("description"));
+                       vnintf.setName(rs.getString("name"));
+                       vnintf.setRequirement(rs.getString("cpdId"));
+                       vnintf.setSupportMandatory(rs.getBoolean("supportMandatory"));
+                       virtualNetworkInterfaceRequirements.add(vnintf);
+                   }
+                   rs.close();
+                   ps.close();
+
+               } catch (SQLException ex) {
+                   Logger.getLogger(DatabaseDriver.class
+                           .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+               }
+               appExtCpd.get(j).setVirtualNetworkInterfaceRequirements(virtualNetworkInterfaceRequirements);
+           }
+           
+           
+           appdlist.get(k).setAppExtCpd(appExtCpd);
+           
+           
+           
+           //Set appservice required
+           //Retrieve App service List required from AppD DB
+
+            List<Long> servrequiredid = new ArrayList();
+            List<ServiceDependency> appServiceRequired = new ArrayList();
+            
+            try {
+                java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+                PreparedStatement ps = conn.prepareStatement("Select serviceRequiredId,serName,version,requestedPermissions from "
+                        + "appservicerequired where appDId=?");
+                ps.setLong(1, appdval);
+                java.sql.ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+                    ServiceDependency servicerequire = new ServiceDependency();
+                    long servreqel = rs.getLong("serviceRequiredId");
+                    servicerequire.setSerName(rs.getString("serName"));
+                    servicerequire.setVersion(rs.getString("version"));
+                    servicerequire.setRequestedPermissions(rs.getString("requestedPermissions"));
+                    appServiceRequired.add(servicerequire);
+                    servrequiredid.add(servreqel);
+                }
+                rs.close();
+                ps.close();
+
+            } catch (SQLException ex) {
+                Logger.getLogger(DatabaseDriver.class
+                        .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+            }
+            for (int j = 0; j < servrequiredid.size(); j++) {
+                //Retrieve ser Category
+                CategoryRef catref = new CategoryRef();
+                try {
+                    java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+                    PreparedStatement ps = conn.prepareStatement("Select href,id,name,version from "
+                            + "sercategory where serviceRequiredId=?");
+                    ps.setLong(1, servrequiredid.get(j));
+                    java.sql.ResultSet rs = ps.executeQuery();
+                    while (rs.next()) {
+                        catref.setHref(rs.getString("href"));
+                        catref.setId(rs.getString("id"));
+                        catref.setName(rs.getString("name"));
+                        catref.setVersion(rs.getString("version"));
+                    }
+                    rs.close();
+                    ps.close();
+
+                } catch (SQLException ex) {
+                    Logger.getLogger(DatabaseDriver.class
+                            .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+                }
+                appServiceRequired.get(j).setSerCategory(catref);
+                //Retrieve transport dependencies
+                List<TransportDependency> serTransportDependencies = new ArrayList();
+                try {
+                    java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+                    PreparedStatement ps = conn.prepareStatement("Select sertransportdependencies.serializers,sertransportdependencies.labels,"
+                            + "sertransport.transportType,sertransport.protocol,sertransport.version,"
+                            + "sertransport.security from "
+                            + "sertransportdependencies inner join  sertransport on "
+                            + "sertransportdependencies.serTransportDependenciesId = sertransport.serTransportDependenciesId "
+                            + "where sertransportdependencies.serviceRequiredId=?");
+                    ps.setLong(1, servrequiredid.get(j));
+                    java.sql.ResultSet rs = ps.executeQuery();
+                    while (rs.next()) {
+                        TransportDependency transpel = new TransportDependency();
+                        transpel.serializers(TransportDependency.SerializersEnum.valueOf(rs.getString("serializers")));
+                        List<String> labellist = new ArrayList();
+                        labellist.add(rs.getString("labels"));
+                        transpel.setLabels(labellist);
+                        TransportDescriptor transport = new TransportDescriptor();
+                        transport.setProtocol(rs.getString("protocol"));
+                        transport.setSecurity(rs.getString("security"));
+                        transport.setType(TransportDescriptor.TypeEnum.valueOf(rs.getString("transportType")));
+                        transport.setVersion(rs.getString("version"));
+                        transpel.setTransport(transport);
+                        serTransportDependencies.add(transpel);
+                    }
+                    rs.close();
+                    ps.close();
+
+                } catch (SQLException ex) {
+                    Logger.getLogger(DatabaseDriver.class
+                            .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+                }
+                appServiceRequired.get(j).serTransportDependencies(serTransportDependencies);
+            }
+            appdlist.get(k).setAppServiceRequired(appServiceRequired);
+            
+           //Set appservice optional
+           //Retrieve App service List required from AppD DB
+
+            List<Long> servroptionalid = new ArrayList();
+            List<ServiceDependency> appServiceOptional = new ArrayList();
+            
+            try {
+                java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+                PreparedStatement ps = conn.prepareStatement("Select serviceRequiredId,serName,version,requestedPermissions from "
+                        + "appserviceoptional where appDId=?");
+                ps.setLong(1, appdval);
+                java.sql.ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+                    ServiceDependency servicerequire = new ServiceDependency();
+                    long servreqel = rs.getLong("serviceRequiredId");
+                    servicerequire.setSerName(rs.getString("serName"));
+                    servicerequire.setVersion(rs.getString("version"));
+                    servicerequire.setRequestedPermissions(rs.getString("requestedPermissions"));
+                    appServiceOptional.add(servicerequire);
+                    servroptionalid.add(servreqel);
+                }
+                rs.close();
+                ps.close();
+
+            } catch (SQLException ex) {
+                Logger.getLogger(DatabaseDriver.class
+                        .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+            }
+            for (int j = 0; j < servroptionalid.size(); j++) {
+                //Retrieve ser Category
+                CategoryRef catref = new CategoryRef();
+                try {
+                    java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+                    PreparedStatement ps = conn.prepareStatement("Select href,id,name,version from "
+                            + "sercategoryoptional where serviceRequiredId=?");
+                    ps.setLong(1, servrequiredid.get(j));
+                    java.sql.ResultSet rs = ps.executeQuery();
+                    while (rs.next()) {
+                        catref.setHref(rs.getString("href"));
+                        catref.setId(rs.getString("id"));
+                        catref.setName(rs.getString("name"));
+                        catref.setVersion(rs.getString("version"));
+                    }
+                    rs.close();
+                    ps.close();
+
+                } catch (SQLException ex) {
+                    Logger.getLogger(DatabaseDriver.class
+                            .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+                }
+                appServiceOptional.get(j).setSerCategory(catref);
+                //Retrieve transport dependencies
+                List<TransportDependency> serTransportDependencies = new ArrayList();
+                try {
+                    java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+                    PreparedStatement ps = conn.prepareStatement("Select sertransportdependenciesoptional.serializers,sertransportdependenciesoptional.labels,"
+                            + "transportoptional.transportType,transportoptional.protocol,transportoptional.version,"
+                            + "transportoptional.security from "
+                            + "sertransportdependenciesoptional inner join  sertransportoptional on "
+                            + "sertransportdependenciesoptional.serTransportDependenciesId = transportoptional.serTransportDependenciesId "
+                            + "where transportdependenciesoptional.serviceRequiredId=?");
+                    ps.setLong(1, servrequiredid.get(j));
+                    java.sql.ResultSet rs = ps.executeQuery();
+                    while (rs.next()) {
+                        TransportDependency transpel = new TransportDependency();
+                        transpel.serializers(TransportDependency.SerializersEnum.valueOf(rs.getString("serializers")));
+                        List<String> labellist = new ArrayList();
+                        labellist.add(rs.getString("labels"));
+                        transpel.setLabels(labellist);
+                        TransportDescriptor transport = new TransportDescriptor();
+                        transport.setProtocol(rs.getString("protocol"));
+                        transport.setSecurity(rs.getString("security"));
+                        transport.setType(TransportDescriptor.TypeEnum.valueOf(rs.getString("transportType")));
+                        transport.setVersion(rs.getString("version"));
+                        transpel.setTransport(transport);
+                        serTransportDependencies.add(transpel);
+                    }
+                    rs.close();
+                    ps.close();
+
+                } catch (SQLException ex) {
+                    Logger.getLogger(DatabaseDriver.class
+                            .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+                }
+                appServiceOptional.get(j).serTransportDependencies(serTransportDependencies);
+            }
+            appdlist.get(k).setAppServiceOptional(appServiceOptional);
+            
+           //Set transport dependencies
+           List<TransportDependency> serTransportDependencies = new ArrayList();
+            try {
+                java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+                PreparedStatement ps = conn.prepareStatement("Select transportdependencies.serializers,transportdependencies.labels,"
+                        + "transport.transportType,transport.protocol,transport.version,"
+                        + "transport.security from "
+                        + "transportdependencies inner join  transport on "
+                        + "transportdependencies.TransportDependenciesId = transport.TransportDependenciesId "
+                        + "where transportdependencies.appDId=?");
+                ps.setLong(1, appdval);
+                java.sql.ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+                    TransportDependency transpel = new TransportDependency();
+                    transpel.serializers(TransportDependency.SerializersEnum.valueOf(rs.getString("serializers")));
+                    List<String> labellist = new ArrayList();
+                    labellist.add(rs.getString("labels"));
+                    transpel.setLabels(labellist);
+                    TransportDescriptor transport = new TransportDescriptor();
+                    transport.setProtocol(rs.getString("protocol"));
+                    transport.setSecurity(rs.getString("security"));
+                    transport.setType(TransportDescriptor.TypeEnum.valueOf(rs.getString("transportType")));
+                    transport.setVersion(rs.getString("version"));
+                    transpel.setTransport(transport);
+                    serTransportDependencies.add(transpel);
+                }
+                rs.close();
+                ps.close();
+
+            } catch (SQLException ex) {
+                Logger.getLogger(DatabaseDriver.class
+                        .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+            }
+            appdlist.get(k).setTransportDependencies(serTransportDependencies);
+            
+           //Set TrafficRuleDescriptor
+           List<TrafficRuleDescriptor> appTrafficRule = new ArrayList();
+            List<Long> traffruleid = new ArrayList();
+            //retrieve traffic rules
+            try {
+                java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+                PreparedStatement ps = conn.prepareStatement("Select trafficRuleId,filterType,priority,action from "
+                        + "apptrafficrule where appDId=?");
+                ps.setLong(1, appdval);
+                java.sql.ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+                    TrafficRuleDescriptor traffrule = new TrafficRuleDescriptor();
+                    long servreqel = rs.getLong("trafficRuleId");
+                    traffrule.setFilterType(TrafficRuleDescriptor.FilterTypeEnum.valueOf(rs.getString("filterType")));
+                    traffrule.setTrafficRuleId(rs.getString("trafficRuleId"));
+                    traffrule.setAction(ActionEnum.valueOf(rs.getString("action")));
+                    traffrule.setPriority(new BigDecimal(rs.getString("trafficRuleId")));
+                    appTrafficRule.add(traffrule);
+                    traffruleid.add(servreqel);
+                }
+                rs.close();
+                ps.close();
+
+            } catch (SQLException ex) {
+                Logger.getLogger(DatabaseDriver.class
+                        .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+            }
+            for (int j = 0; j < traffruleid.size(); j++) {
+                //retrieve traffic filter
+                List<TrafficFilter> trafficFilter = new ArrayList();
+                try {
+                    java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+                    PreparedStatement ps = conn.prepareStatement("Select srcAddress,dstAddress,srcPort,dstPort,"
+                            + "protocol,token,srcTunnelAddress,dstTunnelAddress,srcTunnelPort,dstTunnelPort,"
+                            + "qci,dscp,tc from "
+                            + "trafficfilter where trafficRuleId=?");
+                    ps.setLong(1, traffruleid.get(j));
+                    java.sql.ResultSet rs = ps.executeQuery();
+                    while (rs.next()) {
+                        TrafficFilter trafffilter = new TrafficFilter(); 
+                        trafffilter.setDscp(new BigDecimal(rs.getString("dscp")));
+                        trafffilter.setQci(new BigDecimal(rs.getString("qci")));
+                        trafffilter.setTc(new BigDecimal(rs.getString("tc")));
+                        List<String> strlist = new ArrayList();
+                        strlist.add(rs.getString("dstAddress"));
+                        trafffilter.setDstAddress(strlist);
+                        strlist = new ArrayList();
+                        strlist.add(rs.getString("dstPort"));
+                        trafffilter.setDstPort(strlist);
+                        strlist = new ArrayList();
+                        strlist.add(rs.getString("dstTunnelAddress"));
+                        trafffilter.setDstTunnelAddress(strlist);
+                        strlist = new ArrayList();
+                        strlist.add(rs.getString("dstTunnelPort"));
+                        trafffilter.setDstTunnelPort(strlist);
+                        strlist = new ArrayList();
+                        strlist.add(rs.getString("protocol"));
+                        trafffilter.setProtocol(strlist);
+                        strlist = new ArrayList();
+                        strlist.add(rs.getString("token"));
+                        trafffilter.setToken(strlist);
+                        strlist = new ArrayList();
+                        strlist.add(rs.getString("srcAddress"));
+                        trafffilter.setSrcAddress(strlist);
+                        strlist = new ArrayList();
+                        strlist.add(rs.getString("srcPort"));
+                        trafffilter.setSrcPort(strlist);
+                        strlist = new ArrayList();
+                        strlist.add(rs.getString("srcTunnelAddress"));
+                        trafffilter.setSrcTunnelAddress(strlist);
+                        strlist = new ArrayList();
+                        strlist.add(rs.getString("srcTunnelPort"));
+                        trafffilter.setSrcTunnelPort(strlist);
+                        trafficFilter.add(trafffilter);
+                    }
+                    rs.close();
+                    ps.close();
+
+                } catch (SQLException ex) {
+                    Logger.getLogger(DatabaseDriver.class
+                            .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+                }
+                appTrafficRule.get(j).setTrafficFilter(trafficFilter);
+                //retrieve traffic interfaces
+                List<InterfaceDescriptor> dstInterface = new ArrayList();
+                try {
+                    java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+                    PreparedStatement ps = conn.prepareStatement("Select dstinterface.interfaceType,dstinterface.srcMACAddress,"
+                            + "dstinterface.dstMACAddress,dstinterface.dstIPAddress,tunnelinfo.tunnelType,"
+                            + "tunnelinfo.tunnelDstAddress,tunnelinfo.tunnelSrcAddress,tunnelinfo.tunnelSpecificData from "
+                            + "dstinterface inner join  tunnelinfo on "
+                            + "dstinterface.dstInterfaceId = tunnelinfo.dstInterfaceId "
+                            + "where dstinterface.trafficRuleId=?");
+                    ps.setLong(1, traffruleid.get(j));
+                    java.sql.ResultSet rs = ps.executeQuery();
+                    while (rs.next()) {
+                        InterfaceDescriptor intf = new InterfaceDescriptor();
+                        TunnelInfo tunnel = new TunnelInfo();
+                        tunnel.setTunnelDstAddress(rs.getString("tunnelDstAddress"));
+                        tunnel.setTunnelSpecificData(rs.getString("tunnelSpecificData"));
+                        tunnel.setTunnelSrcAddress(rs.getString("tunnelSrcAddress"));
+                        tunnel.setTunnelType(TunnelInfo.TunnelTypeEnum.valueOf(rs.getString("tunnelType")));
+                        intf.setTunnelInfo(tunnel);
+                        intf.setDstIPAddress(rs.getString("dstIPAddress"));
+                        intf.setDstMACAddress(rs.getString("dstMACAddress"));
+                        intf.setInterfaceType(InterfaceDescriptor.InterfaceTypeEnum.valueOf(rs.getString("interfaceType")));
+                        intf.setSrcMACAddress(rs.getString("srcMACAddress"));
+                        dstInterface.add(intf);
+                    }
+                    rs.close();
+                    ps.close();
+
+                } catch (SQLException ex) {
+                    Logger.getLogger(DatabaseDriver.class
+                            .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+                }
+                appTrafficRule.get(j).setDstInterface(dstInterface);
+            }
+            appdlist.get(k).setAppTrafficRule(appTrafficRule);
+            
+           //Set appDNSRule
+            List<DNSRuleDescriptor> appDNSRule = new ArrayList();
+            try {
+                java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+                PreparedStatement ps = conn.prepareStatement("Select dnsRuleId,domainName,ipAddressType,ipAddress,ttl from "
+                        + "appdnsrule where appDId=?");
+                ps.setLong(1, appdval);
+                java.sql.ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+                    DNSRuleDescriptor dnsrule = new DNSRuleDescriptor();
+                    dnsrule.setDnsRuleId(String.valueOf(rs.getLong("serviceRequiredId")));
+                    dnsrule.setDomainName(rs.getString("domainName"));
+                    dnsrule.setIpAddress(rs.getString("ipAddress"));
+                    dnsrule.setIpAddressType(DNSRuleDescriptor.IpAddressTypeEnum.valueOf(rs.getString("ipAddressType")));
+                    dnsrule.setTtl(new BigDecimal(rs.getString("ttl")));
+                    appDNSRule.add(dnsrule);
+                }
+                rs.close();
+                ps.close();
+
+            } catch (SQLException ex) {
+                Logger.getLogger(DatabaseDriver.class
+                        .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+            }
+            appdlist.get(k).setAppDNSRule(appDNSRule);
+            
+           //Set LatencyDescriptor
+           LatencyDescriptor latency = new LatencyDescriptor();
+            try {
+                java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+                PreparedStatement ps = conn.prepareStatement("Select timeUnit,latency from "
+                        + "applatency where appDId=?");
+                ps.setLong(1, appdval);
+                java.sql.ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+                    latency.setTimeUnit(rs.getString("timeUnit"));
+                    latency.setLatency(new BigDecimal(rs.getString("latency")));
+                }
+                rs.close();
+                ps.close();
+
+            } catch (SQLException ex) {
+                Logger.getLogger(DatabaseDriver.class
+                        .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+            }
+            appdlist.get(k).setAppLatency(latency);
+            
+           //Set Terminate App Instance OpConfig
+           TerminateAppInstanceOpConfig termopconf = new TerminateAppInstanceOpConfig();
+           //retrieve TerminateAppInstanceOpConfig
+           try {
+                java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+                PreparedStatement ps = conn.prepareStatement("Select minGracefulTerminationTimeout,macRecommendedGracefulTerminationTimeout from "
+                        + "terminateappinstanceopconfig where appDId=?");
+                ps.setLong(1, appdval);
+                java.sql.ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+                    termopconf.setMacRecommendedGracefulTerminationTimeout(new BigDecimal(rs.getString("macRecommendedGracefulTerminationTimeout")));
+                    termopconf.setMinGracefulTerminationTimeout(new BigDecimal(rs.getString("minGracefulTerminationTimeout")));
+                }
+                rs.close();
+                ps.close();
+
+            } catch (SQLException ex) {
+                Logger.getLogger(DatabaseDriver.class
+                        .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+            }
+           appdlist.get(k).setTerminateAppInstanceOpConfig(termopconf);
+           
+           //Set Change App Instance StateOpConfig
+           ChangeAppInstanceStateOpConfig changeopconf = new ChangeAppInstanceStateOpConfig();
+           //retrieve ChangeAppInstanceOpConfig
+           try {
+                java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+                PreparedStatement ps = conn.prepareStatement("Select minGracefulTerminationTimeout,macRecommendedGracefulTerminationTimeout from "
+                        + "changeappinstancestateopconfig where appDId=?");
+                ps.setLong(1, appdval);
+                java.sql.ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+                    changeopconf.setMacRecommendedGracefulStopTimeout(new BigDecimal(rs.getString("macRecommendedGracefulTerminationTimeout")));
+                    changeopconf.setMinGracefulStopTimeout(new BigDecimal(rs.getString("minGracefulTerminationTimeout")));
+                }
+                rs.close();
+                ps.close();
+
+            } catch (SQLException ex) {
+                Logger.getLogger(DatabaseDriver.class
+                        .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+            }
+           appdlist.get(k).setChangeAppInstanceStateOpConfig(changeopconf);
+       }
+ 
+       //Send event to SBI for MEC
+       AdvertiseAppDReply appdlistrep = new AdvertiseAppDReply(appdreq.getReqid(), appdlist);
+       System.out.println("DatabaseDriver --> Post AdvertiseAppDReply Event");
+       SingletonEventBus.getBus().post(appdlistrep);
+    } 
+    
+   @Subscribe
+    public void handle_AdvertiseAppDIdRequest(AdvertiseAppDIdRequest appdreq) {
+       System.out.println("DatabaseDriver ---> Handle AdvertiseAppDIdRequest Event");
+       
+       
+       AppD appdelem = new AppD();
+       //select appd
+       try {
+           java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+           PreparedStatement ps = conn.prepareStatement("Select * from appd where appDId");
+           ps.setLong(1, Long.valueOf(appdreq.getAppid()));
+           java.sql.ResultSet rs = ps.executeQuery();
+           while (rs.next()) {
+               appdelem.setAppDId(rs.getString("appDId"));
+               appdelem.setAppDVersion(rs.getString("appDVersion"));
+               appdelem.setAppInfoName(rs.getString("appInfoName"));
+               appdelem.setAppName(rs.getString("appName"));
+               appdelem.setAppProvider(rs.getString("appProvider"));
+               appdelem.setAppSoftVersion(rs.getString("appSoftVersion"));
+               appdelem.setAppDescription(rs.getString("appDescription"));
+               List<String> mecversion = new ArrayList();
+               mecversion.add(rs.getString("mecVersion"));
+               appdelem.setMecVersion(mecversion);
+           }
+           rs.close();
+           ps.close();
+
+       } catch (SQLException ex) {
+           Logger.getLogger(DatabaseDriver.class
+                   .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+       }
+       
+       
+       
+
+       long appdval = Long.valueOf(appdreq.getAppid());
+       //set virtual Compute Descriptor
+       VirtualComputeDescription computeelem = new VirtualComputeDescription();
+       VirtualMemoryData memelem = new VirtualMemoryData();
+       VirtualCpuData cpuelem = new VirtualCpuData();
+       List<RequestAdditionalCapabilityData> capdatalist = new ArrayList();
+
+       //retrieve VirtualCompute Description
+       try {
+           java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+           PreparedStatement ps = conn.prepareStatement("Select virtualComputeDescId from "
+                   + "virtualcomputedescriptor where appDId=?");
+           ps.setLong(1, appdval);
+           java.sql.ResultSet rs = ps.executeQuery();
+           while (rs.next()) {
+               computeelem.setVirtualComputeDescId(rs.getString("virtualComputeDescId"));
+           }
+           rs.close();
+           ps.close();
+
+       } catch (SQLException ex) {
+           Logger.getLogger(DatabaseDriver.class
+                   .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+       }
+
+       //retrieve cpu descriptor
+       try {
+           java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+           PreparedStatement ps = conn.prepareStatement("Select cpuArchitecture,numVirtualCpu,virtualCpuClock,virtualCpuOversubscriptionPolicy from "
+                   + "virtualcpu where appDId=?");
+           ps.setLong(1, appdval);
+           java.sql.ResultSet rs = ps.executeQuery();
+           while (rs.next()) {
+               cpuelem.setCpuArchitecture(rs.getString("cpuArchitecture"));
+               cpuelem.setNumVirtualCpu(new BigDecimal(rs.getString("numVirtualCpu")));
+               cpuelem.setVirtualCpuClock(new BigDecimal(rs.getString("virtualCpuClock")));
+               cpuelem.setVirtualCpuOversubscriptionPolicy(rs.getString("virtualCpuOversubscriptionPolicy"));
+           }
+           rs.close();
+           ps.close();
+
+       } catch (SQLException ex) {
+           Logger.getLogger(DatabaseDriver.class
+                   .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+       }
+       //retrieve cpu 
+       VirtualCpuPinningData cpupinning = new VirtualCpuPinningData();
+       try {
+           java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+           PreparedStatement ps = conn.prepareStatement("Select cpuPinningPolicy,cpuPinningMap from "
+                   + "virtualcpupinning where appDId=?");
+           ps.setLong(1, appdval);
+           java.sql.ResultSet rs = ps.executeQuery();
+           while (rs.next()) {
+               cpupinning.setCpuPinningMap(rs.getString("cpuPinningMap"));
+               cpupinning.setCpuPinningPolicy(VirtualCpuPinningData.CpuPinningPolicyEnum.valueOf(rs.getString("numVirtualCpu")));
+           }
+           rs.close();
+           ps.close();
+
+       } catch (SQLException ex) {
+           Logger.getLogger(DatabaseDriver.class
+                   .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+       }
+       cpuelem.setVirtualCpuPinning(cpupinning);
+       computeelem.setVirtualCpu(cpuelem);
+
+       //retrieve memory descriptor
+       try {
+           java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+           PreparedStatement ps = conn.prepareStatement("Select virtualMemSize,numaEnabled,virtualMemOversubscriptionPolicy from "
+                   + "virtualmemory where appDId=?");
+           ps.setLong(1, appdval);
+           java.sql.ResultSet rs = ps.executeQuery();
+           while (rs.next()) {
+               memelem.setNumaEnabled(rs.getBoolean("numaEnabled"));
+               memelem.setVirtualMemOversubscriptionPolicy(rs.getString("virtualMemOversubscriptionPolicy"));
+               memelem.setVirtualMemSize(new BigDecimal(rs.getString("virtualMemSize")));
+           }
+           rs.close();
+           ps.close();
+
+       } catch (SQLException ex) {
+           Logger.getLogger(DatabaseDriver.class
+                   .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+       }
+       computeelem.setVirtualMemory(memelem);
+
+       //retrieve additional capability descriptor
+       try {
+           java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+           PreparedStatement ps = conn.prepareStatement("Select requestedAdditionalCapabilityName,supportMandatory,"
+                   + "minRequestedAdditionalCapabilityVersion,preferredRequestedAdditionalCapabilityVersion,targetPerformanceParameters from "
+                   + "requestadditionalcapabilities where appDId=?");
+           ps.setLong(1, appdval);
+           java.sql.ResultSet rs = ps.executeQuery();
+           while (rs.next()) {
+               RequestAdditionalCapabilityData capdatael = new RequestAdditionalCapabilityData();
+               capdatael.setMinRequestedAdditionalCapabilityVersion(rs.getString("minRequestedAdditionalCapabilityVersion"));
+               capdatael.setPreferredRequestedAdditionalCapabilityVersion(rs.getString("preferredRequestedAdditionalCapabilityVersion"));
+               capdatael.setRequestedAdditionalCapabilityName(rs.getString("requestedAdditionalCapabilityName"));
+               capdatael.setSupportMandatory(rs.getBoolean("supportMandatory"));
+               capdatael.setTargetPerformanceParameters(rs.getString("targetPerformanceParameters"));
+               capdatalist.add(capdatael);
+           }
+           rs.close();
+           ps.close();
+
+       } catch (SQLException ex) {
+           Logger.getLogger(DatabaseDriver.class
+                   .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+       }
+       computeelem.setRequestAdditionalCapabilities(capdatalist);
+       //set the compute descriptor in appd
+       appdelem.setVirtualComputeDescriptor(computeelem);
+
+       //set SW Image Descriptor
+       List<SwImageDescriptor> swImageDescriptor = new ArrayList();
+       //retrieve additional capability descriptor
+       try {
+           java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+           PreparedStatement ps = conn.prepareStatement("Select id,name,version,checksum_,containerFormat,"
+                   + "diskFormat,minDisk,minRam,size,swImage,operatingSystem,supportedVirtualizationEnvironment from "
+                   + "swimagedescriptor where appDId=?");
+           ps.setLong(1, appdval);
+           java.sql.ResultSet rs = ps.executeQuery();
+           while (rs.next()) {
+               SwImageDescriptor swel = new SwImageDescriptor();
+               swel.setChecksum(rs.getString("checksum_"));
+               swel.setContainerFormat(rs.getString("containerFormat"));
+               swel.setDiskFormat(rs.getString("diskFormat"));
+               swel.setId(rs.getString("id"));
+               swel.setMinDisk(new BigDecimal(rs.getString("minDisk")));
+               swel.setMinRam(new BigDecimal(rs.getString("minRam")));
+               swel.setName(rs.getString("name"));
+               swel.setOperatingSystem(rs.getString("operatingSystem"));
+               swel.setSize(new BigDecimal(rs.getString("size")));
+               List<String> suppvirt = new ArrayList();
+               String virtel = rs.getString("supportedVirtualizationEnvironment");
+               suppvirt.add(virtel);
+               swel.setSupportedVirtualizationEnvironment(suppvirt);
+               swel.setSwImage(rs.getString("swImage"));
+               swel.setVersion(rs.getString("version"));
+               swImageDescriptor.add(swel);
+           }
+           rs.close();
+           ps.close();
+
+       } catch (SQLException ex) {
+           Logger.getLogger(DatabaseDriver.class
+                   .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+       }
+       appdelem.setSwImageDescriptor(swImageDescriptor);
+
+       //set Virtual Storage Descriptor
+       List<VirtualStorageDescriptor> virtualStorageDescriptor = new ArrayList();
+       //retrieve additional capability descriptor
+       try {
+           java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+           PreparedStatement ps = conn.prepareStatement("Select id,typeOfStorage,sizeOfStorage,"
+                   + "rdmaEnabled,swImageDesc from "
+                   + "virtualstoragedescriptor where appDId=?");
+           ps.setLong(1, appdval);
+           java.sql.ResultSet rs = ps.executeQuery();
+           while (rs.next()) {
+               VirtualStorageDescriptor storel = new VirtualStorageDescriptor();
+               storel.setId(rs.getString("id"));
+               storel.setRdmaEnabled(rs.getBoolean("rdmaEnabled"));
+               storel.setSizeOfStorage(new BigDecimal(rs.getString("sizeOfStorage")));
+               storel.setSwImageDesc(rs.getString("swImageDesc"));
+               storel.setTypeOfStorage(rs.getString("typeOfStorage"));
+               virtualStorageDescriptor.add(storel);
+           }
+           rs.close();
+           ps.close();
+
+       } catch (SQLException ex) {
+           Logger.getLogger(DatabaseDriver.class
+                   .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+       }
+       appdelem.setVirtualStorageDescriptor(virtualStorageDescriptor);
+
+       //set App External Cpd
+       //retrieve App external cpd
+       List<AppExternalCpd> appExtCpd = new ArrayList();
+       List<Long> cpdlist = new ArrayList();
+       //retrieve additional capability descriptor
+       try {
+           java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+           PreparedStatement ps = conn.prepareStatement("Select cpdId,layerProtocol,cpRole,"
+                   + "description from "
+                   + "appextcpd where appDId=?");
+           ps.setLong(1, appdval);
+           java.sql.ResultSet rs = ps.executeQuery();
+           while (rs.next()) {
+               AppExternalCpd extcpd = new AppExternalCpd();
+               extcpd.setCpRole(rs.getString("cpRole"));
+               extcpd.setCpdId(rs.getString("cpdId"));
+               extcpd.setDescription(rs.getString("description"));
+               extcpd.setLayerProtocol(AppExternalCpd.LayerProtocolEnum.valueOf(rs.getString("cpRole")));
+               cpdlist.add(Long.valueOf(extcpd.getCpdId()));
+               appExtCpd.add(extcpd);
+           }
+           rs.close();
+           ps.close();
+
+       } catch (SQLException ex) {
+           Logger.getLogger(DatabaseDriver.class
+                   .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+       }
+
+       for (int j = 0; j < cpdlist.size(); j++) {
+           //Retrieve address data
+           List<AddressData> addressData = new ArrayList();
+           try {
+               java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+               PreparedStatement ps = conn.prepareStatement("Select addressType,l2AddressData,l3AddressData from "
+                       + "addressdata where cpdId=?");
+               ps.setLong(1, cpdlist.get(j));
+               java.sql.ResultSet rs = ps.executeQuery();
+               while (rs.next()) {
+                   AddressData addrel = new AddressData();
+                   addrel.setAddressType(AddressTypeEnum.valueOf(rs.getString("addressType")));
+                   addrel.setL2AddressData(rs.getString("l2AddressData"));
+                   addrel.setL3AddressData(rs.getString("l3AddressData"));
+                   addressData.add(addrel);
+               }
+               rs.close();
+               ps.close();
+
+           } catch (SQLException ex) {
+               Logger.getLogger(DatabaseDriver.class
+                       .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+           }
+           appExtCpd.get(j).setAddressData(addressData);
+           //retrieve virtual network interfacement requirement
+           List<VirtualNetworkInterfaceRequirements> virtualNetworkInterfaceRequirements = new ArrayList();
+           try {
+               java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+               PreparedStatement ps = conn.prepareStatement("Select name,description,supportMandatory,requirement from "
+                       + "virtualnetworkinterfacerequirements where cpdId=?");
+               ps.setLong(1, cpdlist.get(j));
+               java.sql.ResultSet rs = ps.executeQuery();
+               while (rs.next()) {
+                   VirtualNetworkInterfaceRequirements vnintf = new VirtualNetworkInterfaceRequirements();
+                   vnintf.setDescription(rs.getString("description"));
+                   vnintf.setName(rs.getString("name"));
+                   vnintf.setRequirement(rs.getString("cpdId"));
+                   vnintf.setSupportMandatory(rs.getBoolean("supportMandatory"));
+                   virtualNetworkInterfaceRequirements.add(vnintf);
+               }
+               rs.close();
+               ps.close();
+
+           } catch (SQLException ex) {
+               Logger.getLogger(DatabaseDriver.class
+                       .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+           }
+           appExtCpd.get(j).setVirtualNetworkInterfaceRequirements(virtualNetworkInterfaceRequirements);
+       }
+
+       appdelem.setAppExtCpd(appExtCpd);
+
+       //Set appservice required
+       //Retrieve App service List required from AppD DB
+       List<Long> servrequiredid = new ArrayList();
+       List<ServiceDependency> appServiceRequired = new ArrayList();
+
+       try {
+           java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+           PreparedStatement ps = conn.prepareStatement("Select serviceRequiredId,serName,version,requestedPermissions from "
+                   + "appservicerequired where appDId=?");
+           ps.setLong(1, appdval);
+           java.sql.ResultSet rs = ps.executeQuery();
+           while (rs.next()) {
+               ServiceDependency servicerequire = new ServiceDependency();
+               long servreqel = rs.getLong("serviceRequiredId");
+               servicerequire.setSerName(rs.getString("serName"));
+               servicerequire.setVersion(rs.getString("version"));
+               servicerequire.setRequestedPermissions(rs.getString("requestedPermissions"));
+               appServiceRequired.add(servicerequire);
+               servrequiredid.add(servreqel);
+           }
+           rs.close();
+           ps.close();
+
+       } catch (SQLException ex) {
+           Logger.getLogger(DatabaseDriver.class
+                   .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+       }
+       for (int j = 0; j < servrequiredid.size(); j++) {
+           //Retrieve ser Category
+           CategoryRef catref = new CategoryRef();
+           try {
+               java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+               PreparedStatement ps = conn.prepareStatement("Select href,id,name,version from "
+                       + "sercategory where serviceRequiredId=?");
+               ps.setLong(1, servrequiredid.get(j));
+               java.sql.ResultSet rs = ps.executeQuery();
+               while (rs.next()) {
+                   catref.setHref(rs.getString("href"));
+                   catref.setId(rs.getString("id"));
+                   catref.setName(rs.getString("name"));
+                   catref.setVersion(rs.getString("version"));
+               }
+               rs.close();
+               ps.close();
+
+           } catch (SQLException ex) {
+               Logger.getLogger(DatabaseDriver.class
+                       .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+           }
+           appServiceRequired.get(j).setSerCategory(catref);
+           //Retrieve transport dependencies
+           List<TransportDependency> serTransportDependencies = new ArrayList();
+           try {
+               java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+               PreparedStatement ps = conn.prepareStatement("Select sertransportdependencies.serializers,sertransportdependencies.labels,"
+                       + "sertransport.transportType,sertransport.protocol,sertransport.version,"
+                       + "sertransport.security from "
+                       + "sertransportdependencies inner join  sertransport on "
+                       + "sertransportdependencies.serTransportDependenciesId = sertransport.serTransportDependenciesId "
+                       + "where sertransportdependencies.serviceRequiredId=?");
+               ps.setLong(1, servrequiredid.get(j));
+               java.sql.ResultSet rs = ps.executeQuery();
+               while (rs.next()) {
+                   TransportDependency transpel = new TransportDependency();
+                   transpel.serializers(TransportDependency.SerializersEnum.valueOf(rs.getString("serializers")));
+                   List<String> labellist = new ArrayList();
+                   labellist.add(rs.getString("labels"));
+                   transpel.setLabels(labellist);
+                   TransportDescriptor transport = new TransportDescriptor();
+                   transport.setProtocol(rs.getString("protocol"));
+                   transport.setSecurity(rs.getString("security"));
+                   transport.setType(TransportDescriptor.TypeEnum.valueOf(rs.getString("transportType")));
+                   transport.setVersion(rs.getString("version"));
+                   transpel.setTransport(transport);
+                   serTransportDependencies.add(transpel);
+               }
+               rs.close();
+               ps.close();
+
+           } catch (SQLException ex) {
+               Logger.getLogger(DatabaseDriver.class
+                       .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+           }
+           appServiceRequired.get(j).serTransportDependencies(serTransportDependencies);
+       }
+       appdelem.setAppServiceRequired(appServiceRequired);
+
+       //Set appservice optional
+       //Retrieve App service List required from AppD DB
+       List<Long> servroptionalid = new ArrayList();
+       List<ServiceDependency> appServiceOptional = new ArrayList();
+
+       try {
+           java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+           PreparedStatement ps = conn.prepareStatement("Select serviceRequiredId,serName,version,requestedPermissions from "
+                   + "appserviceoptional where appDId=?");
+           ps.setLong(1, appdval);
+           java.sql.ResultSet rs = ps.executeQuery();
+           while (rs.next()) {
+               ServiceDependency servicerequire = new ServiceDependency();
+               long servreqel = rs.getLong("serviceRequiredId");
+               servicerequire.setSerName(rs.getString("serName"));
+               servicerequire.setVersion(rs.getString("version"));
+               servicerequire.setRequestedPermissions(rs.getString("requestedPermissions"));
+               appServiceOptional.add(servicerequire);
+               servroptionalid.add(servreqel);
+           }
+           rs.close();
+           ps.close();
+
+       } catch (SQLException ex) {
+           Logger.getLogger(DatabaseDriver.class
+                   .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+       }
+       for (int j = 0; j < servroptionalid.size(); j++) {
+           //Retrieve ser Category
+           CategoryRef catref = new CategoryRef();
+           try {
+               java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+               PreparedStatement ps = conn.prepareStatement("Select href,id,name,version from "
+                       + "sercategoryoptional where serviceRequiredId=?");
+               ps.setLong(1, servrequiredid.get(j));
+               java.sql.ResultSet rs = ps.executeQuery();
+               while (rs.next()) {
+                   catref.setHref(rs.getString("href"));
+                   catref.setId(rs.getString("id"));
+                   catref.setName(rs.getString("name"));
+                   catref.setVersion(rs.getString("version"));
+               }
+               rs.close();
+               ps.close();
+
+           } catch (SQLException ex) {
+               Logger.getLogger(DatabaseDriver.class
+                       .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+           }
+           appServiceOptional.get(j).setSerCategory(catref);
+           //Retrieve transport dependencies
+           List<TransportDependency> serTransportDependencies = new ArrayList();
+           try {
+               java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+               PreparedStatement ps = conn.prepareStatement("Select sertransportdependenciesoptional.serializers,sertransportdependenciesoptional.labels,"
+                       + "transportoptional.transportType,transportoptional.protocol,transportoptional.version,"
+                       + "transportoptional.security from "
+                       + "sertransportdependenciesoptional inner join  sertransportoptional on "
+                       + "sertransportdependenciesoptional.serTransportDependenciesId = transportoptional.serTransportDependenciesId "
+                       + "where transportdependenciesoptional.serviceRequiredId=?");
+               ps.setLong(1, servrequiredid.get(j));
+               java.sql.ResultSet rs = ps.executeQuery();
+               while (rs.next()) {
+                   TransportDependency transpel = new TransportDependency();
+                   transpel.serializers(TransportDependency.SerializersEnum.valueOf(rs.getString("serializers")));
+                   List<String> labellist = new ArrayList();
+                   labellist.add(rs.getString("labels"));
+                   transpel.setLabels(labellist);
+                   TransportDescriptor transport = new TransportDescriptor();
+                   transport.setProtocol(rs.getString("protocol"));
+                   transport.setSecurity(rs.getString("security"));
+                   transport.setType(TransportDescriptor.TypeEnum.valueOf(rs.getString("transportType")));
+                   transport.setVersion(rs.getString("version"));
+                   transpel.setTransport(transport);
+                   serTransportDependencies.add(transpel);
+               }
+               rs.close();
+               ps.close();
+
+           } catch (SQLException ex) {
+               Logger.getLogger(DatabaseDriver.class
+                       .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+           }
+           appServiceOptional.get(j).serTransportDependencies(serTransportDependencies);
+       }
+       appdelem.setAppServiceOptional(appServiceOptional);
+
+       //Set transport dependencies
+       List<TransportDependency> serTransportDependencies = new ArrayList();
+       try {
+           java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+           PreparedStatement ps = conn.prepareStatement("Select transportdependencies.serializers,transportdependencies.labels,"
+                   + "transport.transportType,transport.protocol,transport.version,"
+                   + "transport.security from "
+                   + "transportdependencies inner join  transport on "
+                   + "transportdependencies.TransportDependenciesId = transport.TransportDependenciesId "
+                   + "where transportdependencies.appDId=?");
+           ps.setLong(1, appdval);
+           java.sql.ResultSet rs = ps.executeQuery();
+           while (rs.next()) {
+               TransportDependency transpel = new TransportDependency();
+               transpel.serializers(TransportDependency.SerializersEnum.valueOf(rs.getString("serializers")));
+               List<String> labellist = new ArrayList();
+               labellist.add(rs.getString("labels"));
+               transpel.setLabels(labellist);
+               TransportDescriptor transport = new TransportDescriptor();
+               transport.setProtocol(rs.getString("protocol"));
+               transport.setSecurity(rs.getString("security"));
+               transport.setType(TransportDescriptor.TypeEnum.valueOf(rs.getString("transportType")));
+               transport.setVersion(rs.getString("version"));
+               transpel.setTransport(transport);
+               serTransportDependencies.add(transpel);
+           }
+           rs.close();
+           ps.close();
+
+       } catch (SQLException ex) {
+           Logger.getLogger(DatabaseDriver.class
+                   .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+       }
+       appdelem.setTransportDependencies(serTransportDependencies);
+
+       //Set TrafficRuleDescriptor
+       List<TrafficRuleDescriptor> appTrafficRule = new ArrayList();
+       List<Long> traffruleid = new ArrayList();
+       //retrieve traffic rules
+       try {
+           java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+           PreparedStatement ps = conn.prepareStatement("Select trafficRuleId,filterType,priority,action from "
+                   + "apptrafficrule where appDId=?");
+           ps.setLong(1, appdval);
+           java.sql.ResultSet rs = ps.executeQuery();
+           while (rs.next()) {
+               TrafficRuleDescriptor traffrule = new TrafficRuleDescriptor();
+               long servreqel = rs.getLong("trafficRuleId");
+               traffrule.setFilterType(TrafficRuleDescriptor.FilterTypeEnum.valueOf(rs.getString("filterType")));
+               traffrule.setTrafficRuleId(rs.getString("trafficRuleId"));
+               traffrule.setAction(ActionEnum.valueOf(rs.getString("action")));
+               traffrule.setPriority(new BigDecimal(rs.getString("trafficRuleId")));
+               appTrafficRule.add(traffrule);
+               traffruleid.add(servreqel);
+           }
+           rs.close();
+           ps.close();
+
+       } catch (SQLException ex) {
+           Logger.getLogger(DatabaseDriver.class
+                   .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+       }
+       for (int j = 0; j < traffruleid.size(); j++) {
+           //retrieve traffic filter
+           List<TrafficFilter> trafficFilter = new ArrayList();
+           try {
+               java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+               PreparedStatement ps = conn.prepareStatement("Select srcAddress,dstAddress,srcPort,dstPort,"
+                       + "protocol,token,srcTunnelAddress,dstTunnelAddress,srcTunnelPort,dstTunnelPort,"
+                       + "qci,dscp,tc from "
+                       + "trafficfilter where trafficRuleId=?");
+               ps.setLong(1, traffruleid.get(j));
+               java.sql.ResultSet rs = ps.executeQuery();
+               while (rs.next()) {
+                   TrafficFilter trafffilter = new TrafficFilter();
+                   trafffilter.setDscp(new BigDecimal(rs.getString("dscp")));
+                   trafffilter.setQci(new BigDecimal(rs.getString("qci")));
+                   trafffilter.setTc(new BigDecimal(rs.getString("tc")));
+                   List<String> strlist = new ArrayList();
+                   strlist.add(rs.getString("dstAddress"));
+                   trafffilter.setDstAddress(strlist);
+                   strlist = new ArrayList();
+                   strlist.add(rs.getString("dstPort"));
+                   trafffilter.setDstPort(strlist);
+                   strlist = new ArrayList();
+                   strlist.add(rs.getString("dstTunnelAddress"));
+                   trafffilter.setDstTunnelAddress(strlist);
+                   strlist = new ArrayList();
+                   strlist.add(rs.getString("dstTunnelPort"));
+                   trafffilter.setDstTunnelPort(strlist);
+                   strlist = new ArrayList();
+                   strlist.add(rs.getString("protocol"));
+                   trafffilter.setProtocol(strlist);
+                   strlist = new ArrayList();
+                   strlist.add(rs.getString("token"));
+                   trafffilter.setToken(strlist);
+                   strlist = new ArrayList();
+                   strlist.add(rs.getString("srcAddress"));
+                   trafffilter.setSrcAddress(strlist);
+                   strlist = new ArrayList();
+                   strlist.add(rs.getString("srcPort"));
+                   trafffilter.setSrcPort(strlist);
+                   strlist = new ArrayList();
+                   strlist.add(rs.getString("srcTunnelAddress"));
+                   trafffilter.setSrcTunnelAddress(strlist);
+                   strlist = new ArrayList();
+                   strlist.add(rs.getString("srcTunnelPort"));
+                   trafffilter.setSrcTunnelPort(strlist);
+                   trafficFilter.add(trafffilter);
+               }
+               rs.close();
+               ps.close();
+
+           } catch (SQLException ex) {
+               Logger.getLogger(DatabaseDriver.class
+                       .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+           }
+           appTrafficRule.get(j).setTrafficFilter(trafficFilter);
+           //retrieve traffic interfaces
+           List<InterfaceDescriptor> dstInterface = new ArrayList();
+           try {
+               java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+               PreparedStatement ps = conn.prepareStatement("Select dstinterface.interfaceType,dstinterface.srcMACAddress,"
+                       + "dstinterface.dstMACAddress,dstinterface.dstIPAddress,tunnelinfo.tunnelType,"
+                       + "tunnelinfo.tunnelDstAddress,tunnelinfo.tunnelSrcAddress,tunnelinfo.tunnelSpecificData from "
+                       + "dstinterface inner join  tunnelinfo on "
+                       + "dstinterface.dstInterfaceId = tunnelinfo.dstInterfaceId "
+                       + "where dstinterface.trafficRuleId=?");
+               ps.setLong(1, traffruleid.get(j));
+               java.sql.ResultSet rs = ps.executeQuery();
+               while (rs.next()) {
+                   InterfaceDescriptor intf = new InterfaceDescriptor();
+                   TunnelInfo tunnel = new TunnelInfo();
+                   tunnel.setTunnelDstAddress(rs.getString("tunnelDstAddress"));
+                   tunnel.setTunnelSpecificData(rs.getString("tunnelSpecificData"));
+                   tunnel.setTunnelSrcAddress(rs.getString("tunnelSrcAddress"));
+                   tunnel.setTunnelType(TunnelInfo.TunnelTypeEnum.valueOf(rs.getString("tunnelType")));
+                   intf.setTunnelInfo(tunnel);
+                   intf.setDstIPAddress(rs.getString("dstIPAddress"));
+                   intf.setDstMACAddress(rs.getString("dstMACAddress"));
+                   intf.setInterfaceType(InterfaceDescriptor.InterfaceTypeEnum.valueOf(rs.getString("interfaceType")));
+                   intf.setSrcMACAddress(rs.getString("srcMACAddress"));
+                   dstInterface.add(intf);
+               }
+               rs.close();
+               ps.close();
+
+           } catch (SQLException ex) {
+               Logger.getLogger(DatabaseDriver.class
+                       .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+           }
+           appTrafficRule.get(j).setDstInterface(dstInterface);
+       }
+       appdelem.setAppTrafficRule(appTrafficRule);
+
+       //Set appDNSRule
+       List<DNSRuleDescriptor> appDNSRule = new ArrayList();
+       try {
+           java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+           PreparedStatement ps = conn.prepareStatement("Select dnsRuleId,domainName,ipAddressType,ipAddress,ttl from "
+                   + "appdnsrule where appDId=?");
+           ps.setLong(1, appdval);
+           java.sql.ResultSet rs = ps.executeQuery();
+           while (rs.next()) {
+               DNSRuleDescriptor dnsrule = new DNSRuleDescriptor();
+               dnsrule.setDnsRuleId(String.valueOf(rs.getLong("serviceRequiredId")));
+               dnsrule.setDomainName(rs.getString("domainName"));
+               dnsrule.setIpAddress(rs.getString("ipAddress"));
+               dnsrule.setIpAddressType(DNSRuleDescriptor.IpAddressTypeEnum.valueOf(rs.getString("ipAddressType")));
+               dnsrule.setTtl(new BigDecimal(rs.getString("ttl")));
+               appDNSRule.add(dnsrule);
+           }
+           rs.close();
+           ps.close();
+
+       } catch (SQLException ex) {
+           Logger.getLogger(DatabaseDriver.class
+                   .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+       }
+       appdelem.setAppDNSRule(appDNSRule);
+
+       //Set LatencyDescriptor
+       LatencyDescriptor latency = new LatencyDescriptor();
+       try {
+           java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+           PreparedStatement ps = conn.prepareStatement("Select timeUnit,latency from "
+                   + "applatency where appDId=?");
+           ps.setLong(1, appdval);
+           java.sql.ResultSet rs = ps.executeQuery();
+           while (rs.next()) {
+               latency.setTimeUnit(rs.getString("timeUnit"));
+               latency.setLatency(new BigDecimal(rs.getString("latency")));
+           }
+           rs.close();
+           ps.close();
+
+       } catch (SQLException ex) {
+           Logger.getLogger(DatabaseDriver.class
+                   .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+       }
+       appdelem.setAppLatency(latency);
+
+       //Set Terminate App Instance OpConfig
+       TerminateAppInstanceOpConfig termopconf = new TerminateAppInstanceOpConfig();
+       //retrieve TerminateAppInstanceOpConfig
+       try {
+           java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+           PreparedStatement ps = conn.prepareStatement("Select minGracefulTerminationTimeout,macRecommendedGracefulTerminationTimeout from "
+                   + "terminateappinstanceopconfig where appDId=?");
+           ps.setLong(1, appdval);
+           java.sql.ResultSet rs = ps.executeQuery();
+           while (rs.next()) {
+               termopconf.setMacRecommendedGracefulTerminationTimeout(new BigDecimal(rs.getString("macRecommendedGracefulTerminationTimeout")));
+               termopconf.setMinGracefulTerminationTimeout(new BigDecimal(rs.getString("minGracefulTerminationTimeout")));
+           }
+           rs.close();
+           ps.close();
+
+       } catch (SQLException ex) {
+           Logger.getLogger(DatabaseDriver.class
+                   .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+       }
+       appdelem.setTerminateAppInstanceOpConfig(termopconf);
+
+       //Set Change App Instance StateOpConfig
+       ChangeAppInstanceStateOpConfig changeopconf = new ChangeAppInstanceStateOpConfig();
+       //retrieve ChangeAppInstanceOpConfig
+       try {
+           java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+           PreparedStatement ps = conn.prepareStatement("Select minGracefulTerminationTimeout,macRecommendedGracefulTerminationTimeout from "
+                   + "changeappinstancestateopconfig where appDId=?");
+           ps.setLong(1, appdval);
+           java.sql.ResultSet rs = ps.executeQuery();
+           while (rs.next()) {
+               changeopconf.setMacRecommendedGracefulStopTimeout(new BigDecimal(rs.getString("macRecommendedGracefulTerminationTimeout")));
+               changeopconf.setMinGracefulStopTimeout(new BigDecimal(rs.getString("minGracefulTerminationTimeout")));
+           }
+           rs.close();
+           ps.close();
+
+       } catch (SQLException ex) {
+           Logger.getLogger(DatabaseDriver.class
+                   .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+       }
+       appdelem.setChangeAppInstanceStateOpConfig(changeopconf);
+       
+       AdvertiseAppDIdReply appdidelem = new AdvertiseAppDIdReply(appdreq.getReqid(), appdelem);
+       System.out.println("DatabaseDriver --->  Post AdvertiseAppDIdReply Event");
+       SingletonEventBus.getBus().post(appdidelem);
     }
     
     @Subscribe
@@ -1140,6 +2872,235 @@ public class DatabaseDriver {
     }
 
     //////////////////Allocate Event Handlers///////////////////////////////
+       
+    
+    @Subscribe
+    public void handle_IntraPoPAllocateDbRequest(IntraPoPAllocateDbRequest dbquery) {
+        System.out.println("DatabaseDriver --->  Handle IntraPoPAllocateDbRequest Event");
+        
+        
+        // START - Insert servID into Service table
+        try {
+
+            java.sql.Connection conn = DbServiceDatasource.getInstance().getConnection();
+            PreparedStatement ps = conn.prepareStatement("INSERT INTO service (servId) VALUES(?)");
+            ps.setLong(1, dbquery.getServid());
+
+            ps.executeUpdate();
+            ps.close();
+
+        } catch (SQLIntegrityConstraintViolationException ex) {
+//            Logger.getLogger(ResourceSelectionLogic.class
+//                    .getName()).log(Level.SEVERE, null, ex);
+            System.out.println("handle_NetworkAllocateDBQuery ---> SQLIntegrityConstraintViolationException: ServiceId is already in the DB");
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseDriver.class
+                    .getName()).log(Level.SEVERE, null, ex);
+        }
+        //retrieve domid from abstractnfvipopid 
+        long domid = -1;
+        System.out.println("DatabaseDriver.handle_IntraPoPAllocateDbRequest ---> AbstrNfviPopId: " + dbquery.getNfvipopid() + "");
+        try {
+            java.sql.Connection conn = DbDomainDatasource.getInstance().getConnection();
+            PreparedStatement ps = conn.prepareStatement("Select domId from nfvipop where abstrNfviPopId=?");
+            ps.setLong(1, dbquery.getNfvipopid());
+            java.sql.ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                domid = rs.getLong("domId");
+                // vimlist.add(elementCount,vimElem);
+                //nfviPopIdList.add(elementCount,rs.getString("NfviPopId"));
+
+                System.out.println("DatabaseDriver.handle_IntraPoPAllocateDbRequest ---> domid: " + rs.getString("domId") + "");
+
+            }
+            rs.close();
+            ps.close();
+
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseDriver.class
+                    .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+        }
+        //Allocate IntraPoPAllocateVIMRequest
+        IntraPoPAllocateVIMRequest intrapopreq = new IntraPoPAllocateVIMRequest(dbquery.getReqid(), dbquery.getServid(),
+                                                    dbquery.getNfvipopid(), domid, dbquery.getIntrapopreq());
+        System.out.println("DatabaseDriver --->  Post IntraPoPAllocateVIMRequest Event");
+        SingletonEventBus.getBus().post(intrapopreq);
+        
+    }
+    
+    
+    @Subscribe
+    public void handle_IntraPoPAllocateVIMReply(IntraPoPAllocateVIMReply dbquery) {
+        System.out.println("DatabaseDriver --->  Handle IntraPoPAllocateVIMReply Event");
+        
+        
+        //Insert new intrapop service reply with the service id. Check E2ENetworkAllocate
+        long networkServId = -1;
+        long virtualnetworkId = -1;
+        
+        // Insert record in networkservices table//
+        try {
+
+            java.sql.Connection conn = DbServiceDatasource.getInstance().getConnection();
+
+            PreparedStatement ps = conn.prepareStatement("INSERT INTO networkservices "
+                    + "(reqId,"
+                    + "status,"
+                    + "servId,"
+                    + "logicalPathId)"
+                    + "VALUES(?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
+
+            ps.setLong(1, dbquery.getReqid());
+            ps.setString(2, "enabled");
+            ps.setLong(3, dbquery.getServid());
+            ps.setLong(4, Long.valueOf(-1));
+            //ps.setString(5,null);
+
+            ps.executeUpdate();
+            System.out.println("DatabaseDriver.handle_IntraPoPAllocateVIMReply ---> NetworkService instance inserted into DB");
+            ResultSet rs = ps.getGeneratedKeys();
+
+            if (rs != null && rs.next()) {
+                networkServId = rs.getLong(1);
+                System.out.println("DatabaseDriver.handle_IntraPoPAllocateVIMReply ---> netServId:" + networkServId + "");
+            }
+
+            ps.close();
+
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseDriver.class
+                    .getName()).log(Level.SEVERE, null, ex);
+        }
+
+        //END - Insert 
+        
+        //Insert network request service data
+        try {
+
+            java.sql.Connection conn = DbServiceDatasource.getInstance().getConnection();
+
+            // Insert  data into computeservicerequestdata table
+            PreparedStatement ps = conn.prepareStatement("INSERT INTO networkservicerequestdata\n"
+                    + "(locationConstraints,"
+                    + "reservationId,"
+                    + "affinityOrAntiAffinityConstraints,"
+                    + "resourceGroupId,"
+                    + "networkResourceType,"
+                    + "networkResourceName,"
+                    + "netServId)"
+                    + "VALUES (?,?)");
+
+            ps.setString(1, dbquery.getIntrapopreq().getLocationConstraints());
+            ps.setString(2, dbquery.getIntrapopreq().getReservationId());
+            ps.setString(3, dbquery.getIntrapopreq().getAffinityOrAntiAffinityConstraints());
+            ps.setString(4, dbquery.getIntrapopreq().getResourceGroupId());
+            ps.setString(5, dbquery.getIntrapopreq().getNetworkResourceType());
+            ps.setString(6, dbquery.getIntrapopreq().getNetworkResourceName());
+            ps.setLong(7, networkServId);
+            ps.executeUpdate();
+            System.out.println("DatabaseDriver.handle_IntraPoPAllocateVIMReply ---> AllocateNetworkRequest data inserted into DB");
+            ps.close();
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseDriver.class
+                    .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+        }
+        //END - Insert 
+
+        //Insert network response in virtual network
+        try {        
+
+
+                java.sql.Connection conn = DbServiceDatasource.getInstance().getConnection();
+                PreparedStatement ps = conn.prepareStatement("INSERT INTO mtpservdb.virtualnetwork\n"
+                        + "(networkResourceName,"
+                        + "segmentType,"
+                        + "isShared,"
+                        + "zoneId,"
+                        + "networkResourceId,"
+                        + "networkType,"
+                        + "operationalState,"
+                        + "sharingCriteria,"
+                        + "bandwidth,"
+                        + "nfviPopId,"
+                        + "netServId,"
+                        + "netResIdRef)"
+                        + "VALUES(?,?,?,?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
+                ps.setString(1, dbquery.getIntrapoprep().getNetworkData().getNetworkResourceName());
+                ps.setString(2, dbquery.getIntrapoprep().getNetworkData().getSegmentType());
+                ps.setBoolean(3,dbquery.getIntrapoprep().getNetworkData().isIsShared());
+                ps.setString(4, dbquery.getIntrapoprep().getNetworkData().getZoneId());
+                ps.setString(5, dbquery.getIntrapoprep().getNetworkData().getNetworkResourceId());
+                ps.setString(6, dbquery.getIntrapoprep().getNetworkData().getNetworkType());
+                ps.setString(7, dbquery.getIntrapoprep().getNetworkData().getOperationalState());
+                ps.setString(8, dbquery.getIntrapoprep().getNetworkData().getSharingCriteria());
+                ps.setBigDecimal(9, dbquery.getIntrapoprep().getNetworkData().getBandwidth());
+                ps.setLong(10, dbquery.getNfvipopid());
+                ps.setLong(11, networkServId);
+                ps.setLong(12, Long.valueOf(-1));
+
+                ps.executeUpdate();
+                System.out.println("DatabaseDriver.handle_IntraPoPAllocateVIMReply ---> VirtualNetwork instance inserted into DB");
+                ResultSet rs = ps.getGeneratedKeys();
+
+                if (rs != null && rs.next()) {
+                    virtualnetworkId = rs.getLong(1);
+                    System.out.println("DatabaseDriver.handle_IntraPoPAllocateVIMReply ---> netServId:" + networkServId + "");
+                }
+                rs.close();
+                ps.close();
+                //Insert entries in NETWORK_SUBSET table
+                // TO DO - Fix this part after the VirtualNetwork class is compliant with IFA005 
+                if (dbquery.getIntrapoprep().getSubnetData() != null) {
+                    PreparedStatement ps_subnet = conn.prepareStatement("INSERT INTO networksubnet"
+                            + "(resourceId,ipVersion,"
+                            + "gatewayIp,cidr,isDhcpEnabled,"
+                            + "addressPool,"
+                            + "virtualNetworkId) VALUES(?,?)");
+
+                    ps_subnet.setString(1,dbquery.getIntrapoprep().getSubnetData().getResourceId());
+                    ps_subnet.setString(2,dbquery.getIntrapoprep().getSubnetData().getIpVersion());
+                    ps_subnet.setString(3,dbquery.getIntrapoprep().getSubnetData().getGatewayIp());
+                    ps_subnet.setString(4,dbquery.getIntrapoprep().getSubnetData().getCidr());
+                    ps_subnet.setBoolean(5,dbquery.getIntrapoprep().getSubnetData().isIsDhcpEnabled());
+                    ps_subnet.setString(6,dbquery.getIntrapoprep().getSubnetData().getAddressPool());
+                    ps_subnet.setLong(7,virtualnetworkId);
+                    System.out.println("DatabaseDriver.handle_IntraPoPAllocateVIMReply ---> Subnet entry inserted into DB");
+                    ps_subnet.close();
+                }
+//Insert entries in VIRTUAL_NETWORK_PORT table
+                //TO DO - Complete after VIRTUAL_NETWORK_PORT class is fixed (related to IFA005) 
+                if (dbquery.getIntrapoprep().getNetworkPortData() != null) {
+
+                    PreparedStatement ps_port = conn.prepareStatement("INSERT INTO virtualnetworkport "
+                            + "(resourceId, portType,attachedResourceId,segmentId,bandwidth,virtualNetworkId)"
+                            + "VALUES(?,?,?,?,?,?,?)");
+
+                    ps_port.setString(1, dbquery.getIntrapoprep().getNetworkPortData().getResourceId());
+                    ps_port.setString(2, dbquery.getIntrapoprep().getNetworkPortData().getPortType());
+                    ps_port.setString(3, dbquery.getIntrapoprep().getNetworkPortData().getAttachedResourceId());
+                    ps_port.setString(4, dbquery.getIntrapoprep().getNetworkPortData().getSegmentId());
+                    ps_port.setBigDecimal(5, dbquery.getIntrapoprep().getNetworkPortData().getBandwidth());
+                    ps_port.setLong(6, virtualnetworkId);
+                    System.out.println("DatabaseDriver.handle_IntraPoPAllocateVIMReply ---> VirtualNetworkPort entry inserted into DB");
+                    ps_port.close();
+  
+                }
+            } catch (SQLException ex) {
+                Logger.getLogger(DatabaseDriver.class
+                        .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+            }
+            //Set intraPoPReq with the resource id
+            dbquery.getIntrapoprep().getNetworkData().setNetworkResourceId(String.valueOf(networkServId));
+            
+            //Allocate IntraPoPAllocateVIMRequest
+            IntraPoPAllocateDbReply intrapopreq = new IntraPoPAllocateDbReply(dbquery.getReqid(), dbquery.getServid(),
+                    dbquery.getNfvipopid(), dbquery.getIntrapoprep());
+            System.out.println("DatabaseDriver --->  Post IntraPoPAllocateDbReply Event");
+            SingletonEventBus.getBus().post(intrapopreq);
+    }
+    
+    
+    
     @Subscribe
     public void handle_ComputeAllocateDBQuery(ComputeAllocateDBQuery dbquery) {
         System.out.println("DatabaseDriver --->  Handle ComputeAllocateDBQuery Event");
@@ -1814,11 +3775,499 @@ public class DatabaseDriver {
         }
         //update the virtualcompute with the virtualcomute id to provide to SO 
         dboutcome.getComputereply().setComputeId(Long.toString(virtualcomputeId));
-        E2EComputeAllocateInstanceOutcome allinst = new E2EComputeAllocateInstanceOutcome(dboutcome.getReqid(),
-                dboutcome.getServid(), dboutcome.getComputereply(), dboutcome.isOutcome());
+        //Check if MEC domain should be configured
+        if (dboutcome.getComputereply().getMeCappID().equals("") == false) {
+            //MEC domain has to create an APPD instance
+
+            String mecdom = null;
+
+            //Retrieve MEC domain id from VIM domain ID
+            try {
+                java.sql.Connection conn = DbDomainDatasource.getInstance().getConnection();
+                PreparedStatement ps = conn.prepareStatement("Select mecAssociatedDomainID from domain where domId=?");
+                ps.setLong(1, dboutcome.getDomid());
+                java.sql.ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+
+                    mecdom = rs.getString("mecAssociatedDomainID");
+
+                }
+                rs.close();
+                ps.close();
+
+            } catch (SQLException ex) {
+                Logger.getLogger(DatabaseDriver.class
+                        .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+            }
+            //retrieve data from appd using the appdid and fill with IP adrress from VirtualCompute
+            MECTrafficServiceCreationRequest mecapp = new MECTrafficServiceCreationRequest();
+            
+            //Set request id
+            mecapp.setRequestId(String.valueOf(dboutcome.getReqid()));
+            //Set Region ID
+            List<MetaDataInner> metadata = new ArrayList();
+            metadata = dboutcome.getComputerequest().getMetadata();
+            for (int i=0; i < metadata.size(); i++) {
+                if (metadata.get(i).getKey().compareTo("RegionId") == 0) {
+                    mecapp.setRegionId(metadata.get(i).getValue());
+                }
+            } 
+
+            //Set appservice required
+            //Retrieve App service List required from AppD DB
+
+            List<Long> servrequiredid = new ArrayList();
+            List<ServiceDependency> appServiceRequired = new ArrayList();
+            
+            try {
+                java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+                PreparedStatement ps = conn.prepareStatement("Select serviceRequiredId,serName,version,requestedPermissions from "
+                        + "appservicerequired where appDId=?");
+                ps.setLong(1, Long.valueOf(dboutcome.getComputereply().getMeCappID()));
+                java.sql.ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+                    ServiceDependency servicerequire = new ServiceDependency();
+                    long servreqel = rs.getLong("serviceRequiredId");
+                    servicerequire.setSerName(rs.getString("serName"));
+                    servicerequire.setVersion(rs.getString("version"));
+                    servicerequire.setRequestedPermissions(rs.getString("requestedPermissions"));
+                    appServiceRequired.add(servicerequire);
+                    servrequiredid.add(servreqel);
+                }
+                rs.close();
+                ps.close();
+
+            } catch (SQLException ex) {
+                Logger.getLogger(DatabaseDriver.class
+                        .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+            }
+            for (int j = 0; j < servrequiredid.size(); j++) {
+                //Retrieve ser Category
+                CategoryRef catref = new CategoryRef();
+                try {
+                    java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+                    PreparedStatement ps = conn.prepareStatement("Select href,id,name,version from "
+                            + "sercategory where serviceRequiredId=?");
+                    ps.setLong(1, servrequiredid.get(j));
+                    java.sql.ResultSet rs = ps.executeQuery();
+                    while (rs.next()) {
+                        catref.setHref(rs.getString("href"));
+                        catref.setId(rs.getString("id"));
+                        catref.setName(rs.getString("name"));
+                        catref.setVersion(rs.getString("version"));
+                    }
+                    rs.close();
+                    ps.close();
+
+                } catch (SQLException ex) {
+                    Logger.getLogger(DatabaseDriver.class
+                            .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+                }
+                appServiceRequired.get(j).setSerCategory(catref);
+                //Retrieve transport dependencies
+                List<TransportDependency> serTransportDependencies = new ArrayList();
+                try {
+                    java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+                    PreparedStatement ps = conn.prepareStatement("Select sertransportdependencies.serializers,sertransportdependencies.labels,"
+                            + "sertransport.transportType,sertransport.protocol,sertransport.version,"
+                            + "sertransport.security from "
+                            + "sertransportdependencies inner join  sertransport on "
+                            + "sertransportdependencies.serTransportDependenciesId = sertransport.serTransportDependenciesId "
+                            + "where sertransportdependencies.serviceRequiredId=?");
+                    ps.setLong(1, servrequiredid.get(j));
+                    java.sql.ResultSet rs = ps.executeQuery();
+                    while (rs.next()) {
+                        TransportDependency transpel = new TransportDependency();
+                        transpel.serializers(TransportDependency.SerializersEnum.valueOf(rs.getString("serializers")));
+                        List<String> labellist = new ArrayList();
+                        labellist.add(rs.getString("labels"));
+                        transpel.setLabels(labellist);
+                        TransportDescriptor transport = new TransportDescriptor();
+                        transport.setProtocol(rs.getString("protocol"));
+                        transport.setSecurity(rs.getString("security"));
+                        transport.setType(TransportDescriptor.TypeEnum.valueOf(rs.getString("transportType")));
+                        transport.setVersion(rs.getString("version"));
+                        transpel.setTransport(transport);
+                        serTransportDependencies.add(transpel);
+                    }
+                    rs.close();
+                    ps.close();
+
+                } catch (SQLException ex) {
+                    Logger.getLogger(DatabaseDriver.class
+                            .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+                }
+                appServiceRequired.get(j).serTransportDependencies(serTransportDependencies);
+            }
+            mecapp.setAppServiceRequired(appServiceRequired);
+            
+            //Set appservice optional
+            //Retrieve App service List required from AppD DB
+
+            List<Long> servroptionalid = new ArrayList();
+            List<ServiceDependency> appServiceOptional = new ArrayList();
+            
+            try {
+                java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+                PreparedStatement ps = conn.prepareStatement("Select serviceRequiredId,serName,version,requestedPermissions from "
+                        + "appserviceoptional where appDId=?");
+                ps.setLong(1, Long.valueOf(dboutcome.getComputereply().getMeCappID()));
+                java.sql.ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+                    ServiceDependency servicerequire = new ServiceDependency();
+                    long servreqel = rs.getLong("serviceRequiredId");
+                    servicerequire.setSerName(rs.getString("serName"));
+                    servicerequire.setVersion(rs.getString("version"));
+                    servicerequire.setRequestedPermissions(rs.getString("requestedPermissions"));
+                    appServiceOptional.add(servicerequire);
+                    servroptionalid.add(servreqel);
+                }
+                rs.close();
+                ps.close();
+
+            } catch (SQLException ex) {
+                Logger.getLogger(DatabaseDriver.class
+                        .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+            }
+            for (int j = 0; j < servroptionalid.size(); j++) {
+                //Retrieve ser Category
+                CategoryRef catref = new CategoryRef();
+                try {
+                    java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+                    PreparedStatement ps = conn.prepareStatement("Select href,id,name,version from "
+                            + "sercategoryoptional where serviceRequiredId=?");
+                    ps.setLong(1, servrequiredid.get(j));
+                    java.sql.ResultSet rs = ps.executeQuery();
+                    while (rs.next()) {
+                        catref.setHref(rs.getString("href"));
+                        catref.setId(rs.getString("id"));
+                        catref.setName(rs.getString("name"));
+                        catref.setVersion(rs.getString("version"));
+                    }
+                    rs.close();
+                    ps.close();
+
+                } catch (SQLException ex) {
+                    Logger.getLogger(DatabaseDriver.class
+                            .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+                }
+                appServiceOptional.get(j).setSerCategory(catref);
+                //Retrieve transport dependencies
+                List<TransportDependency> serTransportDependencies = new ArrayList();
+                try {
+                    java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+                    PreparedStatement ps = conn.prepareStatement("Select sertransportdependenciesoptional.serializers,sertransportdependenciesoptional.labels,"
+                            + "transportoptional.transportType,transportoptional.protocol,transportoptional.version,"
+                            + "transportoptional.security from "
+                            + "sertransportdependenciesoptional inner join  sertransportoptional on "
+                            + "sertransportdependenciesoptional.serTransportDependenciesId = transportoptional.serTransportDependenciesId "
+                            + "where transportdependenciesoptional.serviceRequiredId=?");
+                    ps.setLong(1, servrequiredid.get(j));
+                    java.sql.ResultSet rs = ps.executeQuery();
+                    while (rs.next()) {
+                        TransportDependency transpel = new TransportDependency();
+                        transpel.serializers(TransportDependency.SerializersEnum.valueOf(rs.getString("serializers")));
+                        List<String> labellist = new ArrayList();
+                        labellist.add(rs.getString("labels"));
+                        transpel.setLabels(labellist);
+                        TransportDescriptor transport = new TransportDescriptor();
+                        transport.setProtocol(rs.getString("protocol"));
+                        transport.setSecurity(rs.getString("security"));
+                        transport.setType(TransportDescriptor.TypeEnum.valueOf(rs.getString("transportType")));
+                        transport.setVersion(rs.getString("version"));
+                        transpel.setTransport(transport);
+                        serTransportDependencies.add(transpel);
+                    }
+                    rs.close();
+                    ps.close();
+
+                } catch (SQLException ex) {
+                    Logger.getLogger(DatabaseDriver.class
+                            .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+                }
+                appServiceOptional.get(j).serTransportDependencies(serTransportDependencies);
+            }
+            mecapp.setAppServiceOptional(appServiceOptional);
+                        
+            //Set transport dependencies
+            List<TransportDependency> serTransportDependencies = new ArrayList();
+            try {
+                java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+                PreparedStatement ps = conn.prepareStatement("Select transportdependencies.serializers,transportdependencies.labels,"
+                        + "transport.transportType,transport.protocol,transport.version,"
+                        + "transport.security from "
+                        + "transportdependencies inner join  transport on "
+                        + "transportdependencies.TransportDependenciesId = transport.TransportDependenciesId "
+                        + "where transportdependencies.appDId=?");
+                ps.setLong(1, Long.valueOf(dboutcome.getComputereply().getMeCappID()));
+                java.sql.ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+                    TransportDependency transpel = new TransportDependency();
+                    transpel.serializers(TransportDependency.SerializersEnum.valueOf(rs.getString("serializers")));
+                    List<String> labellist = new ArrayList();
+                    labellist.add(rs.getString("labels"));
+                    transpel.setLabels(labellist);
+                    TransportDescriptor transport = new TransportDescriptor();
+                    transport.setProtocol(rs.getString("protocol"));
+                    transport.setSecurity(rs.getString("security"));
+                    transport.setType(TransportDescriptor.TypeEnum.valueOf(rs.getString("transportType")));
+                    transport.setVersion(rs.getString("version"));
+                    transpel.setTransport(transport);
+                    serTransportDependencies.add(transpel);
+                }
+                rs.close();
+                ps.close();
+
+            } catch (SQLException ex) {
+                Logger.getLogger(DatabaseDriver.class
+                        .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+            }
+            mecapp.setTransportDependencies(serTransportDependencies);
+            
+            //Set TrafficRuleDescriptor
+            List<TrafficRuleDescriptor> appTrafficRule = new ArrayList();
+            List<Long> traffruleid = new ArrayList();
+            //retrieve traffic rules
+            try {
+                java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+                PreparedStatement ps = conn.prepareStatement("Select trafficRuleId,filterType,priority,action from "
+                        + "apptrafficrule where appDId=?");
+                ps.setLong(1, Long.valueOf(dboutcome.getComputereply().getMeCappID()));
+                java.sql.ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+                    TrafficRuleDescriptor traffrule = new TrafficRuleDescriptor();
+                    long servreqel = rs.getLong("trafficRuleId");
+                    traffrule.setFilterType(TrafficRuleDescriptor.FilterTypeEnum.valueOf(rs.getString("filterType")));
+                    traffrule.setTrafficRuleId(rs.getString("trafficRuleId"));
+                    traffrule.setAction(ActionEnum.valueOf(rs.getString("action")));
+                    traffrule.setPriority(new BigDecimal(rs.getString("trafficRuleId")));
+                    appTrafficRule.add(traffrule);
+                    traffruleid.add(servreqel);
+                }
+                rs.close();
+                ps.close();
+
+            } catch (SQLException ex) {
+                Logger.getLogger(DatabaseDriver.class
+                        .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+            }
+            for (int j = 0; j < traffruleid.size(); j++) {
+                //retrieve traffic filter
+                List<TrafficFilter> trafficFilter = new ArrayList();
+                try {
+                    java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+                    PreparedStatement ps = conn.prepareStatement("Select srcAddress,dstAddress,srcPort,dstPort,"
+                            + "protocol,token,srcTunnelAddress,dstTunnelAddress,srcTunnelPort,dstTunnelPort,"
+                            + "qci,dscp,tc from "
+                            + "trafficfilter where trafficRuleId=?");
+                    ps.setLong(1, traffruleid.get(j));
+                    java.sql.ResultSet rs = ps.executeQuery();
+                    while (rs.next()) {
+                        TrafficFilter trafffilter = new TrafficFilter(); 
+                        trafffilter.setDscp(new BigDecimal(rs.getString("dscp")));
+                        trafffilter.setQci(new BigDecimal(rs.getString("qci")));
+                        trafffilter.setTc(new BigDecimal(rs.getString("tc")));
+                        List<String> strlist = new ArrayList();
+                        strlist.add(rs.getString("dstAddress"));
+                        trafffilter.setDstAddress(strlist);
+                        strlist = new ArrayList();
+                        strlist.add(rs.getString("dstPort"));
+                        trafffilter.setDstPort(strlist);
+                        strlist = new ArrayList();
+                        strlist.add(rs.getString("dstTunnelAddress"));
+                        trafffilter.setDstTunnelAddress(strlist);
+                        strlist = new ArrayList();
+                        strlist.add(rs.getString("dstTunnelPort"));
+                        trafffilter.setDstTunnelPort(strlist);
+                        strlist = new ArrayList();
+                        strlist.add(rs.getString("protocol"));
+                        trafffilter.setProtocol(strlist);
+                        strlist = new ArrayList();
+                        strlist.add(rs.getString("token"));
+                        trafffilter.setToken(strlist);
+                        strlist = new ArrayList();
+                        strlist.add(rs.getString("srcAddress"));
+                        trafffilter.setSrcAddress(strlist);
+                        strlist = new ArrayList();
+                        strlist.add(rs.getString("srcPort"));
+                        trafffilter.setSrcPort(strlist);
+                        strlist = new ArrayList();
+                        strlist.add(rs.getString("srcTunnelAddress"));
+                        trafffilter.setSrcTunnelAddress(strlist);
+                        strlist = new ArrayList();
+                        strlist.add(rs.getString("srcTunnelPort"));
+                        trafffilter.setSrcTunnelPort(strlist);
+                        trafficFilter.add(trafffilter);
+                    }
+                    rs.close();
+                    ps.close();
+
+                } catch (SQLException ex) {
+                    Logger.getLogger(DatabaseDriver.class
+                            .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+                }
+                appTrafficRule.get(j).setTrafficFilter(trafficFilter);
+                //retrieve traffic interfaces
+                List<InterfaceDescriptor> dstInterface = new ArrayList();
+                try {
+                    java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+                    PreparedStatement ps = conn.prepareStatement("Select dstinterface.interfaceType,dstinterface.srcMACAddress,"
+                            + "dstinterface.dstMACAddress,dstinterface.dstIPAddress,tunnelinfo.tunnelType,"
+                            + "tunnelinfo.tunnelDstAddress,tunnelinfo.tunnelSrcAddress,tunnelinfo.tunnelSpecificData from "
+                            + "dstinterface inner join  tunnelinfo on "
+                            + "dstinterface.dstInterfaceId = tunnelinfo.dstInterfaceId "
+                            + "where dstinterface.trafficRuleId=?");
+                    ps.setLong(1, traffruleid.get(j));
+                    java.sql.ResultSet rs = ps.executeQuery();
+                    while (rs.next()) {
+                        InterfaceDescriptor intf = new InterfaceDescriptor();
+                        TunnelInfo tunnel = new TunnelInfo();
+                        tunnel.setTunnelDstAddress(rs.getString("tunnelDstAddress"));
+                        tunnel.setTunnelSpecificData(rs.getString("tunnelSpecificData"));
+                        tunnel.setTunnelSrcAddress(rs.getString("tunnelSrcAddress"));
+                        tunnel.setTunnelType(TunnelInfo.TunnelTypeEnum.valueOf(rs.getString("tunnelType")));
+                        intf.setTunnelInfo(tunnel);
+                        intf.setDstIPAddress(rs.getString("dstIPAddress"));
+                        intf.setDstMACAddress(rs.getString("dstMACAddress"));
+                        intf.setInterfaceType(InterfaceDescriptor.InterfaceTypeEnum.valueOf(rs.getString("interfaceType")));
+                        intf.setSrcMACAddress(rs.getString("srcMACAddress"));
+                        dstInterface.add(intf);
+                    }
+                    rs.close();
+                    ps.close();
+
+                } catch (SQLException ex) {
+                    Logger.getLogger(DatabaseDriver.class
+                            .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+                }
+                appTrafficRule.get(j).setDstInterface(dstInterface);
+            }
+            mecapp.setAppTrafficRule(appTrafficRule);
+            
+            //Set appDNSRule
+            List<DNSRuleDescriptor> appDNSRule = new ArrayList();
+            try {
+                java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+                PreparedStatement ps = conn.prepareStatement("Select dnsRuleId,domainName,ipAddressType,ipAddress,ttl from "
+                        + "appdnsrule where appDId=?");
+                ps.setLong(1, Long.valueOf(dboutcome.getComputereply().getMeCappID()));
+                java.sql.ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+                    DNSRuleDescriptor dnsrule = new DNSRuleDescriptor();
+                    dnsrule.setDnsRuleId(String.valueOf(rs.getLong("serviceRequiredId")));
+                    dnsrule.setDomainName(rs.getString("domainName"));
+                    dnsrule.setIpAddress(rs.getString("ipAddress"));
+                    dnsrule.setIpAddressType(DNSRuleDescriptor.IpAddressTypeEnum.valueOf(rs.getString("ipAddressType")));
+                    dnsrule.setTtl(new BigDecimal(rs.getString("ttl")));
+                    appDNSRule.add(dnsrule);
+                }
+                rs.close();
+                ps.close();
+
+            } catch (SQLException ex) {
+                Logger.getLogger(DatabaseDriver.class
+                        .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+            }
+            mecapp.setAppDNSRule(appDNSRule);
+            
+            //Set LatencyDescriptor
+            LatencyDescriptor latency = new LatencyDescriptor();
+            try {
+                java.sql.Connection conn = DbAppDDatasource.getInstance().getConnection();
+                PreparedStatement ps = conn.prepareStatement("Select timeUnit,latency from "
+                        + "applatency where appDId=?");
+                ps.setLong(1, Long.valueOf(dboutcome.getComputereply().getMeCappID()));
+                java.sql.ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+                    latency.setTimeUnit(rs.getString("timeUnit"));
+                    latency.setLatency(new BigDecimal(rs.getString("latency")));
+                }
+                rs.close();
+                ps.close();
+
+            } catch (SQLException ex) {
+                Logger.getLogger(DatabaseDriver.class
+                        .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+            }
+            mecapp.setAppLatency(latency);
+            
+            //Send event to SBI for MEC
+            ComputeAllocateMECReq mecallreq = new ComputeAllocateMECReq(dboutcome.getReqid(), dboutcome.getServid(),
+                   Long.valueOf(mecdom), mecapp, dboutcome.getComputereply());
+            System.out.println("DatabaseDriver --> Post MECallocationRequest Event");
+            SingletonEventBus.getBus().post(mecallreq);
+            
+        } else {
+            E2EComputeAllocateInstanceOutcome allinst = new E2EComputeAllocateInstanceOutcome(dboutcome.getReqid(),
+                    dboutcome.getServid(), dboutcome.getComputereply(), dboutcome.isOutcome());
+            System.out.println("DatabaseDriver --> Post E2EComputeAllocateInstanceOutcome Event");
+            SingletonEventBus.getBus().post(allinst);
+        }
+    }
+    
+    @Subscribe
+    public void handle_ComputeAllocateMECReply(ComputeAllocateMECReply allmecrep) {
+        System.out.println("ResouceOrchestration --> Handle handle_ComputeAllocateVIMReply Event");
+        
+        if (allmecrep.getMecreqid().equals("")) {
+            E2EComputeAllocateInstanceOutcome allinst = new E2EComputeAllocateInstanceOutcome(allmecrep.getReqid(),
+                    allmecrep.getServid(), allmecrep.getVmreq(), false);
+            System.out.println("DatabaseDriver --> Post E2EComputeAllocateInstanceOutcome Event");
+            SingletonEventBus.getBus().post(allinst);
+        }
+        //Create entry in mec service instances
+        try {
+
+            java.sql.Connection conn = DbServiceDatasource.getInstance().getConnection();
+            PreparedStatement ps = conn.prepareStatement("INSERT INTO mec_service_instances (appInstanceId,mecdomId,computeServiceId) VALUES(?,?,?)");
+            ps.setString(1, allmecrep.getMecreqid());
+            ps.setString(1, String.valueOf(allmecrep.getMecdomid()));
+            ps.setString(1, allmecrep.getVmreq().getComputeId());
+            
+            ps.executeUpdate();
+            ps.close();
+
+        } catch (SQLIntegrityConstraintViolationException ex) {
+//            Logger.getLogger(ResourceSelectionLogic.class
+//                    .getName()).log(Level.SEVERE, null, ex);
+            System.out.println("DatabaseDriver.handle_ComputeAllocateMECReply ---> SQLIntegrityConstraintViolationException: ServiceId is already in the DB");
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseDriver.class
+                    .getName()).log(Level.SEVERE, null, ex);
+        }
+        E2EComputeAllocateInstanceOutcome allinst = new E2EComputeAllocateInstanceOutcome(allmecrep.getReqid(),
+                allmecrep.getServid(), allmecrep.getVmreq(), true);
         System.out.println("DatabaseDriver --> Post E2EComputeAllocateInstanceOutcome Event");
         SingletonEventBus.getBus().post(allinst);
 
+    }
+    
+    @Subscribe
+    public void handle_ComputeTerminateMECReply(ComputeTerminateMECReply allmecrep) {
+        System.out.println("DatabaseDriver --> Handle ComputeTerminateMECReply Event");
+        //delete MEC instances from DB
+        //Remove entry from ComputeServices
+        for (int i = 0 ; i < allmecrep.getComputereq().size(); i++) {
+            try {
+
+                java.sql.Connection conn = DbServiceDatasource.getInstance().getConnection();
+                PreparedStatement ps = conn.prepareStatement("DELETE FROM mec_service_instances WHERE computeServiceId=?", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+
+                ps.setLong(1, Long.valueOf(allmecrep.getComputereq().get(i)));
+                ps.executeUpdate();
+                ps.close();
+
+            } catch (SQLException ex) {
+                Logger.getLogger(DatabaseDriver.class
+                        .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+            }
+        }    
+        //Send ComputeTerminateDBQuery
+        ComputeTerminateDBQuery dbev = new ComputeTerminateDBQuery(allmecrep.getReqid(),
+                allmecrep.getServid(), allmecrep.getComputereq());
+        System.out.println("DatabaseDriver --> Post ComputeTerminateDBQuery Event");
+        SingletonEventBus.getBus().post(dbev);
+        
     }
 
     @Subscribe
@@ -2277,8 +4726,9 @@ public class DatabaseDriver {
                                 + "networkType,"
                                 + "netServId) VALUES(?,?,?)");
                         
-                        //TO DO - Add missing paramenters
-                        ps_netdata.setLong(1, allocNetworkReq.getReqBandwidth().longValue());
+                        
+                        ps_netdata.setLong(1, allocNetworkReq.getLogicalLinkPathList().get(0).getReqBandwidth().longValue());
+                        //ps_netdata.setLong(1, 5000000);
                         ps_netdata.setString(2, allocNetworkReq.getInterNfviPopNetworkType());
                         ps_netdata.setLong(3, networkServId);
                         ps_netdata.executeUpdate();
@@ -2300,7 +4750,9 @@ public class DatabaseDriver {
 
                         //TO DO - Add missing attributes
                        ps_qos.setString(1, "delay");
-                       ps_qos.setBigDecimal(2, dboutcome.getNetworkRequest().getReqLatency());
+
+                       ps_qos.setBigDecimal(2, dboutcome.getNetworkRequest().getLogicalLinkPathList().get(0).getReqLatency());
+                       //ps_qos.setBigDecimal(2, new BigDecimal(10.0));
                        ps_qos.setLong(3, networkServId);
                        ps_qos.executeUpdate();
                        System.out.println("DatabaseDriver.handle_NetworkAllocateDBQueryOutcome ---> QoS entry inserted into DB");
@@ -2374,8 +4826,8 @@ public class DatabaseDriver {
 
 
 
-        //Amount of Bandwidth released from the Capacity
-long bandwidth = dboutcome.getNetworkRequest().getReqBandwidth().longValue();
+//Amount of Bandwidth released from the Capacity
+long bandwidth = dboutcome.getNetworkRequest().getLogicalLinkPathList().get(0).getReqBandwidth().longValue();
 //long  bandwidth = 5000000;
 
 
@@ -2562,6 +5014,60 @@ long bandwidth = dboutcome.getNetworkRequest().getReqBandwidth().longValue();
     }
 
     //////////////////Terminate Event Handlers///////////////////////////////
+    
+    
+    @Subscribe
+    public void handle_ComputeTerminateMECQuery(ComputeTerminateMECQuery dbquery) {
+        System.out.println("DatabaseDriver ---> Handle ComputeTerminateMECQuery Event");
+
+        //START - Retrieve from DB the list of mec domid  
+        ArrayList<Long> mecdomlist = new ArrayList();
+        ArrayList<String> mecreqlist = new ArrayList();
+        
+        List<String> computeIdList = dbquery.getComputereq();
+
+        long size = dbquery.getComputereq().size();
+
+        // while (computeIdList!=null){
+        for (int i = 0; i < size; i++) {
+            String computeServId = computeIdList.get(i);
+
+            // Retrieve from DB the mec service instance to remove
+            try {
+                java.sql.Connection conn = DbServiceDatasource.getInstance().getConnection();
+                PreparedStatement ps = conn.prepareStatement("SELECT appInstanceId,mecdomId FROM mtpservdb.mec_service_instances where computeServiceId=?");
+                ps.setString(1, computeServId);
+                java.sql.ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+                    mecdomlist.add(Long.valueOf(rs.getString("mecdomId")));
+                    mecreqlist.add(rs.getString("appInstanceId"));
+                    System.out.println("DatabaseDriver.handle_ComputeTerminateDBQuery ---> VM ID: " + rs.getString("computeId") + "");
+                }
+                rs.close();
+                ps.close();
+            } catch (SQLException ex) {
+                Logger.getLogger(DatabaseDriver.class
+                        .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+            } 
+        }
+        
+        if (mecdomlist.size() == 0) {
+            //no MEC instance to remove. call the ComputeTerminateDBQuery 
+            ComputeTerminateDBQuery dbev = new ComputeTerminateDBQuery(dbquery.getReqid(),
+                dbquery.getServid(), dbquery.getComputereq());
+            System.out.println("DatabaseDriver --> Post ComputeTerminateDBQuery Event");      
+            SingletonEventBus.getBus().post(dbev);
+        } else {
+            //Call MEC terminate instance
+            ComputeTerminateMECReq dbev = new ComputeTerminateMECReq(dbquery.getReqid(),
+                dbquery.getServid(), dbquery.getComputereq(), mecreqlist, mecdomlist);
+            System.out.println("DatabaseDriver ---> Post ComputeTerminateMECReq Event");
+            SingletonEventBus.getBus().post(dbev);
+        }
+
+    }        
+            
+            
     @Subscribe
     public void handle_ComputeTerminateDBQuery(ComputeTerminateDBQuery dbquery) {
         System.out.println("DatabaseDriver ---> Handle ComputeTerminateDBQuery Event");
@@ -2570,20 +5076,23 @@ long bandwidth = dboutcome.getNetworkRequest().getReqBandwidth().longValue();
         //list of domains (domId) to call for compute resource termination 
         ArrayList<Long> domlist = new ArrayList();
         ArrayList<Long> poplist = new ArrayList();
+        // List of Virtual Machine identifiers for which the termination is to be requested 
+          ArrayList<String> vmIdList = new ArrayList(); 
+        
         List<String> computeIdList = dbquery.getComputereq();
 
         long size = dbquery.getComputereq().size();
 
         // while (computeIdList!=null){
         for (int i = 0; i < size; i++) {
-
+        String computeServId = computeIdList.get(i);
             try {
                 //String computeServId=computeIdList.remove(0).getNetworkId();
-                String computeServId = computeIdList.get(i);
+                
                 java.sql.Connection conn = DbServiceDatasource.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement("select domId, mtpdomdb.nfvipop.nfviPopId from mtpdomdb.nfvipop inner join mtpservdb.computeservices\n"
                         + "on mtpservdb.computeservices.computeServiceId=?\n"
-                        + "where mtpservdb.computeservices.nfviPopId=mtpdomdb.nfvipop.nfviPopId;");
+                        + "where mtpservdb.computeservices.nfviPopId=mtpdomdb.nfvipop.nfviPopId");
                 ps.setString(1, computeServId);
                 java.sql.ResultSet rs = ps.executeQuery();
                 while (rs.next()) {
@@ -2601,11 +5110,37 @@ long bandwidth = dboutcome.getNetworkRequest().getReqBandwidth().longValue();
                 Logger.getLogger(DatabaseDriver.class
                         .getName()).log(Level.SEVERE, ex.getMessage(), ex);
             }
+            
+            
+            // Retrieve from DB the Virtual Machine ID
+            try { 
+                java.sql.Connection conn = DbServiceDatasource.getInstance().getConnection();
+                PreparedStatement ps = conn.prepareStatement("SELECT computeId FROM mtpservdb.virtualcompute where computeServiceId=?");
+                ps.setString(1, computeServId);
+                java.sql.ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+                    vmIdList.add(rs.getString("computeId"));             
+                    System.out.println("DatabaseDriver.handle_ComputeTerminateDBQuery ---> VM ID: " + rs.getString("computeId") + "");
+                }
+                rs.close();
+                ps.close();
+
+            } catch (SQLException ex) {
+                Logger.getLogger(DatabaseDriver.class
+                        .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+            }
+            
+            
+            
+            
+            
+            
+            
         }
 
         //ComputeTerminateDBQueryReply dbreply = new ComputeTerminateDBQueryReply(dbquery.getReqId(), dbquery.getServId());
         ComputeTerminateDBQueryReply dbreply = new ComputeTerminateDBQueryReply(dbquery.getReqid(), dbquery.getServid(),
-                domlist, poplist);
+                domlist, poplist, vmIdList);
         System.out.println("DatabaseDriver ---> Post ComputeTerminateDBQueryReply Event");
         SingletonEventBus.getBus().post(dbreply);
 
@@ -2658,7 +5193,7 @@ long bandwidth = dboutcome.getNetworkRequest().getReqBandwidth().longValue();
             try {
 
                 java.sql.Connection conn = DbServiceDatasource.getInstance().getConnection();
-                PreparedStatement ps = conn.prepareStatement("SELECT computeServiceId FROM virtualcompute where computeServiceId=?");
+                PreparedStatement ps = conn.prepareStatement("SELECT computeServiceId FROM virtualcompute where computeId=?");
                 ps.setString(1, computeId);
                 java.sql.ResultSet rs = ps.executeQuery();
                 while (rs.next()) {
@@ -3131,6 +5666,230 @@ long bandwidth = dboutcome.getNetworkRequest().getReqBandwidth().longValue();
 
     }
 
+    @Subscribe
+    public void handle_IntraPoPTerminateDbRequest(IntraPoPTerminateDbRequest dbquery) {
+        System.out.println("DatabaseDriver ---> Handle IntraPoPTerminateDbRequest Event");
+        // Retrieve list of domid and network resource id to terminate.
+        List<Long> domlist = new ArrayList<Long>();
+        List<String> domreslist = new ArrayList<String>();
+        List<Long> nfvipoplist = new ArrayList<Long>();
+
+        for (int i = 0; i < dbquery.getNetworklist().size(); i++) {
+
+            try {
+                java.sql.Connection conn = DbServiceDatasource.getInstance().getConnection();
+                PreparedStatement ps = conn.prepareStatement("SELECT networkResourceId,nfviPopId FROM virtualnetwork where netServId=?");
+                ps.setString(1, dbquery.getNetworklist().get(i));
+
+                java.sql.ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+
+                    domreslist.add(rs.getString("networkResourceId"));
+                    nfvipoplist.add(rs.getLong("nfviPopId"));
+                }
+                rs.close();
+                ps.close();
+
+            } catch (SQLException ex) {
+                Logger.getLogger(DatabaseDriver.class
+                        .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+            }
+        }
+
+        //Get from DB the vimdomlist related to the vimPopList
+        for (int j = 0; j < nfvipoplist.size(); j++) {
+
+            try {
+                java.sql.Connection conn = DbDomainDatasource.getInstance().getConnection();
+                PreparedStatement ps = conn.prepareStatement("SELECT domId "
+                        + "FROM nfvipop "
+                        + "where abstrNfviPopId=?");
+                ps.setLong(1, nfvipoplist.get(j));
+                java.sql.ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+                    domlist.add(rs.getLong("domId"));
+
+                }
+                rs.close();
+                ps.close();
+
+            } catch (SQLException ex) {
+                Logger.getLogger(DatabaseDriver.class
+                        .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+            }
+
+        }
+
+
+
+////HACK R2: Set domid = 1 and List String the same
+//        for (int i = 0; i < dbquery.getNetworklist().size(); i++) {
+//            domlist.add(Long.valueOf(1));
+//        }
+        
+        //fomat event
+        IntraPoPTerminateVIMRequest vimreq = new IntraPoPTerminateVIMRequest(dbquery.getReqid(),
+                                            domlist, dbquery.getNetworklist(), domreslist);
+        System.out.println("ResouceOrchestration --> Post IntraPoPTerminateVIMRequest Event");
+
+        SingletonEventBus.getBus().post(vimreq);
+    }
+    
+    @Subscribe
+    public void handle_IntraPoPTerminateVIMReply(IntraPoPTerminateVIMReply dbquery) {
+        System.out.println("DatabaseDriver ---> Handle IntraPoPTerminateVIMReply Event");
+        
+        //TODO R2: remove service request from DB
+        for (int i = 0; i < dbquery.getNetreslist().size(); i++) {
+            String netServId = null;
+            List<Long> virtualnetworkIdList = new ArrayList();
+            
+            netServId = dbquery.getNetreslist().get(i);
+        
+            // Retrieve from DB all virtualnetworkId related to the netservid
+            try {
+
+                java.sql.Connection conn = DbServiceDatasource.getInstance().getConnection();
+
+                PreparedStatement ps = conn.prepareStatement("SELECT virtualNetworkId FROM virtualnetwork WHERE netServId=?", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+
+                ps.setString(1, netServId);
+
+                java.sql.ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+
+                    System.out.println("DatabaseDriver ---> Handle NetworkTerminateDBQueryOutcome Event - VirtualNetworkId:" + rs.getLong("virtualNetworkId") + "");
+
+                    virtualnetworkIdList.add(rs.getLong("virtualNetworkId"));
+                }
+
+                rs.close();
+                ps.close();
+
+            } catch (SQLException ex) {
+                Logger.getLogger(DatabaseDriver.class
+                        .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+            }
+            
+            //Remove records from Network_QoS table
+            for (int j = 0; j < virtualnetworkIdList.size(); j++) {
+
+                try {
+                    java.sql.Connection conn = DbServiceDatasource.getInstance().getConnection();
+
+                    PreparedStatement ps = conn.prepareStatement("DELETE FROM supportednetworkqos WHERE virtualNetworkId=?", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+
+                    ps.setLong(1, virtualnetworkIdList.get(j));
+
+                    ps.executeUpdate();
+
+                    ps.close();
+
+                } catch (SQLException ex) {
+                    Logger.getLogger(DatabaseDriver.class
+                            .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+                }
+
+            }
+
+            //Remove records from VIRTUAL_NETWORK_PORT table
+            for (int j = 0; j < virtualnetworkIdList.size(); j++) {
+
+                try {
+                    java.sql.Connection conn = DbServiceDatasource.getInstance().getConnection();
+
+                    PreparedStatement ps = conn.prepareStatement("DELETE FROM virtualnetworkport WHERE virtualNetworkId=?", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+
+                    ps.setLong(1, virtualnetworkIdList.get(j));
+
+                    ps.executeUpdate();
+                    ps.close();
+
+                } catch (SQLException ex) {
+                    Logger.getLogger(DatabaseDriver.class
+                            .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+                }
+
+            }
+
+            //Remove records from NETWORK_SUBSET table
+            for (int j = 0; j < virtualnetworkIdList.size(); j++) {
+
+                try {
+                    java.sql.Connection conn = DbServiceDatasource.getInstance().getConnection();
+
+                    PreparedStatement ps = conn.prepareStatement("DELETE FROM networksubnet WHERE virtualNetworkId=?", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+
+                    ps.setLong(1, virtualnetworkIdList.get(j));
+
+                    ps.executeUpdate();
+                    ps.close();
+
+                } catch (SQLException ex) {
+                    Logger.getLogger(DatabaseDriver.class
+                            .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+                }
+
+            }
+
+            //Remove records from VirtualNetwork table
+            for (int j = 0; j < virtualnetworkIdList.size(); j++) {
+
+                try {
+                    java.sql.Connection conn = DbServiceDatasource.getInstance().getConnection();
+
+                    PreparedStatement ps = conn.prepareStatement("DELETE FROM virtualnetwork WHERE virtualNetworkId=?", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+
+                    ps.setLong(1, virtualnetworkIdList.get(j));
+                    ps.executeUpdate();
+                    ps.close();
+
+                } catch (SQLException ex) {
+                    Logger.getLogger(DatabaseDriver.class
+                            .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+                }
+
+            }
+            
+            //Remove records from networkservicerequestdata table
+            try {
+                java.sql.Connection conn = DbServiceDatasource.getInstance().getConnection();
+
+                PreparedStatement ps = conn.prepareStatement("DELETE FROM networkservicerequestdata WHERE netServId=?", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+
+                ps.setString(1, netServId);
+
+                ps.executeUpdate();
+                ps.close();
+
+            } catch (SQLException ex) {
+                Logger.getLogger(DatabaseDriver.class
+                        .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+            }
+
+            // Remove record from networkservices table
+            try {
+                java.sql.Connection conn = DbServiceDatasource.getInstance().getConnection();
+
+                PreparedStatement ps = conn.prepareStatement("DELETE FROM networkservices WHERE netServId=?", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+
+                ps.setString(1, netServId);
+
+                ps.executeUpdate();
+                ps.close();
+
+            } catch (SQLException ex) {
+                Logger.getLogger(DatabaseDriver.class
+                        .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+            }
+        }
+
+        //Send event
+        IntraPoPTerminateDbReply dbreply = new IntraPoPTerminateDbReply(dbquery.getReqid(), dbquery.getNetreslist());
+        System.out.println("ResouceOrchestration --> Post IntraPoPTerminateDbReply Event");
+        SingletonEventBus.getBus().post(dbreply);
+    }
+    
     @Subscribe
     public void handle_NetworkTerminateDBQuery(NetworkTerminateDBQuery dbquery) {
         System.out.println("DatabaseDriver ---> Handle NetworkTerminateDBQuery Event");

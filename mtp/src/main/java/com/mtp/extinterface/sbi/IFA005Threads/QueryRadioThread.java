@@ -21,7 +21,7 @@ public class QueryRadioThread extends Thread {
     
     @Override
     public void run() {
-        //TODO: perform query list for Radio domain
+        //TODO  perform query list for Radio domain
         
         
         RadioResAbstractionEvent ev = new RadioResAbstractionEvent(dominfo.getId());

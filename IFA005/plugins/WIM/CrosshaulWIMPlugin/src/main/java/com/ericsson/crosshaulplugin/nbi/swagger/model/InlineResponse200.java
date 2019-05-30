@@ -25,7 +25,7 @@ public class InlineResponse200   {
 
   
   @ApiModelProperty(value = "")
-  @JsonProperty("Gateways")
+  @JsonProperty("gateways")
   public Gateways getGateways() {
     return gateways;
   }

@@ -14,16 +14,34 @@ public class ComputeTerminateDBQueryReply {
     private long servid; //service identifiers
 
     private ArrayList<Long> domlist; //contains domain managing the abstract resources
-
     private ArrayList<Long> poplist;
-
-    public ComputeTerminateDBQueryReply(long reqid, long servid, ArrayList<Long> domlist, ArrayList<Long> poplist) {
+   // List of Virtual Machine identifiers for which the termination is to be requested 
+    private ArrayList<String> vmIdList; 
+    
+    
+    
+    
+    
+    public ComputeTerminateDBQueryReply(long reqid, long servid, ArrayList<Long> domlist, ArrayList<Long> poplist, ArrayList<String> vmIdList) {
         this.reqid = reqid;
         this.servid = servid;
         this.domlist = domlist;
         this.poplist = poplist;
+         this.vmIdList = vmIdList;
     }
 
+    public ArrayList<String> getVmIdList() {
+        return vmIdList;
+    }
+
+    public void setVmIdList(ArrayList<String> vmIdList) {
+        this.vmIdList = vmIdList;
+    }
+
+    
+    
+    
+    
     public long getReqid() {
         return reqid;
     }

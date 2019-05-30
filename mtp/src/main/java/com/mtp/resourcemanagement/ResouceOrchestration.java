@@ -9,17 +9,14 @@ import com.google.common.eventbus.Subscribe;
 import com.mtp.SingletonEventBus;
 import com.mtp.common.objects.PendingNetworkAllocateRequest;
 import com.mtp.common.objects.PendingNetworkTerminateRequest;
-import com.mtp.common.objects.VIMAbstractElem;
 import com.mtp.events.resourcemanagement.ComputeAllocation.ComputeAllocateDBQueryOutcome;
 import com.mtp.events.resourcemanagement.ComputeAllocation.ComputeAllocateVIMReply;
 import com.mtp.events.resourcemanagement.ComputeAllocation.ComputeAllocateVIMReq;
 import com.mtp.events.resourcemanagement.ComputeAllocation.E2EComputeAllocateInstance;
-import com.mtp.events.resourcemanagement.ComputeAllocation.E2EComputeAllocateInstanceOutcome;
 import com.mtp.events.resourcemanagement.ComputeTermination.ComputeTerminateDBQueryOutcome;
 import com.mtp.events.resourcemanagement.ComputeTermination.ComputeTerminateVIMReply;
 import com.mtp.events.resourcemanagement.ComputeTermination.ComputeTerminateVIMReq;
 import com.mtp.events.resourcemanagement.ComputeTermination.E2EComputeTerminateInstance;
-import com.mtp.events.resourcemanagement.ComputeTermination.E2EComputeTerminateInstanceOutcome;
 import com.mtp.events.resourcemanagement.NetworkAllocation.E2ENetworkAllocateInstance;
 import com.mtp.events.resourcemanagement.NetworkAllocation.NetworkAllocateDBQueryOutcome;
 import com.mtp.events.resourcemanagement.NetworkAllocation.NetworkAllocateVIMReply;
@@ -27,20 +24,13 @@ import com.mtp.events.resourcemanagement.NetworkAllocation.NetworkAllocateVIMReq
 import com.mtp.events.resourcemanagement.NetworkAllocation.NetworkAllocateWIMReply;
 import com.mtp.events.resourcemanagement.NetworkAllocation.NetworkAllocateWIMReq;
 import com.mtp.events.resourcemanagement.NetworkTermination.E2ENetworkTerminateInstance;
-import com.mtp.events.resourcemanagement.NetworkTermination.E2ENetworkTerminateInstanceOutcome;
 import com.mtp.events.resourcemanagement.NetworkTermination.NetworkTerminateDBQueryOutcome;
 import com.mtp.events.resourcemanagement.NetworkTermination.NetworkTerminateVIMReply;
 import com.mtp.events.resourcemanagement.NetworkTermination.NetworkTerminateVIMReq;
 import com.mtp.events.resourcemanagement.NetworkTermination.NetworkTerminateWIMReply;
 import com.mtp.events.resourcemanagement.NetworkTermination.NetworkTerminateWIMReq;
-import com.mtp.extinterface.nbi.swagger.model.ReservedVirtualComputeVirtualisationContainerReservedVirtualNetworkInterface;
-import com.mtp.extinterface.nbi.swagger.model.VirtualCompute;
-import com.mtp.extinterface.nbi.swagger.model.VirtualComputeVirtualCpu;
-import com.mtp.extinterface.nbi.swagger.model.VirtualComputeVirtualMemory;
 import com.mtp.extinterface.nbi.swagger.model.AllocateComputeRequest;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 /**
  *
@@ -113,10 +103,8 @@ public class ResouceOrchestration {
     @Subscribe
     public void handle_ComputeAllocateVIMReply(ComputeAllocateVIMReply allvimrep) {
         System.out.println("ResouceOrchestration --> Handle handle_ComputeAllocateVIMReply Event");
-       
-
-
-
+      
+        
 //        ComputeAllocateDBQueryOutcome dboutcome = new ComputeAllocateDBQueryOutcome(allvimrep.getReqId(),
 //                allvimrep.getServId(), allvimrep.getDomId(),
 //                vimElem, allvimrep.getOutcome(), allvimrep.getComputeservid(), allvimrep.getNfvipopid(), allvimrep.getAllocatecomputerequest());
@@ -131,6 +119,8 @@ public class ResouceOrchestration {
 //                new VIMAbstractElem(), allvimrep.getOutcome());
 
     }
+    
+
 
     @Subscribe
     public void handle_E2ENetworkAllocateInstance(E2ENetworkAllocateInstance allinst) {
@@ -221,7 +211,7 @@ public class ResouceOrchestration {
         System.out.println("ResouceOrchestration --> Handle E2EComputeTerminateInstance Event");
         //TODO: orchestrate terminate operation
         ComputeTerminateVIMReq allvimreq = new ComputeTerminateVIMReq(allinst.getReqid(),
-                allinst.getServid(), allinst.getDomlist(), allinst.getPoplist(), allinst.getComputeTermElem());
+                allinst.getServid(), allinst.getDomlist(), allinst.getPoplist(), allinst.getComputeTermElem(), allinst.getVmIdList());
 //        ComputeTerminateVIMReq allvimreq = new ComputeTerminateVIMReq(allinst.getReqId(),
 //                allinst.getServId(), allinst.getDomId());
         System.out.println("ResouceOrchestration --> Post ComputeTerminateVIMReq Event");
@@ -257,7 +247,7 @@ public class ResouceOrchestration {
         System.out.println("ResouceOrchestration --> Post ComputeTerminateDBQueryOutcome Event");
         SingletonEventBus.getBus().post(dboutcome);
     }
-
+    
     @Subscribe
     public void handle_E2ENetworkTerminateInstance(E2ENetworkTerminateInstance allinst) {
         System.out.println("ResouceOrchestration --> Handle E2ENetworkTerminateInstance Event");

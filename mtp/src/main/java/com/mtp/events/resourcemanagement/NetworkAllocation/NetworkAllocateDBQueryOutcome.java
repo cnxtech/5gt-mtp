@@ -5,10 +5,11 @@
  */
 package com.mtp.events.resourcemanagement.NetworkAllocation;
 
-import java.util.ArrayList;
-
 import com.mtp.extinterface.nbi.swagger.model.InterNfviPopConnectivityRequest;
 import com.mtp.extinterface.nbi.swagger.model.VirtualNetwork;
+import java.util.ArrayList;
+
+
 
 public class NetworkAllocateDBQueryOutcome {
 

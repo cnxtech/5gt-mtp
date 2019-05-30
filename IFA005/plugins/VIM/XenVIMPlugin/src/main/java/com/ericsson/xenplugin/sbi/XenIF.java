@@ -49,6 +49,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import com.xensource.xenapi.*;
+import java.net.URL;
+import java.util.Map;
+import java.util.Set;
+
 /**
  *
  * @author efabuba
@@ -62,6 +67,10 @@ public class XenIF {
     private HashMap<String, ComputeService> compservlist;
     private int netservcounter;
     private int compservcounter;
+    //XEN variables
+
+
+    
     
     public XenIF() {
         poplist = new ArrayList();
@@ -69,29 +78,76 @@ public class XenIF {
         compreslist = new HashMap();
         xenreslist = new HashMap();
         netservlist = new HashMap();
+	compservlist = new HashMap();
         netservcounter = 1;
         compservcounter = 1;
+
+      
+//        /* Connect to XEN DC */
+//        try {
+//            connection = new Connection(new URL("http://" + MASTER));
+//        } catch(MalformedURLException e) {
+//            System.out.println("XenIF ---> error malformed URL");
+//            System.out.println("XenIF ---> error message" + e.getMessage());
+//            System.exit(-1);
+//        }
+//        try {
+//            Session.loginWithPassword(connection, USERNAME, PASSWORD, APIVersion.latest().toString());
+//
+//        } catch(BadServerResponse e) {
+//            System.out.println("XenIF ---> error Bad Server Response");
+//            System.out.println("XenIF ---> error message" + e.getMessage());
+//            System.exit(-1);
+//        }
+//        System.out.println("XenIF ---> Logging in to " + MASTER + " as a " + USERNAME + " with the password " + PASSWORD);
+//        // Some data are created when downloading the VM images.
+//        //As it is assumed that the download is already perform such data are retrieved 
+//        //Data retrieved are VM, host, Storage Repository
+//        mapVmPool = VM.getAllRecords(connection);
+//        mapHostPool = Host.getAllRecords(connection);
+//        mapSrPool = SR.getAllRecords(connection);
+        System.out.println("XenIF ---> Retrieve all VM, Host, SR data");
     }
     
     
     //////////////////Start Event Handlers///////////////////////////////
     @Subscribe
-    public void handle_ParseDomainList(Parsedomainlist domlist) {
-        System.out.println("CrossHaulIF ---> Parse domlist from xml file");
+    public void handle_ParseDomainList(Parsedomainlist domlist) throws Exception {
+        Connection conn;
+        System.out.println("XenIF ---> Parse domlist from xml file");
         //TODO: Parse list of domain from xml file
         XMLDomainParser xmldom = new XMLDomainParser(domlist.getFilename());
-        
+
         poplist = xmldom.getPoplist();
         zonelist = xmldom.getZonelist();
         compreslist = xmldom.getReslist();
         xenreslist = xmldom.getXeninfolist();
+        /* Connect to XEN DC for each zone */
+        for (XenService value : xenreslist.values()) {
+            conn = new Connection(new URL("http://" + value.getMaster()));
+
+            Session.loginWithPassword(conn, value.getUsername(), value.getPassword(), APIVersion.latest().toString());
+
+            System.out.println("XenIF ---> Logging in to " + value.getMaster() + " as a " + value.getUsername() + " with the password " + value.getPassword());
+            value.setConnection(conn);
+            // Some data are created when downloading the VM images.
+            //As it is assumed that the download is already perform such data are retrieved 
+            //Data retrieved are VM, host, Storage Repository
+            value.setMapVmPool(VM.getAllRecords(conn));
+            value.setMapHostPool(Host.getAllRecords(conn));
+            value.setMapSrPool(SR.getAllRecords(conn));
+        }
+
+        System.out.println(
+                "XenIF ---> Retrieve all VM, Host, SR data");
         StartServer startserv = new StartServer();
+
         SingletonEventBus.getBus().post(startserv);
     }
     
 
     @Subscribe
-    public void handle_ComputeAllocateRequest(ComputeAllocateRequest servallreq) {
+    public void handle_ComputeAllocateRequest(ComputeAllocateRequest servallreq) throws Exception {
         System.out.println("XenIF ---> allocate compute service request" );
         AllocateComputeRequest compreq = servallreq.getRequest();
         String servid = new String("");
@@ -101,12 +157,69 @@ public class XenIF {
                 servid = inputdata.get(i).getValue();
             }
         }
-        //TODO: For R2 retrieve the virtual network created and remove oit from DC
         
-        ComputeService el =  new ComputeService();
-        //TODO Add Xen info and perform command, wait repsonse
+        //Take Label VM from VCImageID field
+        //Take location constraints for select the zone id
+        XenService xenel = xenreslist.get(servallreq.getRequest().getLocationConstraints());
+        if (xenel == null) {
+            System.out.println("XenIF ---> No resource pool for zoneid= " + servallreq.getRequest().getLocationConstraints());
+            VirtualCompute compel = new VirtualCompute();
+            ComputeAllocateReply servallrep = new ComputeAllocateReply(servallreq.getReqId(),
+                    compel);
+            System.out.println("XenIF ---> post ComputeAllocateReply");
+            SingletonEventBus.getBus().post(servallrep);
+            return;
+        }
+        String vmlabel = servallreq.getRequest().getVcImageId();
+        boolean found = false;
+        for (Map.Entry<VM, VM.Record> e : xenel.getMapVmPool().entrySet()) {
+            if (e.getValue().nameLabel.equals(vmlabel)) {
+                found = true;
+                //String mobileName = vmlabel + String.valueOf(compservcounter);
+                //VM vmCopy;
+                //VM.Record vmCopyRecord;
+                //vmCopy = e.getKey().createClone(xenel.getConnection(), mobileName); // create a clone of the VM target
+                //vmCopyRecord = vmCopy.getRecord(xenel.getConnection());
+
+  
+                /* Start Vm */
+                e.getKey().start(xenel.getConnection(), false, false);
+
+                /* get IP address of VIF associated */
+                // Waiting about 15 seconds to start the VM
+//                for (int i = 15; i >= 0; i--) {
+//                    System.out.print("Waiting for: " + i + " seconds\r");
+//                    Thread.sleep(1000);   // //Pause for 1 second [long milliseconds]
+//                }
+//                VMGuestMetrics metrics = vmCopy.getGuestMetrics(xenel.getConnection());
+//                VMGuestMetrics.Record metricsRecord = metrics.getRecord(xenel.getConnection());
+//                Map<String, String> networkIpMap = metricsRecord.networks;
+//                for (Map.Entry<String, String> e2 : networkIpMap.entrySet()) {
+//                    if (e2.getKey().equals("0/ip")) {
+//                        System.out.println("Key: " + e2.getKey() + " Value: " + e2.getValue());
+//                        ipAddress = e2.getValue();
+//                    }
+//                }
+//                System.out.println("[HypervisorManager:startVm]VM start. Ip addrees: " + ipAddress);
+
+                /* Add the new VM to map */
+               //xenel.getMapVmPool().put(vmCopy, vmCopyRecord); // add the VM to the map
+               ComputeService el =  new ComputeService(Integer.toString(compservcounter), vmlabel, servallreq.getRequest().getLocationConstraints());
+               compservlist.put(Integer.toString(compservcounter), el); 
+            }
+        }
+        if (found == false) {
+            System.out.println("XenIF ---> No WM with label= " + servallreq.getRequest().getVcImageId());
+            VirtualCompute compel = new VirtualCompute();
+            ComputeAllocateReply servallrep = new ComputeAllocateReply(servallreq.getReqId(),
+                    compel);
+            System.out.println("XenIF ---> post ComputeAllocateReply");
+            SingletonEventBus.getBus().post(servallrep);
+            return;
+        }
         
-        compservlist.put(Integer.toString(compservcounter), el);   
+        
+          
         VirtualCompute compel = new VirtualCompute();
         compel.setComputeId(Integer.toString(compservcounter));
         compel.setComputeName("XenCompService" + Integer.toString(netservcounter));
@@ -147,14 +260,62 @@ public class XenIF {
     }
     
     @Subscribe
-    public void handle_ComputeTerminateRequest(ComputeTerminateRequest servtermreq) {
+    public void handle_ComputeTerminateRequest(ComputeTerminateRequest servtermreq) throws Exception {
         System.out.println("XenIF ---> terminate compute service request" );
         List<String> resplist = new ArrayList();
         for (int i = 0; i < servtermreq.getRequest().size(); i++) {
             String key = servtermreq.getRequest().get(i);
             ComputeService servel = compservlist.get(key);
             if (servel != null) {
-                // TODO: Send terminate VM to  command to XHAUL Control 
+                String vmlabel = servel.getVmlabel();
+                String zoneid = servel.getZoneid();
+                XenService xenel = xenreslist.get(zoneid);
+                if (xenel == null) {
+                    System.out.println("XenIF ---> No resource pool for service zoneid= " + zoneid);
+                    ComputeTerminateReply servtermrep = new ComputeTerminateReply(servtermreq.getReqId(), new ArrayList());
+                    System.out.println("XenIF ---> post ComputeTerminateReply");
+                    SingletonEventBus.getBus().post(servtermrep);
+                    return;
+                }
+                /* Select VM target */
+                VM vmTemp = null;
+		VM.Record vmRecordTemp = null; 
+                boolean found  = false;
+                for (Map.Entry<VM, VM.Record> e : xenel.getMapVmPool().entrySet()) {
+                    if (e.getValue().nameLabel.equals(vmlabel)) {
+                        vmTemp = e.getKey();
+                        vmRecordTemp = e.getValue();
+                        found = true;
+                        System.out.println("XenIF ---> Vm found: " + e.getValue().nameLabel);
+                        break;
+                    }
+                }
+                if (found == false) {
+                    System.out.println("XenIF ---> No VM found for label= " + vmlabel);
+                    ComputeTerminateReply servtermrep = new ComputeTerminateReply(servtermreq.getReqId(), new ArrayList());
+                    System.out.println("XenIF ---> post ComputeTerminateReply");
+                    SingletonEventBus.getBus().post(servtermrep);
+                    return;
+		}
+                
+		vmTemp.shutdown(xenel.getConnection());
+		/* Destroy associated VDI */
+//		Set <VBD> setVbdTemp = vmRecordTemp.VBDs;
+//		//System.out.println("Size: " + setVbdTemp.size() );						
+//		for (VBD vdbel : setVbdTemp ) {
+//			VBD.Record vbdRecordTemp = vdbel.getRecord(xenel.getConnection());
+//			if (vbdRecordTemp.empty == false) {
+//				VDI vdiTemp = vbdRecordTemp.VDI;
+//				System.out.println("XenIF ---> Destroy VDI: " + vdiTemp.getRecord(xenel.getConnection()).nameLabel);
+//				vdiTemp.destroy(xenel.getConnection());
+//				break;
+//			}
+//		}
+		/* Deleted associated VDI */
+                //vmTemp.suspend(xenel.getConnection());
+		//vmTemp.destroy(xenel.getConnection());
+		
+		//xenel.getMapVmPool().remove(vmTemp);
                 compservlist.remove(key);
                 resplist.add(key);
             }

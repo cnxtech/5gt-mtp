@@ -6,17 +6,8 @@
 package com.mtp.extinterface.nbi.swagger.api;
 
 import com.google.common.eventbus.Subscribe;
-import com.mtp.SingletonEventBus;
 import com.mtp.events.abstraction.Creation.StartServer;
 import com.mtp.events.abstraction.Creation.StopServer;
-import com.mtp.events.resourcemanagement.ComputeAllocation.E2EComputeAllocateReply;
-import com.mtp.events.resourcemanagement.ComputeAllocation.E2EComputeAllocateRequest;
-import com.mtp.events.resourcemanagement.ComputeTermination.E2EComputeTerminateReply;
-import com.mtp.events.resourcemanagement.ComputeTermination.E2EComputeTerminateRequest;
-import com.mtp.events.resourcemanagement.NetworkAllocation.E2ENetworkAllocateReply;
-import com.mtp.events.resourcemanagement.NetworkAllocation.E2ENetworkAllocateRequest;
-import com.mtp.events.resourcemanagement.NetworkTermination.E2ENetworkTerminateReply;
-import com.mtp.events.resourcemanagement.NetworkTermination.E2ENetworkTerminateRequest;
 import java.io.IOException;
 import java.net.URI;
 import org.glassfish.grizzly.http.server.HttpServer;
@@ -43,16 +34,22 @@ public class NBIIF {
        // try {
             //register all api resources
             ResourceConfig config = new ResourceConfig();
-//            config.register(ComputeResourcesApi.class);
-//            config.register(HealthzApi.class);
-//            config.register(InformationApi.class);
-//            config.register(NetworkResourcesApi.class);
-//            config.register(QuotasApi.class);
-//            config.register(ReservationsApi.class);
-//            config.register(SoftwareImagesApi.class);
+            config.register(AbstractComputeOperateResourcesApi.class);
             config.register(AbstractComputeResourcesApi.class);
+            config.register(AbstractNetworkApi.class);
             config.register(AbstractNetworkResourcesApi.class);
+            config.register(AbstractRadioCoverageareaApi.class);
             config.register(AbstractResourcesApi.class);
+            config.register(ComputeOperateResourcesApi.class);
+            config.register(ComputeResourcesApi.class);
+            config.register(HealthzApi.class);
+            config.register(InformationApi.class);
+            config.register(ServiceApi.class);
+            config.register(MecappApi.class);
+            config.register(NetworkResourcesApi.class);
+            config.register(QuotasApi.class);
+            config.register(ReservationsApi.class);
+            config.register(SoftwareImagesApi.class);
             config.register(JacksonFeature.class);
      
             //instance http server

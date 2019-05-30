@@ -1,8 +1,17 @@
-# Copyright 2018 b<>com. All rights reserved.
-# This software is the confidential intellectual property of b<>com. You shall
-# not disclose it and shall use it only in accordance with the terms of the
-# license agreement you entered into with b<>com.
-# IDDN number:
+# Copyright 2018 b<>com.
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+# IDDN number: IDDN.FR.001.470053.000.S.C.2018.000.00000.
 #
 # -*- coding: utf-8 -*
 
@@ -30,7 +39,7 @@ def create_quotas_compute_resources(project_id):
 
 
 def get_quotas_compute_resources():
-    r = requests.get('http://127.0.0.1:8000/quotas/compute_resources')
+    r = requests.post('http://127.0.0.1:8000/quotas/compute_resources/query')
 
     if r.status_code != 200:
         return False
@@ -68,30 +77,20 @@ def delete_quotas_compute_resources(quota_id):
 
 def test_quotas_network_resources():
     project_id = 'de30d94754e3482983d10121b0c76fd2'
-    quota_id = create_quotas_compute_resources(project_id)
-    if not quota_id:
-        assert False
+    assert create_quotas_compute_resources(project_id)
 
-    get_result = get_quotas_compute_resources()
-    if not get_result:
-        assert False
+    assert get_quotas_compute_resources()
 
-    delete_result = delete_quotas_compute_resources(project_id)
-    if not delete_result:
-        assert False
-
-    assert True
-
+    assert delete_quotas_compute_resources(project_id)
 
 # # Network
 
+
 def test_quotas_compute_resources_query():
-    r = requests.get('http://127.0.0.1:8000/quotas/compute_resources')
-    print(r.text)
+    r = requests.post('http://127.0.0.1:8000/quotas/compute_resources/query')
     assert r.status_code == 200
 
 
 def test_quotas_network_resources_query():
-    r = requests.get('http://127.0.0.1:8000/quotas/network_resources')
-    print(r.text)
+    r = requests.post('http://127.0.0.1:8000/quotas/network_resources/query')
     assert r.status_code == 200

@@ -13,6 +13,12 @@ import com.mtp.common.objects.ComputeAllocateElem;
 import com.mtp.common.objects.ComputeTerminateElem;
 import com.mtp.common.objects.NetworkAllocateElem;
 import com.mtp.common.objects.NetworkTerminateElem;
+import com.mtp.events.placement.PAComputeReply;
+import com.mtp.events.placement.PAComputeRequest;
+import com.mtp.events.placement.PAComputeStatus;
+import com.mtp.events.placement.PANetworkReply;
+import com.mtp.events.placement.PANetworkRequest;
+import com.mtp.events.placement.PANetworkStatus;
 //import com.mtp.common.objects.VIMAbstractElem;
 import com.mtp.events.resourcemanagement.ComputeAllocation.ComputeAllocateDBQuery;
 import com.mtp.events.resourcemanagement.ComputeAllocation.ComputeAllocateDBQueryReply;
@@ -20,8 +26,8 @@ import com.mtp.events.resourcemanagement.ComputeAllocation.E2EComputeAllocateIns
 import com.mtp.events.resourcemanagement.ComputeAllocation.E2EComputeAllocateInstanceOutcome;
 import com.mtp.events.resourcemanagement.ComputeAllocation.E2EComputeAllocateReply;
 import com.mtp.events.resourcemanagement.ComputeAllocation.E2EComputeAllocateRequest;
-import com.mtp.events.resourcemanagement.ComputeTermination.ComputeTerminateDBQuery;
 import com.mtp.events.resourcemanagement.ComputeTermination.ComputeTerminateDBQueryReply;
+import com.mtp.events.resourcemanagement.ComputeTermination.ComputeTerminateMECQuery;
 import com.mtp.events.resourcemanagement.ComputeTermination.E2EComputeTerminateInstance;
 import com.mtp.events.resourcemanagement.ComputeTermination.E2EComputeTerminateInstanceOutcome;
 import com.mtp.events.resourcemanagement.ComputeTermination.E2EComputeTerminateReply;
@@ -41,6 +47,7 @@ import com.mtp.events.resourcemanagement.NetworkTermination.NetworkTerminateDBQu
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.logging.Level;
@@ -52,14 +59,42 @@ public class ResourceSelectionLogic {
     private HashMap<Long, NetworkAllocateElem> netallmap;
     private HashMap<Long, ComputeTerminateElem> comptermmap;
     private HashMap<Long, NetworkTerminateElem> nettermmap;
+    private boolean pacompstatus;
+    private boolean panetstatus;
+    private long panetpathcount;
 
     public ResourceSelectionLogic() {
         compallmap = new HashMap();
         netallmap = new HashMap();
         comptermmap = new HashMap();
         nettermmap = new HashMap();
+        pacompstatus = false;
+        panetstatus = false;
+        panetpathcount = 1000; //From 1000 to on are the computed logical paths from pa network
     }
-
+    
+    @Subscribe
+    public void handle_PAComputeStatus(PAComputeStatus pacompst) {
+        System.out.println("ResourceSelectionLogic --> Handle PAComputeStatus Event");
+        String compstring = new String ("enable");
+        if (pacompst.getStatus().compareTo(compstring) == 0) {
+            pacompstatus = true;
+        } else {
+            pacompstatus = false;
+        }
+    }
+    
+    @Subscribe
+    public void handle_PANetworkStatus(PANetworkStatus panetst) {
+        System.out.println("ResourceSelectionLogic --> Handle PANetworkStatus Event");
+        String compstring = new String ("enable");
+        if (panetst.getStatus().compareTo(compstring) == 0) {
+            panetstatus = true;
+        } else {
+            panetstatus = false;
+        }
+    }
+    
     @Subscribe
     public void handle_E2EComputeAllocateRequest(E2EComputeAllocateRequest allreqev) {
         System.out.println("ResourceSelectionLogic --> Handle E2EComputeAllocateRequest Event");
@@ -67,6 +102,7 @@ public class ResourceSelectionLogic {
         ComputeAllocateElem compel = new ComputeAllocateElem();
         compel.setAllocateRequest(allreqev);
         compallmap.put(allreqev.getReqid(), compel);
+        
 
 //// START - Insert servID into Service table
 //        try {
@@ -100,11 +136,13 @@ public class ResourceSelectionLogic {
     public void handle_ComputeAllocateDBQueryReply(ComputeAllocateDBQueryReply dbreply) {
         System.out.println("ResourceSelectionLogic --> Handle ComputeAllocateDBQueryReply Event");
 
-        
+     
         // Select a nfviPopId from the list
         // Selection Criterion: retrieve the first elementn of the list 
         // Upgrade the selection criteria if needed 
         ArrayList<Long> vimlist = dbreply.getPoplist(); //Retrieve the first element (nfviPopId) of the list 
+        //XXX: TODO R2: Check Policy for PA algorithm, not select the first
+        
         long nfviPopId = vimlist.get(0);
         // START - Retrieve from DB the DomId related to the nfviPoPId
         Integer domId = null;
@@ -128,9 +166,16 @@ public class ResourceSelectionLogic {
                     .getName()).log(Level.SEVERE, ex.getMessage(), ex);
         }
         //END - Retrieve
-
-        //Retrieve ComputeAllocateElem instance  from compallmap using the reqId
         ComputeAllocateElem compAllocElem = compallmap.get(dbreply.getReqid());
+        if (pacompstatus == true ) {
+            PAComputeRequest compreq = new PAComputeRequest(dbreply.getReqid(),
+                dbreply.getServid(), domId, nfviPopId, compAllocElem);
+            System.out.println("ResourceSelectionLogic --> Post PAComputeRequest Event");
+            SingletonEventBus.getBus().post(compreq);
+            return;
+        }
+        //Retrieve ComputeAllocateElem instance  from compallmap using the reqId
+        
         E2EComputeAllocateInstance allinst = new E2EComputeAllocateInstance(dbreply.getReqid(),
                 dbreply.getServid(), domId, nfviPopId, compAllocElem);
         System.out.println("ResourceSelectionLogic --> Post E2EComputeAllocateInstance Event");
@@ -138,6 +183,16 @@ public class ResourceSelectionLogic {
 
     }
 
+    @Subscribe
+    public void handle_PAComputeReply(PAComputeReply pacomprep) {
+        System.out.println("ResourceSelectionLogic --->  Handle PAComputeReply Event");
+        //Retrieve ComputeAllocateElem instance  from compallmap using the reqId
+        ComputeAllocateElem compAllocElem = compallmap.get(pacomprep.getReqid());
+        E2EComputeAllocateInstance allinst = new E2EComputeAllocateInstance(pacomprep.getReqid(),
+                pacomprep.getServid(), pacomprep.getDomid(), pacomprep.getNfvipopid(), compAllocElem);
+        System.out.println("ResourceSelectionLogic --> Post E2EComputeAllocateInstance Event");
+        SingletonEventBus.getBus().post(allinst);
+    }
     @Subscribe
     public void handle_E2EComputeAllocateInstanceOutcome(E2EComputeAllocateInstanceOutcome allinstout) {
         System.out.println("ResourceSelectionLogic --> Handle E2EComputeAllocateInstanceOutcome Event");
@@ -158,11 +213,27 @@ public class ResourceSelectionLogic {
         NetworkAllocateElem netel = new NetworkAllocateElem();
         netel.setAllocateRequest(allreqev);
         netallmap.put(allreqev.getReqid(), netel);
-
+        
+        
         for (int i = 0; i < allreqev.getNetworkreq().getLogicalLinkPathList().size(); i++) {
+
             //Get the logicalLinkId from dbquery
             logicallink = Long.parseLong(allreqev.getNetworkreq().getLogicalLinkPathList().get(i).getLogicalLinkAttributes().getLogicalLinkId());
+            allreqev.getNetworkreq().getLogicalLinkPathList().get(i).getReqBandwidth();
             System.out.println("handle_E2ENetworkAllocateRequest ----> LogicalLinkId:" + logicallink + "");
+            if (pacompstatus == true) {
+                //Prepare and perform the query
+                PANetworkRequest panetreq = new PANetworkRequest(allreqev.getReqid(),
+                        allreqev.getServid(), allreqev.getNetworkreq(), logicallink, 
+                        allreqev.getNetworkreq().getLogicalLinkPathList().get(i).getReqBandwidth(),
+                        allreqev.getNetworkreq().getLogicalLinkPathList().get(i).getReqLatency(),
+                        allreqev.getNetworkreq().getLogicalLinkPathList().get(i).getLogicalLinkAttributes().getSrcGwIpAddress(),
+                        allreqev.getNetworkreq().getLogicalLinkPathList().get(i).getLogicalLinkAttributes().getDstGwIpAddress());
+                //post event
+                System.out.println("ResourceSelectionLogic --> Post PANetworkRequest Event");
+                SingletonEventBus.getBus().post(panetreq);
+                continue;
+            }        
             //rerieve from DB logical paths related to the logicalLinkId 
             try {
                 java.sql.Connection conn = DbAbstractionDatasource.getInstance().getConnection();
@@ -206,7 +277,221 @@ public class ResourceSelectionLogic {
             SingletonEventBus.getBus().post(dbev);
         }
     }
+    
+    @Subscribe
+    public void handle_PANetworkReply(PANetworkReply panetrep) {
+        System.out.println("ResourceSelectionLogic --->  Handle PANetworkReply Event");
+        long logicalpathid = -1; //key used to insert the phisicalpath
+        Integer AbstrSrcPoPId = -1, AbstrDstPoPId = -1;
+        String srcid = null, dstid = null;
+        //Select abstract src and dst popid, src and dst
 
+        try {
+            java.sql.Connection conn = DbAbstractionDatasource.getInstance().getConnection();
+            PreparedStatement ps = conn.prepareStatement("SELECT abstrSrcNfviPopId,abstrDestNfviPopId,"
+                    + "srcRouterId,dstRouterId  FROM logicallink where logicalLinkId=?");
+            ps.setLong(1, panetrep.getLogicalpathid());
+            java.sql.ResultSet rs = ps.executeQuery();
+            //Select the path with minimum available bandwidth
+            while (rs.next()) {
+               AbstrSrcPoPId = rs.getInt("abstrSrcNfviPopId");
+               AbstrDstPoPId = rs.getInt("abstrDestNfviPopId");
+               srcid = rs.getString("srcRouterId");
+               dstid = rs.getString("dstRouterId");
+            }
+            System.out.println("handle_PANetworkReply ---> AbstrSrcPoPId: " + AbstrSrcPoPId + "");
+            System.out.println("handle_PANetworkReply ---> AbstrDstPoPId: " + AbstrDstPoPId + "");
+            System.out.println("handle_PANetworkReply ---> srcid: " + srcid + "");
+            System.out.println("handle_PANetworkReply ---> dstid: " + dstid + "");
+
+            rs.close();
+            ps.close();
+
+        } catch (SQLException ex) {
+            Logger.getLogger(ResourceSelectionLogic.class
+                    .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+        }
+        //retrieve interdomain link id delay and bw
+        ArrayList<Integer> interdomainkeys = new ArrayList<Integer>();
+        ArrayList<Integer> wanlinkkeys = new ArrayList<Integer>();
+        ArrayList<Float> delayvals = new ArrayList<Float>();
+        ArrayList<Float> bwvals = new ArrayList<Float>();
+        
+        for (int i =0; i < panetrep.getInterWanLinks().size(); i++) {
+            try {
+                java.sql.Connection conn = DbDomainDatasource.getInstance().getConnection();
+                PreparedStatement ps = conn.prepareStatement("Select interDomainLinkId,delay,availableBandwidth from interdomainlink "
+                        + "where srcDomId=? AND dstDomId=? AND srcGwId=? AND dstGwId=? AND srcGWIp=? AND dstGwIp=?");
+                ps.setInt(1, Integer.valueOf(panetrep.getInterWanLinks().get(i).getAWimId()));
+                ps.setInt(2, Integer.valueOf(panetrep.getInterWanLinks().get(i).getZWimId()));
+                ps.setString(3, panetrep.getInterWanLinks().get(i).getAPEId());
+                ps.setString(4, panetrep.getInterWanLinks().get(i).getZPEId());
+                ps.setString(5, String.valueOf(panetrep.getInterWanLinks().get(i).getALinkId()));
+                ps.setString(6, String.valueOf(panetrep.getInterWanLinks().get(i).getZLinkId()));
+                java.sql.ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+                    interdomainkeys.add(rs.getInt("interDomainLinkId"));
+                    delayvals.add(Float.valueOf(rs.getString("delay")));
+                    bwvals.add(Float.valueOf(rs.getString("availableBandwidth")));
+                    System.out.println("handle_PANetworkReply ---> "
+                            + "interdomainkeys: " + rs.getInt("interDomainLinkId") + "");
+                    System.out.println("handle_PANetworkReply ---> "
+                            + "delayvals: " + rs.getString("delay") + "");
+                    System.out.println("handle_PANetworkReply ---> "
+                            + "bwvals: " + rs.getString("availableBandwidth") + "");
+                }
+                rs.close();
+                ps.close();
+
+            } catch (SQLException ex) {
+                Logger.getLogger(ResourceSelectionLogic.class
+                        .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+            }
+        }
+        //retrieve wan paths link id, delay and bw
+        for (int i =0; i < panetrep.getWanPaths().size(); i++) {
+            try {
+                java.sql.Connection conn = DbDomainDatasource.getInstance().getConnection();
+                PreparedStatement ps = conn.prepareStatement("Select networkResId,delay,availableCapacity from networkresources "
+                        + "where  srcGwId=? AND dstGwId=? AND srcGWIp=? AND dstGwIp=?");
+                ps.setString(1, panetrep.getWanPaths().get(i).getWanPathElements().get(0).getANodeId());
+                ps.setString(2, panetrep.getWanPaths().get(i).getWanPathElements().get(0).getZNodeId());
+                ps.setString(3, String.valueOf(panetrep.getWanPaths().get(i).getWanPathElements().get(0).getALinkId()));
+                ps.setString(4, String.valueOf(panetrep.getWanPaths().get(i).getWanPathElements().get(0).getZLinkId()));
+                java.sql.ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+                    wanlinkkeys.add(rs.getInt("networkResId"));
+                    delayvals.add(Float.valueOf(rs.getString("delay")));
+                    bwvals.add(Float.valueOf(rs.getString("availableCapacity")));
+                    System.out.println("handle_PANetworkReply ---> "
+                            + "wanlinkkeys: " + rs.getInt("networkResId") + "");
+                    System.out.println("handle_PANetworkReply ---> "
+                            + "delayvals: " + rs.getString("delay") + "");
+                    System.out.println("handle_PANetworkReply ---> "
+                            + "bwvals: " + rs.getString("availableCapacity") + "");
+                }
+                rs.close();
+                ps.close();
+
+            } catch (SQLException ex) {
+                Logger.getLogger(ResourceSelectionLogic.class
+                        .getName()).log(Level.SEVERE, ex.getMessage(), ex);
+            }
+        }
+        
+        //compute delay as sum of values in delayvals
+        double latencyval;
+        latencyval = 0.0;
+        for (int i = 0; i < delayvals.size(); i++) {
+            latencyval += delayvals.get(i);
+        }
+        double bwval;
+        bwval = bwvals.get(0); //set to first value
+        for (int i = 1; i < delayvals.size(); i++) { //not check first value
+            if (bwvals.get(i) <bwval) {
+                bwval = bwvals.get(i);
+            }
+        }
+        
+        //Insert new logicalpath associated to the logicalpathid
+        try {
+            java.sql.Connection conn = DbAbstractionDatasource.getInstance().getConnection();
+
+            // Insert  data into abstract logicallink table
+            PreparedStatement ps = conn.prepareStatement("INSERT INTO logicalpath"
+                    + "(abstrSrcNfviPopId,abstrDestNfviPopId,srcRouterId,dstRouterId,srcRouterIp,dstRouterIp,delay,"
+                    + "availableBandwidth,reservedBandwidth,totalBandwidth,allocatedBandwidth,LogicalLinkId)"
+                    + "VALUES(?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
+            ps.setLong(1, AbstrSrcPoPId);
+            ps.setLong(2, AbstrDstPoPId);
+            ps.setString(3, srcid);
+            ps.setString(4, dstid);
+            ps.setString(5, Long.toString(panetpathcount));
+            ps.setString(6, Long.toString(panetpathcount));
+            ps.setString(7, Double.toString(latencyval));
+            ps.setString(8, Double.toString(bwval));
+            ps.setString(8, Double.toString(0.0));
+            ps.setString(10, Double.toString(0.0));
+            ps.setString(11, Double.toString(bwval));
+            ps.setLong(12, panetrep.getLogicalpathid());
+            ps.executeUpdate();
+            //increment logicalPathCount;
+            panetpathcount++;
+            System.out.println("handle_PANetworkReply ---> Abstract logicalpath resources data inserted into DB");
+            ResultSet rs = ps.getGeneratedKeys();
+
+            if (rs != null && rs.next()) {
+                logicalpathid = rs.getLong(1);
+                System.out.println("handle_PANetworkReply ---> logicalpathid:" + logicalpathid + "");
+            }
+            rs.close();
+            ps.close();
+        } catch (SQLException ex) {
+            Logger.getLogger(E2EAbstractionLogic.class
+                    .getName()).log(Level.SEVERE, null, ex);
+        }
+        //create association logicalpathid and iterdomain links
+        for (int i = 0; i < interdomainkeys.size(); i++) {
+            try {
+                java.sql.Connection conn = DbDomainDatasource.getInstance().getConnection();
+
+                // Insert  data into abstract logicallink table
+                PreparedStatement ps = conn.prepareStatement("INSERT INTO logicalpath_interdomainlink"
+                        + "(logicalPathId,interDomainLinkId)"
+                        + "VALUES(?,?)", Statement.RETURN_GENERATED_KEYS);
+                ps.setLong(1, logicalpathid);
+                ps.setLong(2, interdomainkeys.get(i));
+
+                ps.executeUpdate();
+                System.out.println("handle_PANetworkReply ---> interdomain resources data inserted into DB");
+                ResultSet rs = ps.getGeneratedKeys();
+
+                if (rs != null && rs.next()) {
+                    System.out.println("handle_PANetworkReply ---> interdomain association key:" + rs.getLong(1) + "");
+                }
+                rs.close();
+                ps.close();
+            } catch (SQLException ex) {
+                Logger.getLogger(E2EAbstractionLogic.class
+                        .getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        //create association logical path link and wan links
+        for (int i = 0; i < wanlinkkeys.size(); i++) {
+            try {
+                java.sql.Connection conn = DbDomainDatasource.getInstance().getConnection();
+
+                // Insert  data into abstract logicallink table
+                PreparedStatement ps = conn.prepareStatement("INSERT INTO logicalpath_networkresources"
+                        + "(logicalPathId,networkResId)"
+                        + "VALUES(?,?)", Statement.RETURN_GENERATED_KEYS);
+                ps.setLong(1, logicalpathid);
+                ps.setLong(2, wanlinkkeys.get(i));
+
+                ps.executeUpdate();
+                System.out.println("handle_PANetworkReply ---> netresources resources data inserted into DB");
+                ResultSet rs = ps.getGeneratedKeys();
+
+                if (rs != null && rs.next()) {
+                    System.out.println("handle_PANetworkReply ---> netresources association key:" + rs.getLong(1) + "");
+                }
+                rs.close();
+                ps.close();
+            } catch (SQLException ex) {
+                Logger.getLogger(E2EAbstractionLogic.class
+                        .getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        //Call NetworkAllocateDBQuery
+        NetworkAllocateDBQuery dbev = new NetworkAllocateDBQuery(panetrep.getReqid(),
+               panetrep.getServid(), 
+                netallmap.get(panetrep.getReqid()).getAllocateRequest().getNetworkreq(), 
+                logicalpathid);
+       //post event
+       System.out.println("ResourceSelectionLogic --> Post NetworkAllocateDBQuery Event");
+       SingletonEventBus.getBus().post(dbev);
+    }
+    
     @Subscribe
     public void handle_NetworkAllocateDBQueryReply(NetworkAllocateDBQueryReply dbreply) {
         System.out.println("ResourceSelectionLogic --> Handle NetworkAllocateDBQueryReply Event");
@@ -363,10 +648,15 @@ public class ResourceSelectionLogic {
         comptermmap.put(allreqev.getReqid(), compel);
 
         //Prepare and perform the query
-        ComputeTerminateDBQuery dbev = new ComputeTerminateDBQuery(allreqev.getReqid(),
+//        ComputeTerminateDBQuery dbev = new ComputeTerminateDBQuery(allreqev.getReqid(),
+//                allreqev.getServid(), allreqev.getComputereq());
+//        System.out.println("ResourceSelectionLogic --> Post ComputeTerminateDBQuery Event");      
+//        SingletonEventBus.getBus().post(dbev);
+          
+          ComputeTerminateMECQuery dbev = new ComputeTerminateMECQuery(allreqev.getReqid(),
                 allreqev.getServid(), allreqev.getComputereq());
         //post event
-        System.out.println("ResourceSelectionLogic --> Post ComputeTerminateDBQuery Event");
+        System.out.println("ResourceSelectionLogic --> Post ComputeTerminateMECQuery Event");
         SingletonEventBus.getBus().post(dbev);
     }
 
@@ -377,7 +667,7 @@ public class ResourceSelectionLogic {
         ComputeTerminateElem compTermElem = comptermmap.get(dbreply.getReqid());
         E2EComputeTerminateInstance allinst = new E2EComputeTerminateInstance(dbreply.getReqid(),
                 dbreply.getServid(), dbreply.getDomlist(), dbreply.getPoplist(), 
-                compTermElem);
+                compTermElem, dbreply.getVmIdList());
 
         System.out.println("ResourceSelectionLogic --> Post E2EComputeTerminateInstance Event");
         SingletonEventBus.getBus().post(allinst);

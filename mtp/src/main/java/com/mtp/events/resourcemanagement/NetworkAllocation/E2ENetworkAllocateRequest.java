@@ -12,14 +12,13 @@ public class E2ENetworkAllocateRequest {
 
     private long reqid;
     private long servid; //service identifiers
-    private InterNfviPopConnectivityRequest networkreq; //contains vim computation info 
+    private InterNfviPopConnectivityRequest networkreq; //contains vim computation info
 
     public E2ENetworkAllocateRequest(long reqid, long servid, InterNfviPopConnectivityRequest networkreq) {
         this.reqid = reqid;
         this.servid = servid;
         this.networkreq = networkreq;
     }
-
 
 
     //insert set/get methods
@@ -46,6 +45,5 @@ public class E2ENetworkAllocateRequest {
     public void setNetworkreq(InterNfviPopConnectivityRequest networkreq) {
         this.networkreq = networkreq;
     }
-
     
 }

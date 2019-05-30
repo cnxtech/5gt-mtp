@@ -1,31 +1,31 @@
 package com.mtp.extinterface.nbi.swagger.api;
 
-
-
 import com.google.common.eventbus.Subscribe;
 import com.mtp.SingletonEventBus;
 import com.mtp.events.abstraction.Advertisement.AdvertiseE2EAbstractionReply;
 import com.mtp.events.abstraction.Advertisement.AdvertiseE2EAbstractionRequest;
-import com.mtp.extinterface.nbi.swagger.model.InlineResponse2001;
+import com.mtp.extinterface.nbi.swagger.model.InlineResponse2003;
+
 import javax.ws.rs.*;
+import javax.ws.rs.core.Response;
 
 import io.swagger.annotations.*;
+
 import java.util.Map;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import javax.validation.constraints.*;
+import javax.validation.Valid;
 import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import org.glassfish.jersey.server.ManagedAsync;
-
-
-
 
 @Path("/abstract-resources")
 @Api(description = "the abstract-resources API")
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaJAXRSSpecServerCodegen", date = "2018-11-23T15:51:40.129Z")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaJAXRSSpecServerCodegen", date = "2019-04-17T12:21:14.657Z")
 public class AbstractResourcesApi {
-    
+        
     private static Map<String, AsyncResponse> suspended = new ConcurrentHashMap();
     private static long reqid = 0;
 
@@ -37,12 +37,13 @@ public class AbstractResourcesApi {
     @GET
     @ManagedAsync
     @Produces({ "application/json" })
-    @ApiOperation(value = "Retrieve aggregated Cloud NFVI-PoP and Inter-NFVI-PoP Connectivity", notes = "Retrieve aggregated Cloud NFVI-PoP and Inter-NFVI-PoP Connectivity", response = InlineResponse2001.class, tags={ "abstractResources" })
+    @ApiOperation(value = "Retrieve aggregated Cloud NFVI-PoP and Inter-NFVI-PoP Connectivity", notes = "Retrieve aggregated Cloud NFVI-PoP and Inter-NFVI-PoP Connectivity", response = InlineResponse2003.class, tags={ "SOInterface" })
     @ApiResponses(value = { 
-        @ApiResponse(code = 200, message = "Successful operation", response = InlineResponse2001.class),
+        @ApiResponse(code = 200, message = "Successful operation", response = InlineResponse2003.class),
         @ApiResponse(code = 400, message = "Bad request", response = Void.class),
         @ApiResponse(code = 401, message = "Unauthorized", response = Void.class),
-        @ApiResponse(code = 403, message = "Forbidden", response = Void.class) })
+        @ApiResponse(code = 403, message = "Forbidden", response = Void.class)
+    })
     public void collectMtpCloudNetworkResourceInformation(@Suspended final AsyncResponse ar) {
         //return Response.ok().entity("magic!").build();
         System.out.println("collectMtpCloudNetworkResourceInformation ----> retrieve abstract resources request suspended");
@@ -55,7 +56,8 @@ public class AbstractResourcesApi {
         SingletonEventBus.getBus().post(request);
     }
     
-    ////////////////Guava Event Handlers////////////////////////////////////////
+    
+  ////////////////Guava Event Handlers////////////////////////////////////////
     //Subscribe Event
     @Subscribe
     public void handle_AdvertiseE2EAbstractionReply(AdvertiseE2EAbstractionReply ev) throws InterruptedException {
@@ -68,7 +70,5 @@ public class AbstractResourcesApi {
         resp = Response.ok(ev.getResponse(), MediaType.APPLICATION_JSON).build();
         System.out.println("allocateNetwork ----> response ok");
         asyncResp.resume(resp);
-    }
-
-    
+    }   
 }

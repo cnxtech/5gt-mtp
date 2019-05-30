@@ -7,6 +7,7 @@ package com.mtp.events.resourcemanagement.ComputeAllocation;
 
 import com.mtp.extinterface.nbi.swagger.model.VirtualCompute;
 
+
 public class E2EComputeAllocateReply {
 
     private long reqid;

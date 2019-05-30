@@ -10,18 +10,17 @@ import com.mtp.extinterface.nbi.swagger.model.InlineResponse201;
 import com.mtp.extinterface.nbi.swagger.model.InterNfviPopConnectivityRequest;
 
 
-
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 
 import io.swagger.annotations.*;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
+import java.util.Map;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import javax.validation.constraints.*;
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.MediaType;
@@ -29,9 +28,8 @@ import org.glassfish.jersey.server.ManagedAsync;
 
 @Path("/abstract-network-resources")
 @Api(description = "the abstract-network-resources API")
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaJAXRSSpecServerCodegen", date = "2018-11-23T15:51:40.129Z")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaJAXRSSpecServerCodegen", date = "2019-04-17T12:21:14.657Z")
 public class AbstractNetworkResourcesApi {
-    
     private static Map<String, AsyncResponse> suspended = new ConcurrentHashMap();
     private static Map<String, Integer> allocationreq = new ConcurrentHashMap();
     private static Map<String, Integer> allocationcurrentreq = new ConcurrentHashMap();
@@ -42,19 +40,19 @@ public class AbstractNetworkResourcesApi {
         //reqid = 0;
 
     }
-
     @POST
     @ManagedAsync
     @Consumes({ "application/json" })
     @Produces({ "application/json" })
-    @ApiOperation(value = "Create inter-NFVI-PoP connectivity", notes = "", response = InlineResponse201.class, tags={ "abstractResources",  })
+    @ApiOperation(value = "Create inter-NFVI-PoP connectivity", notes = "", response = Object.class, responseContainer = "List", tags={ "SOInterface",  })
     @ApiResponses(value = { 
-        @ApiResponse(code = 201, message = "Successful operation", response = InlineResponse201.class),
+        @ApiResponse(code = 201, message = "Successful operation", response = Object.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = "Bad request", response = Void.class),
         @ApiResponse(code = 401, message = "Unauthorized", response = Void.class),
-        @ApiResponse(code = 403, message = "Forbidden", response = Void.class) })
-    public void createInterNfviPoPConnectivity(@Suspended final AsyncResponse ar, @Valid InterNfviPopConnectivityRequest body) {
-       //return Response.ok().entity("magic!").build();
+        @ApiResponse(code = 403, message = "Forbidden", response = Void.class)
+    })
+    public void createInterNfviPoPConnectivity(@Suspended final AsyncResponse ar,@Valid InterNfviPopConnectivityRequest body) {
+        //return Response.ok().entity("magic!").build();
         long servid = -1;
         System.out.println("createInterNfviPoPConnectivity ----> allocate abstract network request suspended");
         System.out.println("createInterNfviPoPConnectivity ----> Calling post");
@@ -77,13 +75,14 @@ public class AbstractNetworkResourcesApi {
     @DELETE
     @ManagedAsync
     @Consumes({ "application/json" })
-    @ApiOperation(value = "Delete inter-NFVI-PoP connectivity", notes = "", response = Void.class, tags={ "abstractResources" })
+    @ApiOperation(value = "Delete inter-NFVI-PoP connectivity", notes = "", response = Void.class, tags={ "SOInterface" })
     @ApiResponses(value = { 
         @ApiResponse(code = 204, message = "Successful operation", response = Void.class),
         @ApiResponse(code = 400, message = "Bad request", response = Void.class),
         @ApiResponse(code = 401, message = "Unauthorized", response = Void.class),
-        @ApiResponse(code = 403, message = "Forbidden", response = Void.class) })
-    public void deleteInterNfviPoPConnectivity(@Suspended final AsyncResponse ar, @QueryParam("networkId") @NotNull    List<String> networkId) {
+        @ApiResponse(code = 403, message = "Forbidden", response = Void.class)
+    })
+    public void deleteInterNfviPoPConnectivity(@Suspended final AsyncResponse ar, @QueryParam("networkId") @NotNull   @ApiParam("Delete inter-NfviPop Connectivity")  List<String> networkId) {
         //return Response.ok().entity("magic!").build();
         System.out.println("terminateNetwork ----> allocate compute request suspended");
         System.out.println("terminateNetwork ----> Calling post");
@@ -97,11 +96,9 @@ public class AbstractNetworkResourcesApi {
         request.setNetServIdList(networkId);
         SingletonEventBus.getBus().post(request);
     }
-  
-
     
     
-        ////////////////Guava Event Handlers////////////////////////////////////////
+////////////////Guava Event Handlers////////////////////////////////////////
     //Subscribe Event
     @Subscribe
     public void handle_E2ENetworkAllocateReply(E2ENetworkAllocateReply ev) throws InterruptedException {

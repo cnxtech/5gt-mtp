@@ -12,7 +12,7 @@ import com.mtp.events.resourcemanagement.NetworkTermination.NetworkTerminateVIMR
 import com.mtp.events.resourcemanagement.NetworkTermination.NetworkTerminateWIMReply;
 import io.swagger.client.ApiClient;
 import io.swagger.client.ApiException;
-import io.swagger.client.api.VirtualisedNetworkResourcesApi;
+import io.swagger.client.api.VimNetworkResourcesApi;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -44,11 +44,13 @@ public class TerminateVIMNetworkThread extends Thread {
             ArrayList<Integer> errorcodeList = new ArrayList();
             ArrayList<String> errormsgList = new ArrayList();
             for (int i = 0; i < dominfoMap.get(j).size(); i++) { 
+//                String basepath = "http://" + dominfoMap.get(j).get(i).getIp() + ":" 
+//                        + dominfoMap.get(j).get(i).getPort() + "/" + dominfoMap.get(j).get(i).getName();
                 String basepath = "http://" + dominfoMap.get(j).get(i).getIp() + ":" 
-                        + dominfoMap.get(j).get(i).getPort() + "/" + dominfoMap.get(j).get(i).getName();
+                       + dominfoMap.get(j).get(i).getPort();
                 ApiClient capi = new ApiClient();
                 capi.setBasePath(basepath);
-                VirtualisedNetworkResourcesApi api = new VirtualisedNetworkResourcesApi(capi);
+                VimNetworkResourcesApi api = new VimNetworkResourcesApi(capi);
 
                 List<String> netlist = new ArrayList();
                 List<String> resplist = new ArrayList();

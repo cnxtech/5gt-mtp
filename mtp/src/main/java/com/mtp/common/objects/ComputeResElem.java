@@ -8,6 +8,7 @@ package com.mtp.common.objects;
 import com.mtp.extinterface.nbi.swagger.model.CapacityInformation;
 import com.mtp.extinterface.nbi.swagger.model.VirtualComputeResourceInformation;
 
+
 /**
  *
  * @author efabuba

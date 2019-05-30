@@ -7,13 +7,9 @@ package com.mtp.extinterface.sbi.StubThreads;
 
 import com.mtp.SingletonEventBus;
 import com.mtp.common.objects.DomainElem;
-import com.mtp.events.resourcemanagement.ComputeAllocation.ComputeAllocateVIMReply;
 import com.mtp.events.resourcemanagement.NetworkAllocation.NetworkAllocateWIMReply;
 import com.mtp.events.resourcemanagement.NetworkAllocation.NetworkAllocateWIMReq;
 import com.mtp.extinterface.nbi.swagger.model.VirtualNetwork;
-import io.swagger.client.ApiClient;
-import io.swagger.client.ApiException;
-import io.swagger.client.api.VirtualisedNetworkResourcesApi;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;

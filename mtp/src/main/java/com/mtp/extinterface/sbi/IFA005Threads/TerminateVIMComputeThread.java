@@ -11,7 +11,7 @@ import com.mtp.events.resourcemanagement.ComputeTermination.ComputeTerminateVIMR
 import com.mtp.events.resourcemanagement.ComputeTermination.ComputeTerminateVIMReq;
 import io.swagger.client.ApiClient;
 import io.swagger.client.ApiException;
-import io.swagger.client.api.VirtualisedComputeResourcesApi;
+import io.swagger.client.api.VimComputeResourcesApi;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,25 +44,36 @@ public class TerminateVIMComputeThread extends Thread {
         ArrayList<Boolean> outcomeList = new ArrayList();
         ArrayList<Integer> errorcodeList = new ArrayList();
         ArrayList<String> errormsgList = new ArrayList();
-        long size = outcomeList.size();
-
+        long size = dominfoList.size();
+        
+        System.out.println("eNTER tERMINATE vim THREAD.");
         for (int i = 0; i < size; i++) {
             DomainElem dominfo = dominfoList.get(i);
+            // List of identifiers of terminated VMs
             List<String> compid = new ArrayList();
-            compid.add(request.getComputeTermElem().getTerminateRequest().get(i));
-   
-            String basepath = "http://" + dominfo.getIp() + ":" + dominfo.getPort() + "/" + dominfo.getName();
+          
+            
+       
+            //Virtual Machine identifier for which the termination is to be requested to the specific Domain
+             compid.add(request.getVmIdList().get(i));
+            //compid.add(request.getComputeTermElem().getTerminateRequest().get(i));
+            
+            
+            //String basepath = "http://" + dominfo.getIp() + ":" + dominfo.getPort() + "/" + dominfo.getName();
+            String basepath = "http://" + dominfo.getIp() + ":" + dominfo.getPort();
             ApiClient capi = new ApiClient();
             capi.setBasePath(basepath);
-            VirtualisedComputeResourcesApi api = new VirtualisedComputeResourcesApi(capi);
+            VimComputeResourcesApi api = new VimComputeResourcesApi(capi);
 
-            List<String> complist = new ArrayList();;
+            List<String> complist = new ArrayList();
             //List<ComputeIds> dummy = new ArrayList();
 
-            
+            //TEST TEST
             try {
 
                 complist = api.terminateAbstractResources(compid);
+                
+                
                 outcomeList.add(Boolean.TRUE);
                 errorcodeList.add(0);
                 errormsgList.add("");

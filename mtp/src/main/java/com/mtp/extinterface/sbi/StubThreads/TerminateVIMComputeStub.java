@@ -12,7 +12,7 @@ import com.mtp.events.resourcemanagement.ComputeTermination.ComputeTerminateVIMR
 import com.mtp.events.resourcemanagement.ComputeTermination.ComputeTerminateVIMReq;
 import io.swagger.client.ApiClient;
 import io.swagger.client.ApiException;
-import io.swagger.client.api.VirtualisedComputeResourcesApi;
+import io.swagger.client.api.VimComputeResourcesApi;
 
 import java.util.ArrayList;
 import java.util.List;

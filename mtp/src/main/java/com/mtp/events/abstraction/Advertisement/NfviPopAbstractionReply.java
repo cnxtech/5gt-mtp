@@ -5,6 +5,7 @@
  */
 package com.mtp.events.abstraction.Advertisement;
 
+
 import com.mtp.extinterface.nbi.swagger.model.NfviPop;
 import java.util.ArrayList;
 

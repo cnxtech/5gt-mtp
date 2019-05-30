@@ -5,8 +5,10 @@
  */
 package com.mtp.events.resourcemanagement.NetworkAllocation;
 
-
 import com.mtp.extinterface.nbi.swagger.model.InterNfviPopConnectivityRequest;
+
+
+
 
 public class NetworkAllocateDBQuery {
 

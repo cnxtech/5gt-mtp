@@ -1,24 +1,34 @@
-# Copyright 2018 b<>com. All rights reserved.
-# This software is the confidential intellectual property of b<>com. You shall
-# not disclose it and shall use it only in accordance with the terms of the
-# license agreement you entered into with b<>com.
-# IDDN number:
+# Copyright 2018 b<>com.
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+# IDDN number: IDDN.FR.001.470053.000.S.C.2018.000.00000.
 #
 
 import flask
 import http
-
+import json
 
 from flasgger import fields
 from flasgger import Schema
 from flasgger import SwaggerView
 
+from vim_manager.api import common
 from vim_manager.api.resource_quota.schema import ResourceGroupIds
 from vim_manager.api.resource_quota.schema import VirtualNetworkQuota
 from vim_manager.api.resource_quota.schema import VirtualNetworkQuotaData
+from vim_manager.api.schema import Filter
 from vim_manager.api.schema import Identifier
 from vim_manager.osc.clients import OpenStackClients
-
 
 OK = http.HTTPStatus.OK.value
 CREATED = http.HTTPStatus.CREATED.value
@@ -36,14 +46,14 @@ class CreateNetworkResourceQuotaRequest(Schema):
     resourceGroupId = fields.Str(
         required=True,
         description='Unique identifier of the "infrastructure resource '
-                    'group", logical grouping of virtual resources assigned '
-                    'to a tenant within an Infrastructure Domain.')
-    virtualComputeQuota = fields.Nested(
+        'group", logical grouping of virtual resources assigned '
+        'to a tenant within an Infrastructure Domain.')
+    virtualNetworkQuota = fields.Nested(
         VirtualNetworkQuotaData,
         required=True,
         description='Type and configuration of virtualised network resources '
-                    'that need to be restricted by the quota, e.g. '
-                    '{"numPublicIps": 20}.')
+        'that need to be restricted by the quota, e.g. '
+        '{"numPublicIps": 20}.')
 
 
 class NetworkResourceQuotaCreateAPI(SwaggerView):
@@ -53,14 +63,12 @@ class NetworkResourceQuotaCreateAPI(SwaggerView):
     resources as indicated by the consumer functional block.
     """
 
-    parameters = [
-        {
-            "name": "body",
-            "in": "body",
-            "schema": CreateNetworkResourceQuotaRequest,
-            "required": True
-        }
-    ]
+    parameters = [{
+        "name": "body",
+        "in": "body",
+        "schema": CreateNetworkResourceQuotaRequest,
+        "required": True
+    }]
     responses = {
         CREATED: {
             'description': 'Element containing information about the quota '
@@ -91,6 +99,7 @@ class NetworkResourceQuotaCreateAPI(SwaggerView):
         data = flask.request.get_json()
 
         resource_group_id = data['resourceGroupId']
+        # import ipdb; ipdb.set_trace()
         network_quota = data['virtualNetworkQuota']
 
         resources = {'quota': {}}
@@ -126,19 +135,19 @@ class NetworkResourceQuotaTerminateAPI(SwaggerView):
     the remaining ones.
     """
 
-    parameters = [
-        {
-            'name': 'resourceGroupId',
-            "in": "query",
-            'type': 'array',
-            'items': {'type': Identifier},
-            'description': 'Unique identifier of the "infrastructure resource '
-                           'group", logical grouping of virtual resources '
-                           'assigned to a tenant within an Infrastructure '
-                           'Domain.',
-            'required': True
-        }
-    ]
+    parameters = [{
+        'name': 'resourceGroupId',
+        "in": "query",
+        'type': 'array',
+        'items': {
+            'type': Identifier
+        },
+        'description': 'Unique identifier of the "infrastructure resource '
+                       'group", logical grouping of virtual resources '
+                       'assigned to a tenant within an Infrastructure '
+                       'Domain.',
+        'required': True
+    }]
 
     responses = {
         OK: {
@@ -186,6 +195,19 @@ class NetworkResourceQuotaQueryAPI(SwaggerView):
     that the consumer has access to.
     """
 
+    parameters = [{
+        "name": "queryQuotaFilter",
+        "in": "body",
+        "schema": Filter,
+        "description": "Query filter based on e.g. name, identifier, "
+                       "meta-data information or status information, "
+                       "expressing the type of information to be "
+                       "retrieved. It can also be used to specify one or "
+                       "more quotas to be queried by providing their "
+                       "identifiers.",
+        "required": True
+    }]
+
     responses = {
         OK: {
             'description': 'Element containing information about the quota '
@@ -209,12 +231,26 @@ class NetworkResourceQuotaQueryAPI(SwaggerView):
     tags = ['virtualisedResourceQuota']
     operationId = "queryNetworkQuota"
 
-    def get(self):
-        config = flask.current_app.osloconfig
-        keystone = OpenStackClients(config).keystone()
-        neutron = OpenStackClients(config).neutron()
+    def get_param_value(self, project, param):
+        elt_list = param.split('.')
+        size_list = len(elt_list)
 
-        project_ids = [p.id for p in keystone.projects.list()]
+        if ( size_list == 1):
+            return project[elt_list[0]]
+        else:
+            return '-1'
+
+    def post(self):
+        data_filter = flask.request.get_json()
+        filter_list = list(data_filter.keys())
+
+        config = flask.current_app.osloconfig
+        neutron = OpenStackClients(config).neutron()
+        session = OpenStackClients(config).session
+        response = session.get('/v3/projects', endpoint_filter={'service_type': 'identity', 'interface': 'public', 'region_name': 'RegionOne'})
+        content = json.loads(response.__dict__['_content'].decode("utf-8"))
+
+        project_ids = [ p['id'] for p in content['projects'] ]
 
         quotas_projects = []
         for project_id in project_ids:
@@ -226,26 +262,48 @@ class NetworkResourceQuotaQueryAPI(SwaggerView):
                 'numSubnets': quotas['subnet'],
             })
 
-        return flask.jsonify(quotas_projects), OK
+        filtered_project = []
+        for project in quotas_projects:
+            match = False
+            for item in filter_list:
+                # Get param value from server
+                try:
+                    value = self.get_param_value(project, data_filter[item]['param'])
+
+                except (KeyError) as e:
+                    print (e)
+                    return flask.jsonify('Error param name, for ' + item + ' (' + str(e) + ')'), OK
+
+                test = common.compare_value(data_filter[item]['op'], value, data_filter[item]['value'])
+                if test == '-1':
+                    return flask.jsonify('Error wrong operator, for ' + item ), OK
+                elif test:
+                    match = True
+                else:
+                    match = False
+                    break
+            if match :
+                filtered_project.append(project)
+
+        # import ipdb; ipdb.set_trace()
+        return flask.jsonify(filtered_project), OK
 
 
 blueprint.add_url_rule(
-    '/quotas/network_resources', strict_slashes=False,
-    view_func=NetworkResourceQuotaQueryAPI.as_view(
-        'queryNetworkQuota'),
-    methods=['GET']
-)
+    '/v1/quotas/network_resources/query',
+    strict_slashes=False,
+    view_func=NetworkResourceQuotaQueryAPI.as_view('queryNetworkQuota'),
+    methods=['POST'])
 
 blueprint.add_url_rule(
-    '/quotas/network_resources', strict_slashes=False,
-    view_func=NetworkResourceQuotaCreateAPI.as_view(
-        'createNetworkQuota'),
-    methods=['POST']
-)
+    '/v1/quotas/network_resources',
+    strict_slashes=False,
+    view_func=NetworkResourceQuotaCreateAPI.as_view('createNetworkQuota'),
+    methods=['POST'])
 
 blueprint.add_url_rule(
-    '/quotas/network_resources', strict_slashes=False,
+    '/v1/quotas/network_resources',
+    strict_slashes=False,
     view_func=NetworkResourceQuotaTerminateAPI.as_view(
         'terminateNetworkQuota'),
-    methods=['DELETE']
-)
+    methods=['DELETE'])

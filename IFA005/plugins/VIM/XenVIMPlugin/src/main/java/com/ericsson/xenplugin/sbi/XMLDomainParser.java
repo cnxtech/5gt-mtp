@@ -105,7 +105,7 @@ public class XMLDomainParser {
             Element xmlnetNode = (Element) xmlnet.get(i);
             String tmp = xmlnetNode.getChildText("type");
             if (tmp.compareTo("mem") == 0) {
-                //Id
+             //Id
             String id = xmlnetNode.getChildText("id");
             System.out.println("XMLDomainParser --> id : " + xmlnetNode.getChildText("id"));
             //Id
@@ -193,13 +193,22 @@ public class XMLDomainParser {
         Element xmlxenlist = rootNode.getChild("XENInfoList");
         List<Element> xmlxen = xmlxenlist.getChildren("XENInfo");
         for (int i = 0; i < xmlxen.size(); i++) {
-            
             Element xmlranNode = (Element) xmlxen.get(i);
-            //TODO XEN parser
+             //zoneid
+            String zoneid = xmlranNode.getChildText("zoneid");
+            System.out.println("XMLDomainParser --> zoneid : " + xmlranNode.getChildText("zoneid"));
+            //master
+            String master = xmlranNode.getChildText("master");
+            System.out.println("XMLDomainParser --> master : " + xmlranNode.getChildText("master"));
+            //username
+            String username = xmlranNode.getChildText("username");
+            System.out.println("XMLDomainParser --> username : " + xmlranNode.getChildText("username"));
+            //password
+            String password = xmlranNode.getChildText("password");
+            System.out.println("XMLDomainParser --> password : " + xmlranNode.getChildText("password"));
             
-            XenService el = new XenService();
-
-            //xeninfolist.put(id, el);
+            XenService el = new XenService(zoneid, master, username, password);
+            xeninfolist.put(zoneid, el);
         }
         
         

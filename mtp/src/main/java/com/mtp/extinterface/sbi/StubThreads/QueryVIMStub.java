@@ -21,7 +21,6 @@ import com.mtp.extinterface.nbi.swagger.model.VirtualComputeResourceInformation;
 import com.mtp.extinterface.nbi.swagger.model.VirtualComputeResourceInformationVirtualCPU;
 import com.mtp.extinterface.nbi.swagger.model.VirtualComputeResourceInformationVirtualMemory;
 import com.mtp.extinterface.nbi.swagger.model.VirtualNetworkResourceInformation;
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;

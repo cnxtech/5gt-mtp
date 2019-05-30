@@ -6,6 +6,8 @@
 package com.mtp.common;
 
 import com.mtp.common.objects.DomainElem;
+import com.mtp.common.objects.LocalPAConfig;
+import com.mtp.common.objects.MonitoringConfig;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -23,6 +25,9 @@ import org.jdom2.input.SAXBuilder;
  */
 public class XMLDomainParser {
     private ArrayList<DomainElem> doms;
+    private LocalPAConfig pa_net;
+    private LocalPAConfig pa_comp;
+    private MonitoringConfig mon;
     
     public XMLDomainParser(String xmlFile) {
         doms = new ArrayList();
@@ -31,7 +36,9 @@ public class XMLDomainParser {
         Element rootNode = document.getRootElement();
         System.out.println("XMLDomainParse --> Root Element :: " + rootNode.getName());
 
-        List<Element> list = rootNode.getChildren("Domain");
+        //Parse domain List
+        Element domains = rootNode.getChild("Domains");
+        List<Element> list = domains.getChildren("Domain");
 
         for (int i = 0; i < list.size(); i++) {
 
@@ -46,7 +53,11 @@ public class XMLDomainParser {
             //Domain Id
             Long id = Long.parseLong(DomainNode.getChildText("Id"));
             System.out.println("XMLDomainParse --> Id : " + id);
-
+            
+            //Domain Id
+            Long mecid = Long.parseLong(DomainNode.getChildText("MecId"));
+            System.out.println("XMLDomainParse --> MecId : " + id);
+            
             //Domain IP
             String ip = DomainNode.getChildText("Ip");
             System.out.println("XMLDomainParse --> Ip : " + DomainNode.getChildText("Ip"));
@@ -56,10 +67,69 @@ public class XMLDomainParser {
             System.out.println("XMLDomainParse --> Port : " + port);
 
             //insert element in ArrayList
-            DomainElem el = new DomainElem(type, name, ip, port, id);
+            DomainElem el = new DomainElem(ip, port, name, type, id, mecid);
 
             doms.add(el);
         }
+        //Parse Local PA Config
+        Element paconfigs = rootNode.getChild("LocalPAConfig");
+        //Parse PA Compute Config
+        Element PAComp = paconfigs.getChild("Compute");
+        
+        String compstatus = PAComp.getChildText("Status");
+        System.out.println("XMLDomainParse --> PA compute Status : " + PAComp.getChildText("Status"));
+        
+        //Domain Name
+        String compname = PAComp.getChildText("Name");
+        System.out.println("XMLDomainParse --> PA compute Name : " + PAComp.getChildText("Name"));
+
+        //Domain IP
+        String compip = PAComp.getChildText("Ip");
+        System.out.println("XMLDomainParse --> PA Compute Ip : " + PAComp.getChildText("Ip"));
+
+        //Domain Port
+        Long compport = Long.parseLong(PAComp.getChildText("Port"));
+        System.out.println("XMLDomainParse --> PA Compute Port : " + compport);
+
+        //insert element in LocalPAConfig
+        pa_comp = new LocalPAConfig( compip, compport, compname, compstatus);
+
+        //Parse PA Network Config
+        Element PANet = paconfigs.getChild("Network");
+ 
+        String netstatus = PANet.getChildText("Status");
+        System.out.println("XMLDomainParse --> PA network Status : " + PANet.getChildText("Status"));
+        
+        //Domain Name
+        String netname = PANet.getChildText("Name");
+        System.out.println("XMLDomainParse --> PA network Name : " + PANet.getChildText("Name"));
+
+        //Domain IP
+        String netip = PANet.getChildText("Ip");
+        System.out.println("XMLDomainParse --> PA network Ip : " + PANet.getChildText("Ip"));
+
+        //Domain Port
+        Long netport = Long.parseLong(PANet.getChildText("Port"));
+        System.out.println("XMLDomainParse --> PA network Port : " + netport);
+
+        //insert element in LocalPAConfig
+        pa_net = new LocalPAConfig( netip, netport, netname, netstatus); 
+        
+        Element monconfigs = rootNode.getChild("MonitoringConfig");
+        
+        String monip = monconfigs.getChildText("Ip");
+        System.out.println("XMLDomainParse --> Mon network Ip : " + monconfigs.getChildText("Ip"));
+        
+        Long monport = Long.parseLong(monconfigs.getChildText("Port"));
+        System.out.println("XMLDomainParse --> Mon network Port : " + monconfigs.getChildText("Port"));
+        
+        String monname = monconfigs.getChildText("Name");
+        System.out.println("XMLDomainParse --> PA network Name : " + monconfigs.getChildText("Name"));
+        
+        mon = new MonitoringConfig(monip, monport, monname);
+        
+        //Parse AppD
+        //TODO R2: Build parser for AppD
     }
   
     private static Document getSAXParsedDocument(final String fileName)
@@ -86,6 +156,30 @@ public class XMLDomainParser {
 
     public void setDomainElem(DomainElem domelem) {
         doms.add(domelem);
+    }
+
+    public LocalPAConfig getPa_net() {
+        return pa_net;
+    }
+
+    public void setPa_net(LocalPAConfig pa_net) {
+        this.pa_net = pa_net;
+    }
+
+    public LocalPAConfig getPa_comp() {
+        return pa_comp;
+    }
+
+    public void setPa_comp(LocalPAConfig pa_comp) {
+        this.pa_comp = pa_comp;
+    }
+
+    public MonitoringConfig getMon() {
+        return mon;
+    }
+
+    public void setMon(MonitoringConfig mon) {
+        this.mon = mon;
     }
 
 }

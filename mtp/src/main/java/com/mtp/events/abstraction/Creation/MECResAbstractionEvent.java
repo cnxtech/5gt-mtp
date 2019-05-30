@@ -5,17 +5,24 @@
  */
 package com.mtp.events.abstraction.Creation;
 
+import com.mtp.extinterface.nbi.swagger.model.MECRegionInfo;
+import java.util.List;
+
 /**
  *
  * @author efabuba
  */
 public class MECResAbstractionEvent {
-    private long id; //id of the VIM domain
-    //TODO: Create MEC abstraction event
-    
-    public MECResAbstractionEvent(long val) {
-        id = val;
+    private long id; //id of the MEC domain
+    private List<MECRegionInfo> mecregionlist;
+
+    public MECResAbstractionEvent(long id, List<MECRegionInfo> mecregionlist) {
+        this.id = id;
+        this.mecregionlist = mecregionlist;
     }
+            
+    
+
     
     public void setId(long val) {
         id = val;
@@ -23,4 +30,13 @@ public class MECResAbstractionEvent {
     public long getId() {
         return id;
     }
+
+    public List<MECRegionInfo> getMecregionlist() {
+        return mecregionlist;
+    }
+
+    public void setMecregionlist(List<MECRegionInfo> mecregionlist) {
+        this.mecregionlist = mecregionlist;
+    }
+    
 }

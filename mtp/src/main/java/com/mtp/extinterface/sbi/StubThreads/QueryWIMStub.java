@@ -19,7 +19,6 @@ import com.mtp.extinterface.nbi.swagger.model.VirtualNetworkResourceInformation;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import javax.ws.rs.container.ResourceInfo;
 //import com.mtp.extinterface.nbi.swagger.model.ResourceInfo;
 
 /**

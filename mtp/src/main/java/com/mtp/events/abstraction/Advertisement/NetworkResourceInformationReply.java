@@ -5,6 +5,7 @@
  */
 package com.mtp.events.abstraction.Advertisement;
 
+
 import com.mtp.extinterface.nbi.swagger.model.VirtualNetworkResourceInformation;
 import java.util.ArrayList;
 

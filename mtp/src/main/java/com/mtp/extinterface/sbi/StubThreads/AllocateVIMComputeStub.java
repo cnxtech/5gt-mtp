@@ -10,8 +10,6 @@ import com.mtp.common.objects.DomainElem;
 import com.mtp.events.resourcemanagement.ComputeAllocation.ComputeAllocateVIMReply;
 import com.mtp.events.resourcemanagement.ComputeAllocation.ComputeAllocateVIMReq;
 import com.mtp.extinterface.nbi.swagger.model.ReservedVirtualComputeVirtualisationContainerReservedVirtualNetworkInterface;
-import io.swagger.client.ApiClient;
-import io.swagger.client.api.VirtualisedComputeResourcesApi;
 import com.mtp.extinterface.nbi.swagger.model.VirtualCompute;
 import com.mtp.extinterface.nbi.swagger.model.VirtualComputeVirtualCpu;
 import com.mtp.extinterface.nbi.swagger.model.VirtualComputeVirtualMemory;

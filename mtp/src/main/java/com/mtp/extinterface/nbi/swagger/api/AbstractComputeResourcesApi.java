@@ -1,8 +1,5 @@
 package com.mtp.extinterface.nbi.swagger.api;
 
-
-
-
 import com.google.common.eventbus.Subscribe;
 import com.mtp.SingletonEventBus;
 import com.mtp.events.resourcemanagement.ComputeAllocation.E2EComputeAllocateReply;
@@ -12,50 +9,51 @@ import com.mtp.events.resourcemanagement.ComputeTermination.E2EComputeTerminateR
 import com.mtp.extinterface.nbi.swagger.model.AllocateComputeRequest;
 import com.mtp.extinterface.nbi.swagger.model.MetaDataInner;
 import com.mtp.extinterface.nbi.swagger.model.VirtualCompute;
+
+
 import javax.ws.rs.*;
+import javax.ws.rs.core.Response;
 
 import io.swagger.annotations.*;
 import java.util.ArrayList;
 
-
-import java.util.List;
 import java.util.Map;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.validation.constraints.*;
 import javax.validation.Valid;
 import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import org.glassfish.jersey.server.ManagedAsync;
 
 @Path("/abstract-compute-resources")
 @Api(description = "the abstract-compute-resources API")
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaJAXRSSpecServerCodegen", date = "2018-11-23T15:51:40.129Z")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaJAXRSSpecServerCodegen", date = "2019-04-17T12:21:14.657Z")
 public class AbstractComputeResourcesApi {
-    
     private static Map<String, AsyncResponse> suspended = new ConcurrentHashMap();
     private static long reqid = 0;
-
+    
     public AbstractComputeResourcesApi() {
         //reqid = 0;
 
     }
-
+    
     @POST
     @ManagedAsync
     @Consumes({ "application/json" })
     @Produces({ "application/json" })
-    @ApiOperation(value = "Allocate abstract compute resources", notes = "", response = VirtualCompute.class, tags={ "abstractResources",  })
+    @ApiOperation(value = "Allocate abstract compute resources", notes = "", response = VirtualCompute.class, tags={ "SOInterface",  })
     @ApiResponses(value = { 
         @ApiResponse(code = 201, message = "Element containing information of the newly instantiated abstracted virtualised compute resource.", response = VirtualCompute.class),
         @ApiResponse(code = 400, message = "Bad request", response = Void.class),
         @ApiResponse(code = 401, message = "Unauthorized", response = Void.class),
         @ApiResponse(code = 403, message = "Forbidden", response = Void.class),
-        @ApiResponse(code = 409, message = "software image already added", response = Void.class) })
+        @ApiResponse(code = 409, message = "software image already added", response = Void.class)
+    })
     public void allocateAbstractCompute(@Suspended final AsyncResponse ar, @Valid AllocateComputeRequest body) {
         //return Response.ok().entity("magic!").build();
-                //return Response.ok().entity("Not Implemented!").build();
+        //return Response.ok().entity("Not Implemented!").build();
         System.out.println("allocateAbstractCompute ----> allocate abstract compute request suspended");
         System.out.println("allocateAbstractCompute ----> Calling post");
         reqid++;
@@ -81,12 +79,13 @@ public class AbstractComputeResourcesApi {
     @ManagedAsync
     @Consumes({ "application/json" })
     @Produces({ "application/json" })
-    @ApiOperation(value = "Terminate abstract compute resources", notes = "", response = String.class, responseContainer = "List", tags={ "abstractResources" })
+    @ApiOperation(value = "Terminate abstract compute resources", notes = "", response = String.class, responseContainer = "List", tags={ "SOInterface" })
     @ApiResponses(value = { 
         @ApiResponse(code = 200, message = "Identifier(s) of the virtualised compute resource(s) successfully terminated.", response = String.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = "Bad request", response = Void.class),
         @ApiResponse(code = 401, message = "Unauthorized", response = Void.class),
-        @ApiResponse(code = 403, message = "Forbidden", response = Void.class) })
+        @ApiResponse(code = 403, message = "Forbidden", response = Void.class)
+    })
     public void terminateResources(@Suspended final AsyncResponse ar, @QueryParam("computeId") @NotNull   @ApiParam("Identifier(s) of the virtualised compute resource(s) to be terminated.")  List<String> computeId) {
         //return Response.ok().entity("magic!").build();
         System.out.println("terminateResources ----> terminate abstracted compute request suspended");
@@ -103,7 +102,7 @@ public class AbstractComputeResourcesApi {
     }
     
     
-     ////////////////Guava Event Handlers////////////////////////////////////////
+    ////////////////Guava Event Handlers////////////////////////////////////////
     //Subscribe Event
     @Subscribe
     public void handle_E2EComputeAllocateReply(E2EComputeAllocateReply ev) throws InterruptedException {
@@ -113,11 +112,11 @@ public class AbstractComputeResourcesApi {
         AsyncResponse asyncResp = suspended.remove(Long.toString(ev.getReqid()));
         System.out.println("allocateCompute ----> reqid = " + ev.getReqid());
         System.out.println("allocateCompute ----> request deblocked");
-        VirtualCompute replist;
+        com.mtp.extinterface.nbi.swagger.model.VirtualCompute replist;
         if (ev.isOutcome()) {
             replist = ev.getComputereply();
         } else {
-            replist = new VirtualCompute();
+            replist = new com.mtp.extinterface.nbi.swagger.model.VirtualCompute();
         }
         Response resp;
         resp = Response.ok(replist, MediaType.APPLICATION_JSON).build();
@@ -147,6 +146,3 @@ public class AbstractComputeResourcesApi {
         asyncResp.resume(resp);
     }
 }
-
-
-
