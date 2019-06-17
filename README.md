@@ -1,23 +1,47 @@
-# 5GT-MTP
-This repository contains the code for the Mobile Transport and Computing Platform (MTP) developed in the 5G-Transformer EU project.
-It is the second release (see [Changelog](CHANGELOG.md) for detailed supported feature list) and it is the reference code for Proof Of Concept Demo of the project 
-## Repository Organization
-The repository is divided in three folders:
+##5GT CTTC MTP implementation
 
-### 1. MTP 
-This folder contains the code of the MTP core. Please refer to the [MTP README](mtp/README.md) for instruction details
+This is the CTTC implementation for 5GT MTP.
 
-### 2. java-client-generated
-This folder contains a java REST client library (client-sbi) that MTP core uses to communicate with the plugins. It is generated automatically via [swagger codegen](https://editor.swagger.io/) 
+## Installation
 
-### 3. IFA005
-This folder contains the MTP plugins and the json files used for generate the external interfaces for MTP core (both generated via [swagger codegen](https://editor.swagger.io/) ) Please refer to the [IFA005 README](IFA005/README.md) for instruction details.
+First of all, install python 3.6 and virtualenv in your host.
 
-### 4. MonitoringAPI
-This folder contains the Monitoring API that MTP uses for communicate with the 5G-T Monitoring Platform. it includes the json files and the java REST client library used by MTP core (both generated via  [swagger codegen])
+In "main" folder (where is located this README):
 
-### 5. MTP_API_PA_Alg
-This folder contains the MTP local placement algorithms, the json file used by algorithms to communicate with MTP core and the java REST client used by MTP core (both generated via [swagger codegen]). Please refer to the [PA README](MTP_API_PA_Alg/README.md) for instruction details
+* create virtual environment:
+```
+virtualenv -p python3.6 venv
+source venv/bin/activate
+pip3 install -r requirements.txt 
+```
+* rename the "pa.properties" file (changing the value of PA):
+```
+mv pa.properties.ini pa.properties 
+``` 
+* create "body_input.dat" and "body_output.dat" files:
+```
+touch body_input.dat body_output.dat
+```
 
-### 6. Postman_collections
-This folder contains a json [POSTMAN]() collection to be use for testing the MTP core.
+In "db" folder, rename mtp_db.db.ini to mtp_db.db
+```
+mv mtp_db.db.ini mtp_db.db 
+```
+
+## Usage
+To run the code in "main" folder:
+
+Activate the virtualenv if not:
+
+```
+source venv/bin/activate 
+```
+Then:
+```
+export PYTHONPATH=$PYTHONPATH:/current-directory/ (pwd)
+python nbi/nbi_server.py
+```
+Once the code is running, you can enter in the GUI putting in the browser:
+http://ip_address:8090
+
+Default User: admin (Password: admin) 
